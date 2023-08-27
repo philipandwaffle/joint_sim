@@ -12,7 +12,7 @@ use scrolling_cam::ScrollingCamPlugin;
 use world_object::body::{Body, BodyList};
 use world_object::bone::Bone;
 use world_object::joint::JointBundle;
-use world_object::muscle::Muscle;
+use world_object::muscle::{AngularMuscle, LinearMuscleBundle};
 use world_object::OrganismPlugin;
 
 mod scrolling_cam;
@@ -54,7 +54,10 @@ fn main() {
         ScrollingCamPlugin,
         // OrganismPlugin,
     ))
-    .add_systems(Startup, (spawn_ground, spawn_organism_test));
+    .add_systems(
+        Startup,
+        (spawn_ground, spawn_motor_test, spawn_organism_test),
+    );
 
     if profiling_mode {
         app.add_plugins((
@@ -89,6 +92,25 @@ fn spawn_ground(mut commands: Commands) {
     ));
 }
 
+fn spawn_motor_test(mut commands: Commands) {
+    let a_ent = commands
+        .spawn(JointBundle::from_translation(vec2(0.0, 1000.0)))
+        .id();
+    let b_ent = commands
+        .spawn(JointBundle::from_translation(vec2(200.0, 1000.0)))
+        .id();
+
+    let mut joint = PrismaticJointBuilder::new(Vec2::X)
+        .local_anchor1(Vec2::new(0.0, 0.0))
+        .local_anchor2(Vec2::new(0.0, 0.0))
+        .motor_velocity(500.0, 0.5);
+
+    commands
+        .get_entity(a_ent)
+        .unwrap()
+        .insert(ImpulseJoint::new(b_ent, joint));
+}
+
 fn spawn_organism_test(mut commands: Commands) {
     let a_pos = vec2(-100.0, 50.0);
     let b_pos = vec2(0.0, 0.0);
@@ -101,11 +123,13 @@ fn spawn_organism_test(mut commands: Commands) {
     let ba_bone_motor = Bone::new(&mut commands, [b_ent, a_ent], [b_pos, a_pos], None);
     let bc_bone_motor = Bone::new(&mut commands, [b_ent, c_ent], [b_pos, c_pos], None);
 
+    let ac_linear_muscle = LinearMuscleBundle::new(&mut commands, [a_ent, c_ent]);
+
     commands.insert_resource(BodyList {
         bodies: vec![Body {
-            muscles: vec![Muscle {
-                bone_motors: [ba_bone_motor, bc_bone_motor],
-            }],
+            angular_muscles: vec![],
+            linear_muscles: vec![],
+            // linear_muscles: vec![ac_linear_muscle],
         }],
     })
 }
