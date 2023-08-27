@@ -122,7 +122,7 @@ fn spawn_organism_test(mut commands: Commands) {
     let ba_bone_motor = Bone::new(&mut commands, [b_ent, a_ent], [b_pos, a_pos], None);
     let bc_bone_motor = Bone::new(&mut commands, [b_ent, c_ent], [b_pos, c_pos], None);
 
-    let ac_linear_muscle = LinearMuscleBundle::new(&mut commands, [a_ent, c_ent]);
+    // let ac_linear_muscle = LinearMuscleBundle::new(&mut commands, [a_ent, c_ent]);
 
     commands.insert_resource(BodyList { bodies: vec![] })
 }
