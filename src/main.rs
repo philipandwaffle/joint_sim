@@ -12,7 +12,6 @@ use scrolling_cam::ScrollingCamPlugin;
 use world_object::body::{Body, BodyList};
 use world_object::bone::Bone;
 use world_object::joint::JointBundle;
-use world_object::muscle::{AngularMuscle, LinearMuscleBundle};
 use world_object::OrganismPlugin;
 
 mod scrolling_cam;
@@ -125,13 +124,7 @@ fn spawn_organism_test(mut commands: Commands) {
 
     let ac_linear_muscle = LinearMuscleBundle::new(&mut commands, [a_ent, c_ent]);
 
-    commands.insert_resource(BodyList {
-        bodies: vec![Body {
-            angular_muscles: vec![],
-            linear_muscles: vec![],
-            // linear_muscles: vec![ac_linear_muscle],
-        }],
-    })
+    commands.insert_resource(BodyList { bodies: vec![] })
 }
 
 fn spawn_test_scene(mut commands: Commands) {

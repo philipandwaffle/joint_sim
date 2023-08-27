@@ -28,9 +28,7 @@ impl Bone {
             .local_anchor2(b_pos - a_pos)
             .build();
 
-        let impulse_joint = commands
-            .spawn((ImpulseJoint::new(joints[0], joint_ab), BoneMotor::default()))
-            .id();
+        let impulse_joint = commands.spawn(ImpulseJoint::new(joints[0], joint_ab)).id();
 
         commands
             .get_entity(joints[1])
@@ -38,31 +36,5 @@ impl Bone {
             .add_child(impulse_joint);
 
         return impulse_joint;
-    }
-}
-
-#[derive(Component)]
-pub struct BoneMotor {
-    target_impulse: f32,
-}
-impl BoneMotor {
-    pub fn apply_impulse(&mut self, delta_impulse: f32) {
-        self.target_impulse += delta_impulse;
-    }
-}
-impl Default for BoneMotor {
-    fn default() -> Self {
-        Self {
-            target_impulse: 0.0,
-        }
-    }
-}
-
-pub fn apply_motor_impulse(mut motors: Query<(&BoneMotor, &mut ImpulseJoint)>) {
-    for (b, ij) in motors.iter_mut() {
-        println!("applying impulse, {:?}", b.target_impulse);
-        let revolute_joint = *ij.data.as_revolute().unwrap();
-        let mut motor = *revolute_joint.motor().unwrap();
-        motor.target_vel = b.target_impulse;
     }
 }
