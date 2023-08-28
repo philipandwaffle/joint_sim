@@ -6,6 +6,8 @@ use bevy_rapier2d::prelude::*;
 pub struct JointBundle {
     joint: Joint,
     rigid_body: RigidBody,
+    mass: AdditionalMassProperties,
+    external_impulse: ExternalImpulse,
     damping: Damping,
     shape_bundle: ShapeBundle,
     fill: Fill,
@@ -28,9 +30,6 @@ impl JointBundle {
         };
 
         return JointBundle {
-            joint: Joint,
-            // velocity: Velocity::default(),
-            rigid_body: RigidBody::Dynamic,
             damping: Damping {
                 linear_damping,
                 angular_damping,
@@ -40,11 +39,7 @@ impl JointBundle {
                 transform: Transform::from_translation(translation.extend(0.0)),
                 ..default()
             },
-            fill: Fill::color(Color::hsl(108.0, 0.83, 0.33)),
-            stroke: Stroke::new(Color::hsl(108.0, 0.89, 0.14), 0.0),
-            collider: Collider::ball(radius),
-            gravity: GravityScale::default(),
-            ccd: Ccd::default(),
+            ..default()
         };
     }
     pub fn from_translation(translation: Vec2) -> Self {
@@ -65,6 +60,8 @@ impl Default for JointBundle {
         return JointBundle {
             joint: Joint,
             rigid_body: RigidBody::Dynamic,
+            mass: AdditionalMassProperties::Mass(20.0),
+            external_impulse: ExternalImpulse::default(),
             damping: Damping {
                 linear_damping,
                 angular_damping,

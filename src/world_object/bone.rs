@@ -8,7 +8,7 @@ impl Bone {
         joints: [Entity; 2],
         joint_pos: [Vec2; 2],
         length: Option<f32>,
-    ) -> Entity {
+    ) {
         let [mut a_pos, mut b_pos] = joint_pos;
 
         if let Some(length) = length {
@@ -21,9 +21,6 @@ impl Bone {
 
         let joint_ab = RevoluteJointBuilder::new()
             .motor_velocity(-1.0, 0.5)
-            // .motor_max_force(10.0)
-            // .motor(0.0, 0.0, 0.5, 0.5)
-            // .motor_velocity(1.0, 1.0)
             .local_anchor1(a_pos - a_pos)
             .local_anchor2(b_pos - a_pos)
             .build();
@@ -34,7 +31,5 @@ impl Bone {
             .get_entity(joints[1])
             .unwrap()
             .add_child(impulse_joint);
-
-        return impulse_joint;
     }
 }

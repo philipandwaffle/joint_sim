@@ -13,18 +13,19 @@ pub struct Body {
     pub muscles: Vec<Muscle>,
 }
 
-fn test_body(
-    time: Res<Time>,
+pub fn handle_bodies(
     bodies: Res<BodyList>,
-    mut muscles: Query<(&mut Velocity, &RigidBody, &Transform), With<Joint>>,
+    mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
     for body in bodies.bodies.iter() {
-        for muscle_ents in body.muscles.iter() {
-            let [(mut a_v, a_rb, a_t), (mut b_v, b_rb, b_t)] =
-                muscles.get_many_mut(*muscle_ents).unwrap();
-            let speed = f32::sin(time.elapsed_seconds());
+        for muscle in body.muscles.iter() {
+            let [(mut a_ei, a_t), (mut b_ei, b_t)] = muscles.get_many_mut(muscle.joints).unwrap();
+            let impulse_scale = muscle.impulse_scale;
+            let dir = b_t.translation.truncate() - a_t.translation.truncate();
+            let impulse = dir.normalize() * impulse_scale;
 
-            let dir = b_t.translation - a_t.translation;
+            a_ei.impulse = impulse;
+            b_ei.impulse = -impulse;
         }
     }
 }

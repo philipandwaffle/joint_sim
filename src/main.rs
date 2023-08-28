@@ -7,17 +7,22 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::ImpulseJointSet;
 use scrolling_cam::ScrollingCamPlugin;
 use world_object::body::{Body, BodyList};
 use world_object::bone::Bone;
+use world_object::brain::Brain;
 use world_object::joint::JointBundle;
+use world_object::muscle::Muscle;
 use world_object::OrganismPlugin;
 
 mod scrolling_cam;
 mod world_object;
 
 fn main() {
+    let brain = Brain::new(vec![3, 2], |x| x);
+    println!("{:?}", brain.feed_forward(vec![1.0, 1.0, 1.0]));
+
+    return;
     let profiling_mode = false;
     let debug_mode = true;
 
@@ -51,12 +56,9 @@ fn main() {
         RapierPhysicsPlugin::<NoUserData>::default(),
         // RegisterTraitPlugin,
         ScrollingCamPlugin,
-        // OrganismPlugin,
+        OrganismPlugin,
     ))
-    .add_systems(
-        Startup,
-        (spawn_ground, spawn_motor_test, spawn_organism_test),
-    );
+    .add_systems(Startup, (spawn_ground, spawn_organism_test));
 
     if profiling_mode {
         app.add_plugins((
@@ -91,40 +93,30 @@ fn spawn_ground(mut commands: Commands) {
     ));
 }
 
-fn spawn_motor_test(mut commands: Commands) {
-    let a_ent = commands
-        .spawn(JointBundle::from_translation(vec2(0.0, 1000.0)))
-        .id();
-    let b_ent = commands
-        .spawn(JointBundle::from_translation(vec2(200.0, 1000.0)))
-        .id();
-
-    let mut joint = PrismaticJointBuilder::new(Vec2::X)
-        .local_anchor1(Vec2::new(0.0, 0.0))
-        .local_anchor2(Vec2::new(0.0, 0.0))
-        .motor_velocity(500.0, 0.5);
-
-    commands
-        .get_entity(a_ent)
-        .unwrap()
-        .insert(ImpulseJoint::new(b_ent, joint));
-}
-
 fn spawn_organism_test(mut commands: Commands) {
     let a_pos = vec2(-100.0, 50.0);
-    let b_pos = vec2(0.0, 0.0);
+    let b_pos = vec2(0.0, 150.0);
     let c_pos = vec2(100.0, 50.0);
+    let d_pos = vec2(-150.0, 100.0);
+    let e_pos = vec2(150.0, 100.0);
 
     let a_ent = commands.spawn(JointBundle::from_translation(a_pos)).id();
     let b_ent = commands.spawn(JointBundle::from_translation(b_pos)).id();
     let c_ent = commands.spawn(JointBundle::from_translation(c_pos)).id();
+    let d_ent = commands.spawn(JointBundle::from_translation(d_pos)).id();
+    let e_ent = commands.spawn(JointBundle::from_translation(e_pos)).id();
 
-    let ba_bone_motor = Bone::new(&mut commands, [b_ent, a_ent], [b_pos, a_pos], None);
-    let bc_bone_motor = Bone::new(&mut commands, [b_ent, c_ent], [b_pos, c_pos], None);
+    Bone::new(&mut commands, [a_ent, b_ent], [a_pos, b_pos], None);
+    Bone::new(&mut commands, [b_ent, c_ent], [b_pos, c_pos], None);
+    Bone::new(&mut commands, [c_ent, a_ent], [c_pos, a_pos], None);
+    Bone::new(&mut commands, [b_ent, d_ent], [b_pos, d_pos], None);
+    Bone::new(&mut commands, [b_ent, e_ent], [b_pos, e_pos], None);
 
-    // let ac_linear_muscle = LinearMuscleBundle::new(&mut commands, [a_ent, c_ent]);
-
-    commands.insert_resource(BodyList { bodies: vec![] })
+    commands.insert_resource(BodyList {
+        bodies: vec![Body {
+            muscles: vec![Muscle::new([a_ent, d_ent]), Muscle::new([c_ent, e_ent])],
+        }],
+    })
 }
 
 fn spawn_test_scene(mut commands: Commands) {
