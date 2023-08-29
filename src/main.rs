@@ -47,10 +47,11 @@ fn main() {
     for epoch in 0..100 {
         let avg_fitness = fitness.iter().sum::<f32>() / fitness.len() as f32;
         println!("epoch {} average fitness {}", epoch, avg_fitness);
+        println!("fitnesses {:?}", fitness);
 
         let mut next_gen = vec![];
         for i in 0..brains.len() {
-            if fitness[i] > avg_fitness {
+            if fitness[i] >= avg_fitness {
                 let mut b = brains[i].clone();
                 b.mutate(0.1, 1.0);
                 next_gen.push(b);
@@ -163,7 +164,8 @@ fn spawn_organism_test(mut commands: Commands) {
     Bone::new(&mut commands, [c_ent, a_ent], [c_pos, a_pos], None);
     Bone::new(&mut commands, [b_ent, d_ent], [b_pos, d_pos], None);
     Bone::new(&mut commands, [b_ent, e_ent], [b_pos, e_pos], None);
-
+    
+    let body = Body::new(vec![])
     commands.insert_resource(BodyList {
         bodies: vec![Body {
             muscles: vec![Muscle::new([a_ent, d_ent]), Muscle::new([c_ent, e_ent])],
