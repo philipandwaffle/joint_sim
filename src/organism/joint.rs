@@ -63,7 +63,7 @@ impl Default for JointBundle {
         return JointBundle {
             joint: Joint,
             rigid_body: RigidBody::Dynamic,
-            mass: AdditionalMassProperties::Mass(20.0),
+            mass: AdditionalMassProperties::Mass(2000.0),
             external_impulse: ExternalImpulse::default(),
             damping: Damping {
                 linear_damping,

@@ -1,34 +1,88 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use super::{brain::Brain, joint::Joint, muscle::Muscle};
+use super::{
+    bone::Bone,
+    brain::Brain,
+    joint::{Joint, JointBundle},
+    muscle::Muscle,
+};
 
 #[derive(Resource)]
 pub struct OrganismList {
     pub organisms: Vec<Organism>,
 }
+impl OrganismList {
+    pub fn new() -> Self {
+        return Self { organisms: vec![] };
+    }
+    pub fn push(&mut self, o: Organism) {
+        self.organisms.push(o);
+    }
+
+    pub fn despawn(&mut self, commands: &mut Commands) {
+        for o in self.organisms.iter() {
+            o.despawn(commands);
+        }
+        self.organisms = vec![];
+    }
+}
 
 #[derive(Resource)]
 pub struct Organism {
     pub brain: Brain,
+    pub joints: Vec<Entity>,
     pub muscles: Vec<Muscle>,
 }
-impl Organism {
-    pub fn new(brain_structure: Vec<usize>, muscles: Vec<Muscle>) -> Self {
-        let in_neurones = brain_structure[0];
-        let out_neurones = brain_structure[brain_structure.len() - 1];
-        let num_muscles = muscles.len();
 
-        if in_neurones > num_muscles {
-            panic!("There are not enough neurons in the input layer");
-        } else if out_neurones != num_muscles {
-            panic!("There are not enough neurons in the output layer");
+impl Organism {
+    pub fn new(
+        commands: &mut Commands,
+        brain_structure: Vec<usize>,
+        joint_pos: Vec<Vec2>,
+        bones: Vec<[usize; 2]>,
+        muscles: Vec<[usize; 2]>,
+    ) -> Self {
+        let num_muscles = muscles.len();
+        let mut joint_ents = Vec::with_capacity(joint_pos.len());
+        // let mut bone_ents = Vec::with_capacity(bones.len());
+        let mut muscles_ents = Vec::with_capacity(num_muscles);
+
+        for jp in joint_pos.iter() {
+            let ent = commands.spawn(JointBundle::from_translation(*jp)).id();
+            joint_ents.push(ent);
         }
 
+        for [j_a, j_b] in bones.iter() {
+            let b = Bone::new(
+                commands,
+                [joint_ents[*j_a], joint_ents[*j_b]],
+                [joint_pos[*j_a], joint_pos[*j_b]],
+                None,
+            );
+            // bone_ents.push(b);
+        }
+
+        for [j_a, j_b] in muscles.iter() {
+            let m = Muscle::new([joint_ents[*j_a], joint_ents[*j_b]]);
+            muscles_ents.push(m);
+        }
+
+        let mut structure = vec![num_muscles];
+        structure.extend(brain_structure.iter());
+        structure.push(num_muscles);
+
         return Self {
-            brain: Brain::new(brain_structure, |x| f32::tanh(x)),
-            muscles: muscles,
+            brain: Brain::new(structure, |x| f32::tanh(x)),
+            joints: joint_ents,
+            muscles: muscles_ents,
         };
+    }
+
+    pub fn despawn(&self, commands: &mut Commands) {
+        for j in self.joints.iter() {
+            commands.get_entity(*j).unwrap().despawn();
+        }
     }
 
     pub fn tick_brain(&mut self) {
@@ -46,10 +100,10 @@ impl Organism {
 }
 
 pub fn update_muscles(
-    bodies: Res<OrganismList>,
+    ol: Res<OrganismList>,
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
-    for body in bodies.organisms.iter() {
+    for body in ol.organisms.iter() {
         println!(
             "{:?}",
             body.muscles
@@ -69,8 +123,8 @@ pub fn update_muscles(
     }
 }
 
-pub fn update_brains(mut bodies: ResMut<OrganismList>) {
-    for body in bodies.organisms.iter_mut() {
+pub fn update_brains(mut ol: ResMut<OrganismList>) {
+    for body in ol.organisms.iter_mut() {
         body.tick_brain();
     }
 }

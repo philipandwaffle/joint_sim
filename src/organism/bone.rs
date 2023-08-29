@@ -20,7 +20,6 @@ impl Bone {
         }
 
         let joint_ab = RevoluteJointBuilder::new()
-            .motor_velocity(-1.0, 0.5)
             .local_anchor1(a_pos - a_pos)
             .local_anchor2(b_pos - a_pos)
             .build();

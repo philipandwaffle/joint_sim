@@ -13,13 +13,13 @@ pub struct Brain {
     activation_fn: fn(f32) -> f32,
 }
 impl Brain {
-    pub fn new(n: Vec<usize>, activation_fn: fn(f32) -> f32) -> Self {
+    pub fn new(structure: Vec<usize>, activation_fn: fn(f32) -> f32) -> Self {
         let mut weights = vec![];
         let mut biases = vec![];
 
-        for i in 1..n.len() {
-            weights.push(gen_rand_matrix(n[i - 1], n[i]));
-            biases.push(gen_rand_matrix(1, n[i]));
+        for i in 1..structure.len() {
+            weights.push(gen_rand_matrix(structure[i - 1], structure[i]));
+            biases.push(gen_rand_matrix(1, structure[i]));
         }
 
         return Self {

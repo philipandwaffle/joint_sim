@@ -112,8 +112,8 @@ fn main() {
         RapierPhysicsPlugin::<NoUserData>::default(),
         // RegisterTraitPlugin,
         ScrollingCamPlugin,
-        OrganismPlugin,
         OrganismTestingPlugin,
+        OrganismPlugin,
     ))
     .add_systems(Startup, spawn_ground);
 
@@ -141,7 +141,7 @@ fn spawn_ground(mut commands: Commands) {
     commands.spawn((
         ShapeBundle {
             path: GeometryBuilder::build_as(&rectangle),
-            transform: Transform::from_translation(vec3(0.0, -200.0, 0.0)),
+            transform: Transform::from_translation(vec3(0.0, -20.0, 0.0)),
             ..default()
         },
         Fill::color(Color::BLACK),
