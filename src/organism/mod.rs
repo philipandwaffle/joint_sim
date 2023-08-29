@@ -1,6 +1,6 @@
 use bevy::prelude::{Plugin, Update};
 
-use self::body::handle_bodies;
+use self::body::{update_brains, update_muscles};
 
 pub mod body;
 pub mod bone;
@@ -11,6 +11,6 @@ pub mod muscle;
 pub struct OrganismPlugin;
 impl Plugin for OrganismPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(Update, handle_bodies);
+        app.add_systems(Update, (update_brains, update_muscles));
     }
 }

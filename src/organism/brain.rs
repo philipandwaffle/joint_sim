@@ -92,7 +92,7 @@ fn gen_rand_matrix(rows: usize, cols: usize) -> NxNMatrix {
     let mut m = NxNMatrix::zeros(rows, cols);
 
     for cell in m.iter_mut() {
-        *cell = rng.gen::<f32>();
+        *cell = rng.gen_range(-1.0..=1.0);
     }
 
     return m;

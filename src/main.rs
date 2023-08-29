@@ -8,28 +8,19 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use organism::body::{Organism, OrganismList};
+use organism::bone::Bone;
+use organism::brain::Brain;
+use organism::joint::JointBundle;
+use organism::muscle::Muscle;
+use organism::OrganismPlugin;
 use rand::Rng;
 use scrolling_cam::ScrollingCamPlugin;
-use world_object::body::{Body, BodyList};
-use world_object::bone::Bone;
-use world_object::brain::Brain;
-use world_object::joint::JointBundle;
-use world_object::muscle::Muscle;
-use world_object::OrganismPlugin;
 
+mod organism;
 mod scrolling_cam;
-mod world_object;
 
-fn calc_fitness(b: &Brain) -> f32 {
-    let i = b.feed_forward(vec![0.0, 0.0])[0];
-    let j = b.feed_forward(vec![-1.0, 0.0])[0];
-    let k = b.feed_forward(vec![0.0, -1.0])[0];
-    let l = b.feed_forward(vec![1.0, 1.0])[0];
-
-    return (j + k) - (i + l);
-}
-
-fn main() {
+fn brain_test() {
     let mut rng = rand::thread_rng();
 
     let mut brain = Brain::new(vec![2, 5, 1], |x| f32::tanh(x));
@@ -74,8 +65,18 @@ fn main() {
     println!("{:?}", brain.feed_forward(vec![1.0, 1.0]));
     brain.mutate(0.1, 1.0);
     println!("{:?}", brain);
+}
 
-    return;
+fn calc_fitness(b: &Brain) -> f32 {
+    let i = b.feed_forward(vec![0.0, 0.0])[0];
+    let j = b.feed_forward(vec![-1.0, 0.0])[0];
+    let k = b.feed_forward(vec![0.0, -1.0])[0];
+    let l = b.feed_forward(vec![1.0, 1.0])[0];
+
+    return (j + k) - (i + l);
+}
+
+fn main() {
     let profiling_mode = false;
     let debug_mode = true;
 
@@ -164,13 +165,14 @@ fn spawn_organism_test(mut commands: Commands) {
     Bone::new(&mut commands, [c_ent, a_ent], [c_pos, a_pos], None);
     Bone::new(&mut commands, [b_ent, d_ent], [b_pos, d_pos], None);
     Bone::new(&mut commands, [b_ent, e_ent], [b_pos, e_pos], None);
-    
-    let body = Body::new(vec![])
-    commands.insert_resource(BodyList {
-        bodies: vec![Body {
-            muscles: vec![Muscle::new([a_ent, d_ent]), Muscle::new([c_ent, e_ent])],
-        }],
-    })
+
+    let body = Organism::new(
+        vec![2, 4, 2],
+        vec![Muscle::new([a_ent, d_ent]), Muscle::new([c_ent, e_ent])],
+    );
+    commands.insert_resource(OrganismList {
+        organisms: vec![body],
+    });
 }
 
 fn spawn_test_scene(mut commands: Commands) {
