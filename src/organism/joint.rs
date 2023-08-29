@@ -39,22 +39,25 @@ impl JointBundle {
                 transform: Transform::from_translation(translation.extend(0.0)),
                 ..default()
             },
+            collider: Collider::ball(radius),
             ..default()
         };
     }
     pub fn from_translation(translation: Vec2) -> Self {
-        return JointBundle::new(translation, 20.0, 0.5, 0.5);
+        let mut joint = JointBundle::default();
+        joint.shape_bundle.transform = Transform::from_translation(translation.extend(0.0));
+        return joint;
     }
 }
 impl Default for JointBundle {
     fn default() -> Self {
         let linear_damping = 0.5;
         let angular_damping = 0.5;
-        let radius = 20.0;
+        let radius = 10.0;
         let circle = shapes::RegularPolygon {
             sides: 16,
             feature: shapes::RegularPolygonFeature::Radius(radius),
-            ..shapes::RegularPolygon::default()
+            ..default()
         };
 
         return JointBundle {

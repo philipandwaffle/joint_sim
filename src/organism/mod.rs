@@ -1,12 +1,12 @@
 use bevy::prelude::{Plugin, Update};
 
-use self::body::{update_brains, update_muscles};
+use self::organism::{update_brains, update_muscles};
 
-pub mod body;
 pub mod bone;
 pub mod brain;
 pub mod joint;
 pub mod muscle;
+pub mod organism;
 
 pub struct OrganismPlugin;
 impl Plugin for OrganismPlugin {
