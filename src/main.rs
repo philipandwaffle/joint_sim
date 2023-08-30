@@ -70,7 +70,7 @@ fn main() {
     if debug_mode {
         app.add_plugins((
             RapierDebugRenderPlugin::default(),
-            WorldInspectorPlugin::new(),
+            // WorldInspectorPlugin::new(),
         ));
     }
 
@@ -85,7 +85,7 @@ fn spawn_ground(mut commands: Commands) {
         ..default()
     };
 
-    for i in 0..100 {
+    for i in 0..200 {
         commands.spawn((
             ShapeBundle {
                 path: GeometryBuilder::build_as(&rectangle),

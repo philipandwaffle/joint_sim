@@ -9,6 +9,7 @@ pub struct JointBundle {
     mass: AdditionalMassProperties,
     external_impulse: ExternalImpulse,
     damping: Damping,
+    friction: Friction,
     shape_bundle: ShapeBundle,
     fill: Fill,
     stroke: Stroke,
@@ -52,9 +53,9 @@ impl JointBundle {
 impl Default for JointBundle {
     fn default() -> Self {
         let linear_damping = 100000.0;
-        let angular_damping = 0.5;
+        let angular_damping = 0.0;
         let radius = 10.0;
-        let mass = 20.0;
+        let mass = 1.0;
         let circle = shapes::RegularPolygon {
             sides: 16,
             feature: shapes::RegularPolygonFeature::Radius(radius),
@@ -70,6 +71,7 @@ impl Default for JointBundle {
                 linear_damping,
                 angular_damping,
             },
+            friction: Friction::coefficient(0.7),
             shape_bundle: ShapeBundle {
                 path: GeometryBuilder::build_as(&circle),
                 transform: Transform::default(),

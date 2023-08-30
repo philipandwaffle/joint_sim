@@ -79,9 +79,9 @@ pub struct OrganismTestingPlugin;
 impl Plugin for OrganismTestingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            mutate_rate: 0.1,
-            mutate_factor: 0.2,
-            num_organisms: 100,
+            mutate_rate: 0.5,
+            mutate_factor: 1.0,
+            num_organisms: 200,
             timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
             unfreeze_flag: true,
         })
@@ -110,15 +110,31 @@ fn spawn_generation(commands: &mut Commands, config: &GenerationConfig) {
 fn spawn_runner2(commands: &mut Commands, offset: Vec2) -> Organism {
     let brain_structure = vec![6, 6, 6];
     let joint_pos = vec![
-        vec2(-80.0, 100.0),
-        vec2(0.0, 120.0),
-        vec2(80.0, 100.0),
-        vec2(0.0, 80.0),
-        vec2(-90.0, 10.0),
-        vec2(90.0, 10.0),
+        vec2(-80.0, 140.0),
+        vec2(80.0, 140.0),
+        vec2(-130.0, 100.0),
+        vec2(0.0, 100.0),
+        vec2(130.0, 100.0),
+        vec2(-80.0, 10.0),
+        vec2(80.0, 10.0),
     ];
-    let bones = vec![[0, 1], [0, 3], [2, 1], [2, 3], [1, 3], [4, 0], [5, 2]];
-    let muscles = vec![[0, 4], [2, 5]];
+    let bones = vec![
+        [0, 1],
+        [0, 2],
+        [1, 4],
+        [3, 0],
+        [3, 1],
+        [2, 3],
+        [4, 3],
+        [5, 0],
+        [6, 1],
+    ];
+    let muscles = vec![
+        [5, 2],
+        // [5, 3],
+        // [6, 3],
+        [6, 3],
+    ];
 
     let o = Organism::new(commands, offset, brain_structure, joint_pos, bones, muscles);
     return o;
@@ -129,9 +145,9 @@ fn spawn_running_organism(commands: &mut Commands) -> Organism {
     let joint_pos = vec![
         vec2(-80.0, 200.0),
         vec2(80.0, 200.0),
-        vec2(-100.0, 140.0),
+        vec2(-120.0, 140.0),
         vec2(0.0, 160.0),
-        vec2(100.0, 140.0),
+        vec2(120.0, 140.0),
         vec2(-60.0, 100.0),
         vec2(60.0, 100.0),
         vec2(-90.0, 10.0),
