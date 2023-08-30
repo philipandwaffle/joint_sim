@@ -51,9 +51,10 @@ impl JointBundle {
 }
 impl Default for JointBundle {
     fn default() -> Self {
-        let linear_damping = 0.5;
+        let linear_damping = 100000.0;
         let angular_damping = 0.5;
         let radius = 10.0;
+        let mass = 20.0;
         let circle = shapes::RegularPolygon {
             sides: 16,
             feature: shapes::RegularPolygonFeature::Radius(radius),
@@ -63,7 +64,7 @@ impl Default for JointBundle {
         return JointBundle {
             joint: Joint,
             rigid_body: RigidBody::Dynamic,
-            mass: AdditionalMassProperties::Mass(2000.0),
+            mass: AdditionalMassProperties::Mass(mass),
             external_impulse: ExternalImpulse::default(),
             damping: Damping {
                 linear_damping,

@@ -1,14 +1,21 @@
 use bevy::prelude::*;
 
+#[derive(Clone)]
 pub struct Muscle {
     pub joints: [Entity; 2],
-    pub impulse_scale: f32,
+    pub base_len: f32,
+    pub len_modifier: f32,
 }
 impl Muscle {
-    pub fn new(joints: [Entity; 2]) -> Self {
+    pub fn new(joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Self {
         return Self {
             joints: joints,
-            impulse_scale: 0.0,
+            base_len: (joint_pos[1] - joint_pos[0]).length(),
+            len_modifier: 1.0,
         };
+    }
+
+    pub fn get_target_len(&self) -> f32 {
+        return self.base_len + (self.base_len * self.len_modifier);
     }
 }

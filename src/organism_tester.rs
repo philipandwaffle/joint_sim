@@ -1,23 +1,30 @@
 use std::time::Duration;
 
-use bevy::{math::vec2, prelude::*};
+use bevy::{ecs::query, math::vec2, prelude::*};
+use bevy_rapier2d::prelude::Damping;
+use rand::Rng;
 
 use crate::organism::{
     bone::Bone,
-    joint::{self, JointBundle},
+    joint::{self, Joint, JointBundle},
     muscle::{self, Muscle},
     organism::{Organism, OrganismList},
 };
 
 #[derive(Resource)]
-pub struct GenerationSpawnConfig {
+pub struct GenerationConfig {
+    mutate_rate: f32,
+    mutate_factor: f32,
+    num_organisms: usize,
     timer: Timer,
 }
-pub fn update_timer(
+pub fn handle_generation(
     mut commands: Commands,
-    mut config: ResMut<GenerationSpawnConfig>,
+    mut config: ResMut<GenerationConfig>,
     mut ol: ResMut<OrganismList>,
     time: Res<Time>,
+    joint_ents: Query<&Transform, With<Joint>>,
+    foo: Query<&Damping, With<Joint>>,
 ) {
     config.timer.tick(time.delta());
     if ol.organisms.is_empty() {
@@ -27,7 +34,37 @@ pub fn update_timer(
 
     if config.timer.finished() {
         config.timer = Timer::new(Duration::from_secs(5), TimerMode::Once);
+
+        // fitness eval
+        let num_organism = config.num_organisms;
+        let mut fitness = Vec::with_capacity(num_organism);
+        for o in ol.organisms.iter() {
+            let mut score = 0.0;
+            for j in o.joints.iter() {
+                score += joint_ents.get(*j).unwrap().translation.x;
+            }
+            fitness.push(score);
+        }
+
+        let avg_fitness = fitness.iter().sum::<f32>() / fitness.len() as f32;
+        println!("average fitness {:?}", avg_fitness);
+        let mut new_organisms = Vec::with_capacity(num_organism);
+        for i in 0..num_organism {
+            if fitness[i] > avg_fitness {
+                new_organisms.push(ol.organisms[i].clone());
+            }
+        }
+        let mut rng = rand::thread_rng();
+        while new_organisms.len() < num_organism {
+            let index = rng.gen_range(0..new_organisms.len());
+            new_organisms.push(new_organisms[index].clone());
+        }
+        new_organisms
+            .iter_mut()
+            .for_each(|x| x.brain.mutate(config.mutate_rate, config.mutate_factor));
+
         ol.despawn(&mut commands);
+        ol.organisms = new_organisms;
         spawn_generation(&mut commands, &config);
     }
 }
@@ -35,24 +72,47 @@ pub fn update_timer(
 pub struct OrganismTestingPlugin;
 impl Plugin for OrganismTestingPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(GenerationSpawnConfig {
-            timer: Timer::new(Duration::from_secs(0), TimerMode::Once),
+        app.insert_resource(GenerationConfig {
+            mutate_rate: 0.1,
+            mutate_factor: 0.2,
+            num_organisms: 10,
+            timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
         })
         .insert_resource(OrganismList::new());
         app.add_systems(
             Update,
-            update_timer.run_if(resource_exists::<OrganismList>()),
+            handle_generation.run_if(resource_exists::<OrganismList>()),
         );
         // app.add_systems(Startup, spawn_generation);
         // app.add_systems(Startup, spawn_organism_test);
     }
 }
 
-fn spawn_generation(commands: &mut Commands, config: &GenerationSpawnConfig) {
-    let organism = spawn_running_organism(commands);
+fn spawn_generation(commands: &mut Commands, config: &GenerationConfig) {
+    let mut organisms = vec![];
+    for i in 0..config.num_organisms {
+        organisms.push(spawn_runner2(commands, vec2(0.0, 200.0 * i as f32)))
+    }
     commands.insert_resource(OrganismList {
-        organisms: vec![organism],
+        organisms: organisms,
     });
+}
+
+fn spawn_runner2(commands: &mut Commands, offset: Vec2) -> Organism {
+    let brain_structure = vec![6, 6, 6];
+    let joint_pos = vec![
+        vec2(-80.0, 100.0),
+        vec2(0.0, 120.0),
+        vec2(80.0, 100.0),
+        vec2(0.0, 80.0),
+        vec2(-90.0, 10.0),
+        vec2(90.0, 10.0),
+    ];
+    let bones = vec![[0, 1], [0, 3], [2, 1], [2, 3], [1, 3], [4, 0], [5, 2]];
+    let muscles = vec![[0, 4], [2, 5]];
+
+    let o = Organism::new(commands, offset, brain_structure, joint_pos, bones, muscles);
+    return o;
 }
 
 fn spawn_running_organism(commands: &mut Commands) -> Organism {
@@ -76,14 +136,21 @@ fn spawn_running_organism(commands: &mut Commands) -> Organism {
         [1, 4],
         [2, 3],
         [4, 3],
-        [5, 2],
-        [6, 4],
+        [2, 5],
+        [4, 6],
         [5, 7],
         [6, 8],
     ];
     let muscles = vec![[2, 7], [3, 5], [3, 6], [4, 8]];
 
     // let organism = Organism::new(commands, brain_structure, joint_pos, vec![], vec![]);
-    let organism = Organism::new(commands, brain_structure, joint_pos, bones, muscles);
+    let organism = Organism::new(
+        commands,
+        Vec2::ZERO,
+        brain_structure,
+        joint_pos,
+        bones,
+        muscles,
+    );
     return organism;
 }

@@ -134,20 +134,25 @@ fn main() {
 }
 
 fn spawn_ground(mut commands: Commands) {
+    let width = 2000.0;
+    let height = 20.0;
     let rectangle = shapes::Rectangle {
-        extents: vec2(1000.0, 20.0),
+        extents: vec2(width, height),
         ..default()
     };
-    commands.spawn((
-        ShapeBundle {
-            path: GeometryBuilder::build_as(&rectangle),
-            transform: Transform::from_translation(vec3(0.0, -20.0, 0.0)),
-            ..default()
-        },
-        Fill::color(Color::BLACK),
-        RigidBody::Fixed,
-        Collider::cuboid(500.0, 10.0),
-    ));
+
+    for i in 0..10 {
+        commands.spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(&rectangle),
+                transform: Transform::from_translation(vec3(0.0, (i as f32 * 200.0) - 20.0, 0.0)),
+                ..default()
+            },
+            Fill::color(Color::BLACK),
+            RigidBody::Fixed,
+            Collider::cuboid(width * 0.5, height * 0.5),
+        ));
+    }
 }
 
 fn spawn_test_scene(mut commands: Commands) {

@@ -20,6 +20,12 @@ impl OrganismList {
         self.organisms.push(o);
     }
 
+    pub fn toggle_freeze(&mut self, joints: &mut Query<&mut Damping, With<Joint>>) {
+        self.organisms
+            .iter_mut()
+            .for_each(|o| o.toggle_freeze(joints))
+    }
+
     pub fn despawn(&mut self, commands: &mut Commands) {
         for o in self.organisms.iter() {
             o.despawn(commands);
@@ -28,16 +34,18 @@ impl OrganismList {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct Organism {
     pub brain: Brain,
     pub joints: Vec<Entity>,
     pub muscles: Vec<Muscle>,
+    pub frozen: bool,
 }
 
 impl Organism {
     pub fn new(
         commands: &mut Commands,
+        offset: Vec2,
         brain_structure: Vec<usize>,
         joint_pos: Vec<Vec2>,
         bones: Vec<[usize; 2]>,
@@ -49,7 +57,9 @@ impl Organism {
         let mut muscles_ents = Vec::with_capacity(num_muscles);
 
         for jp in joint_pos.iter() {
-            let ent = commands.spawn(JointBundle::from_translation(*jp)).id();
+            let ent = commands
+                .spawn(JointBundle::from_translation(offset + *jp))
+                .id();
             joint_ents.push(ent);
         }
 
@@ -64,7 +74,10 @@ impl Organism {
         }
 
         for [j_a, j_b] in muscles.iter() {
-            let m = Muscle::new([joint_ents[*j_a], joint_ents[*j_b]]);
+            let m = Muscle::new(
+                [joint_ents[*j_a], joint_ents[*j_b]],
+                [joint_pos[*j_a], joint_pos[*j_b]],
+            );
             muscles_ents.push(m);
         }
 
@@ -76,7 +89,20 @@ impl Organism {
             brain: Brain::new(structure, |x| f32::tanh(x)),
             joints: joint_ents,
             muscles: muscles_ents,
+            frozen: true,
         };
+    }
+
+    pub fn toggle_freeze(&mut self, joints: &mut Query<&mut Damping, With<Joint>>) {
+        self.frozen = !self.frozen;
+        let linear_damping = match self.frozen {
+            true => 1000.0,
+            false => 0.5,
+        };
+
+        for mut d in joints.iter_mut() {
+            d.linear_damping = linear_damping;
+        }
     }
 
     pub fn despawn(&self, commands: &mut Commands) {
@@ -89,12 +115,12 @@ impl Organism {
         let prev_muscle_state = self
             .muscles
             .iter()
-            .map(|m| m.impulse_scale)
+            .map(|m| m.len_modifier)
             .collect::<Vec<f32>>();
         let cur_muscle_state = self.brain.feed_forward(prev_muscle_state);
 
         for i in 0..cur_muscle_state.len() {
-            self.muscles[i].impulse_scale = cur_muscle_state[0];
+            self.muscles[i].len_modifier = cur_muscle_state[0];
         }
     }
 }
@@ -104,21 +130,28 @@ pub fn update_muscles(
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
     for body in ol.organisms.iter() {
-        println!(
-            "{:?}",
-            body.muscles
-                .iter()
-                .map(|x| x.impulse_scale)
-                .collect::<Vec<f32>>()
-        );
+        // println!(
+        //     "{:?}",
+        //     body.muscles
+        //         .iter()
+        //         .map(|x| x.len_modifier)
+        //         .collect::<Vec<f32>>()
+        // );
         for muscle in body.muscles.iter() {
             let [(mut a_ei, a_t), (mut b_ei, b_t)] = muscles.get_many_mut(muscle.joints).unwrap();
-            let impulse_scale = muscle.impulse_scale * 2500.0;
             let dir = b_t.translation.truncate() - a_t.translation.truncate();
-            let impulse = dir.normalize() * impulse_scale;
+            let diff = dir.length() - muscle.get_target_len();
+            let modifier = 5.0;
+            if diff != 0.0 {
+                a_ei.impulse = dir * -diff * modifier;
+                b_ei.impulse = dir * diff * modifier;
+            }
+            // let impulse_scale = muscle.impulse_scale * 2500.0;
+            // let dir = b_t.translation.truncate() - a_t.translation.truncate();
+            // let impulse = dir.normalize() * impulse_scale;
 
-            a_ei.impulse = impulse;
-            b_ei.impulse = -impulse;
+            // a_ei.impulse = impulse;
+            // b_ei.impulse = -impulse;
         }
     }
 }
