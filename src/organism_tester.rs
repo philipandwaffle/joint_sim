@@ -17,14 +17,14 @@ pub struct GenerationConfig {
     mutate_factor: f32,
     num_organisms: usize,
     timer: Timer,
+    unfreeze_flag: bool,
 }
 pub fn handle_generation(
     mut commands: Commands,
     mut config: ResMut<GenerationConfig>,
     mut ol: ResMut<OrganismList>,
     time: Res<Time>,
-    joint_ents: Query<&Transform, With<Joint>>,
-    foo: Query<&Damping, With<Joint>>,
+    joint_transforms: Query<&Transform, With<Joint>>,
 ) {
     config.timer.tick(time.delta());
     if ol.organisms.is_empty() {
@@ -32,8 +32,14 @@ pub fn handle_generation(
         return;
     }
 
+    if config.unfreeze_flag && config.timer.elapsed_secs() > 0.2 {
+        ol.toggle_freeze();
+        config.unfreeze_flag = false;
+    }
+
     if config.timer.finished() {
         config.timer = Timer::new(Duration::from_secs(5), TimerMode::Once);
+        config.unfreeze_flag = true;
 
         // fitness eval
         let num_organism = config.num_organisms;
@@ -41,7 +47,7 @@ pub fn handle_generation(
         for o in ol.organisms.iter() {
             let mut score = 0.0;
             for j in o.joints.iter() {
-                score += joint_ents.get(*j).unwrap().translation.x;
+                score += joint_transforms.get(*j).unwrap().translation.x;
             }
             fitness.push(score);
         }
@@ -77,6 +83,7 @@ impl Plugin for OrganismTestingPlugin {
             mutate_factor: 0.2,
             num_organisms: 10,
             timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
+            unfreeze_flag: true,
         })
         .insert_resource(OrganismList::new());
         app.add_systems(
@@ -93,9 +100,11 @@ fn spawn_generation(commands: &mut Commands, config: &GenerationConfig) {
     for i in 0..config.num_organisms {
         organisms.push(spawn_runner2(commands, vec2(0.0, 200.0 * i as f32)))
     }
-    commands.insert_resource(OrganismList {
+    let ol = OrganismList {
         organisms: organisms,
-    });
+    };
+
+    commands.insert_resource(ol);
 }
 
 fn spawn_runner2(commands: &mut Commands, offset: Vec2) -> Organism {

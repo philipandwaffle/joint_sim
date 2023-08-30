@@ -20,10 +20,10 @@ impl OrganismList {
         self.organisms.push(o);
     }
 
-    pub fn toggle_freeze(&mut self, joints: &mut Query<&mut Damping, With<Joint>>) {
-        self.organisms
-            .iter_mut()
-            .for_each(|o| o.toggle_freeze(joints))
+    pub fn toggle_freeze(&mut self) {
+        for o in self.organisms.iter_mut() {
+            o.queue_freeze = true;
+        }
     }
 
     pub fn despawn(&mut self, commands: &mut Commands) {
@@ -40,6 +40,7 @@ pub struct Organism {
     pub joints: Vec<Entity>,
     pub muscles: Vec<Muscle>,
     pub frozen: bool,
+    queue_freeze: bool,
 }
 
 impl Organism {
@@ -90,19 +91,8 @@ impl Organism {
             joints: joint_ents,
             muscles: muscles_ents,
             frozen: true,
+            queue_freeze: false,
         };
-    }
-
-    pub fn toggle_freeze(&mut self, joints: &mut Query<&mut Damping, With<Joint>>) {
-        self.frozen = !self.frozen;
-        let linear_damping = match self.frozen {
-            true => 1000.0,
-            false => 0.5,
-        };
-
-        for mut d in joints.iter_mut() {
-            d.linear_damping = linear_damping;
-        }
     }
 
     pub fn despawn(&self, commands: &mut Commands) {
@@ -125,23 +115,47 @@ impl Organism {
     }
 }
 
+pub fn freeze_queued(mut ol: ResMut<OrganismList>, mut joints: Query<&mut Damping, With<Joint>>) {
+    for o in ol.organisms.iter_mut() {
+        if !o.queue_freeze {
+            return;
+        }
+        o.queue_freeze = false;
+
+        o.frozen = !o.frozen;
+        let linear_damping = match o.frozen {
+            true => 1000.0,
+            false => 0.5,
+        };
+
+        for j in o.joints.iter_mut() {
+            joints.get_mut(*j).unwrap().linear_damping = linear_damping;
+        }
+    }
+}
+
 pub fn update_muscles(
     ol: Res<OrganismList>,
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
-    for body in ol.organisms.iter() {
-        // println!(
-        //     "{:?}",
-        //     body.muscles
-        //         .iter()
-        //         .map(|x| x.len_modifier)
-        //         .collect::<Vec<f32>>()
-        // );
+    let cur_id = 0;
+    for i in 0..ol.organisms.len() {
+        let body = &ol.organisms[i];
+        if i == cur_id {
+            println!(
+                "{:?}",
+                body.muscles
+                    .iter()
+                    .map(|x| x.len_modifier)
+                    .collect::<Vec<f32>>()
+            );
+        }
+
         for muscle in body.muscles.iter() {
             let [(mut a_ei, a_t), (mut b_ei, b_t)] = muscles.get_many_mut(muscle.joints).unwrap();
             let dir = b_t.translation.truncate() - a_t.translation.truncate();
             let diff = dir.length() - muscle.get_target_len();
-            let modifier = 5.0;
+            let modifier = 10.0;
             if diff != 0.0 {
                 a_ei.impulse = dir * -diff * modifier;
                 b_ei.impulse = dir * diff * modifier;
