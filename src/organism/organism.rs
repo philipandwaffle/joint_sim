@@ -87,7 +87,7 @@ impl Organism {
         structure.push(num_muscles);
 
         return Self {
-            brain: Brain::new(structure, |x| f32::tanh(x)),
+            brain: Brain::new(structure, 1, |x| f32::tanh(x)),
             joints: joint_ents,
             muscles: muscles_ents,
             frozen: true,
@@ -101,13 +101,15 @@ impl Organism {
         }
     }
 
-    pub fn tick_brain(&mut self) {
-        let prev_muscle_state = self
-            .muscles
-            .iter()
-            .map(|m| m.len_modifier)
-            .collect::<Vec<f32>>();
-        let cur_muscle_state = self.brain.feed_forward(prev_muscle_state);
+    pub fn tick_brain(&mut self, mut memory: Vec<f32>) {
+        memory.append(
+            &mut self
+                .muscles
+                .iter()
+                .map(|m| m.len_modifier)
+                .collect::<Vec<f32>>(),
+        );
+        let cur_muscle_state = self.brain.feed_forward(memory);
 
         for i in 0..cur_muscle_state.len() {
             self.muscles[i].len_modifier = cur_muscle_state[0];
@@ -155,7 +157,7 @@ pub fn update_muscles(
             let [(mut a_ei, a_t), (mut b_ei, b_t)] = muscles.get_many_mut(muscle.joints).unwrap();
             let dir = b_t.translation.truncate() - a_t.translation.truncate();
             let diff = dir.length() - muscle.get_target_len();
-            let modifier = 10.0;
+            let modifier = 20.0;
             if diff != 0.0 {
                 a_ei.impulse = dir * -diff * modifier;
                 b_ei.impulse = dir * diff * modifier;
@@ -170,8 +172,13 @@ pub fn update_muscles(
     }
 }
 
-pub fn update_brains(mut ol: ResMut<OrganismList>) {
+pub fn update_brains(mut ol: ResMut<OrganismList>, time: Res<Time>) {
+    let a = f32::sqrt(5.0);
+    let x = time.elapsed_seconds() / a;
+    let time_mem0 = (2.0 * x.rem_euclid(a) / a) - 1.0;
+    let memory = vec![time_mem0];
+    // println!("mem block {:?}", memory);
     for body in ol.organisms.iter_mut() {
-        body.tick_brain();
+        body.tick_brain(memory.clone());
     }
 }

@@ -8,21 +8,29 @@ type NxNMatrix = DMatrix<f32>;
 
 #[derive(Clone)]
 pub struct Brain {
+    memory: Vec<f32>,
     weights: Vec<NxNMatrix>,
     biases: Vec<NxNMatrix>,
     activation_fn: fn(f32) -> f32,
 }
 impl Brain {
-    pub fn new(structure: Vec<usize>, activation_fn: fn(f32) -> f32) -> Self {
+    pub fn new(
+        mut structure: Vec<usize>,
+        memory_size: usize,
+        activation_fn: fn(f32) -> f32,
+    ) -> Self {
         let mut weights = vec![];
         let mut biases = vec![];
+        let num_layers = structure.len();
+        structure[0] += memory_size;
 
-        for i in 1..structure.len() {
+        for i in 1..num_layers {
             weights.push(gen_rand_matrix(structure[i - 1], structure[i]));
             biases.push(gen_rand_matrix(1, structure[i]));
         }
 
         return Self {
+            memory: vec![],
             weights,
             biases,
             activation_fn,

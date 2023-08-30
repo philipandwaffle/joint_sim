@@ -81,7 +81,7 @@ impl Plugin for OrganismTestingPlugin {
         app.insert_resource(GenerationConfig {
             mutate_rate: 0.1,
             mutate_factor: 0.2,
-            num_organisms: 10,
+            num_organisms: 100,
             timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
             unfreeze_flag: true,
         })

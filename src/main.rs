@@ -22,62 +22,6 @@ mod organism;
 mod organism_tester;
 mod scrolling_cam;
 
-fn brain_test() {
-    let mut rng = rand::thread_rng();
-
-    let mut brain = Brain::new(vec![2, 5, 1], |x| f32::tanh(x));
-    let mut brains = vec![];
-    let mut fitness = vec![];
-
-    for _ in 0..20 {
-        let b = brain.clone();
-        let f = calc_fitness(&b);
-
-        brains.push(b);
-        fitness.push(f);
-    }
-
-    for epoch in 0..100 {
-        let avg_fitness = fitness.iter().sum::<f32>() / fitness.len() as f32;
-        println!("epoch {} average fitness {}", epoch, avg_fitness);
-        println!("fitnesses {:?}", fitness);
-
-        let mut next_gen = vec![];
-        for i in 0..brains.len() {
-            if fitness[i] >= avg_fitness {
-                let mut b = brains[i].clone();
-                b.mutate(0.1, 1.0);
-                next_gen.push(b);
-            }
-        }
-
-        let next_gen_count = next_gen.len();
-        for _ in 0..(20 - next_gen_count) {
-            let mut b = (next_gen[rng.gen_range(0..next_gen_count)]).clone();
-            b.mutate(0.1, 1.0);
-            next_gen.push(b);
-        }
-        brains = next_gen;
-        for i in 0..brains.len() {
-            fitness[i] = calc_fitness(&brains[i]);
-        }
-    }
-
-    println!("{:?}", brain);
-    println!("{:?}", brain.feed_forward(vec![1.0, 1.0]));
-    brain.mutate(0.1, 1.0);
-    println!("{:?}", brain);
-}
-
-fn calc_fitness(b: &Brain) -> f32 {
-    let i = b.feed_forward(vec![0.0, 0.0])[0];
-    let j = b.feed_forward(vec![-1.0, 0.0])[0];
-    let k = b.feed_forward(vec![0.0, -1.0])[0];
-    let l = b.feed_forward(vec![1.0, 1.0])[0];
-
-    return (j + k) - (i + l);
-}
-
 fn main() {
     let profiling_mode = false;
     let debug_mode = true;
@@ -141,7 +85,7 @@ fn spawn_ground(mut commands: Commands) {
         ..default()
     };
 
-    for i in 0..10 {
+    for i in 0..100 {
         commands.spawn((
             ShapeBundle {
                 path: GeometryBuilder::build_as(&rectangle),
