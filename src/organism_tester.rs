@@ -70,9 +70,7 @@ pub fn handle_generation(
             let index = rng.gen_range(0..new_organisms.len());
             new_organisms.push(new_organisms[index].clone());
         }
-        new_organisms
-            .iter_mut()
-            .for_each(|x| x.brain.mutate(config.mutate_rate, config.mutate_factor));
+        new_organisms.iter_mut().for_each(|x| x.mutate());
 
         ol.despawn(&mut commands);
         ol.organisms = new_organisms;

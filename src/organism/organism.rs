@@ -4,6 +4,7 @@ use bevy_rapier2d::prelude::*;
 use super::{
     bone::Bone,
     brain::Brain,
+    genome::Genome,
     joint::{Joint, JointBundle},
     muscle::Muscle,
 };
@@ -36,7 +37,8 @@ impl OrganismList {
 
 #[derive(Resource, Clone)]
 pub struct Organism {
-    pub brain: Brain,
+    brain: Brain,
+    pub genome: Genome,
     pub joints: Vec<Entity>,
     pub muscles: Vec<Muscle>,
     pub frozen: bool,
@@ -88,6 +90,7 @@ impl Organism {
 
         return Self {
             brain: Brain::new(structure, 1, |x| f32::tanh(x)),
+            genome: Genome::default(),
             joints: joint_ents,
             muscles: muscles_ents,
             frozen: true,
@@ -101,15 +104,32 @@ impl Organism {
         }
     }
 
-    pub fn tick_brain(&mut self, mut memory: Vec<f32>) {
-        memory.append(
+    pub fn mutate(&mut self) {
+        self.brain.mutate(
+            self.genome.learning_rate.val,
+            self.genome.learning_factor.val,
+        );
+        self.genome.mutate();
+    }
+
+    pub fn process_stimuli(&mut self, mut external_stimuli: Vec<f32>) {
+        // 0th = time
+        let a = f32::sqrt(self.genome.internal_clock.val);
+        let x = external_stimuli[0] / a;
+        external_stimuli[0] = (2.0 * x.rem_euclid(a) / a) - 1.0;
+
+        self.tick_brain(external_stimuli);
+    }
+
+    fn tick_brain(&mut self, mut external_stimuli: Vec<f32>) {
+        external_stimuli.append(
             &mut self
                 .muscles
                 .iter()
                 .map(|m| m.len_modifier)
                 .collect::<Vec<f32>>(),
         );
-        let cur_muscle_state = self.brain.feed_forward(memory);
+        let cur_muscle_state = self.brain.feed_forward(external_stimuli);
 
         for i in 0..cur_muscle_state.len() {
             self.muscles[i].len_modifier = cur_muscle_state[0];
@@ -173,12 +193,9 @@ pub fn update_muscles(
 }
 
 pub fn update_brains(mut ol: ResMut<OrganismList>, time: Res<Time>) {
-    let a = f32::sqrt(5.0);
-    let x = time.elapsed_seconds() / a;
-    let time_mem0 = (2.0 * x.rem_euclid(a) / a) - 1.0;
-    let memory = vec![time_mem0];
-    // println!("mem block {:?}", memory);
+    let external_stimuli = vec![time.elapsed_seconds()];
+
     for body in ol.organisms.iter_mut() {
-        body.tick_brain(memory.clone());
+        body.process_stimuli(external_stimuli.clone());
     }
 }

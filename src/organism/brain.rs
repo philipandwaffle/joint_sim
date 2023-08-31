@@ -30,25 +30,30 @@ impl Brain {
         }
 
         return Self {
-            memory: vec![],
+            memory: Vec::with_capacity(memory_size),
             weights,
             biases,
             activation_fn,
         };
     }
 
-    pub fn feed_forward(&self, input: Vec<f32>) -> Vec<f32> {
+    pub fn feed_forward(&mut self, mut external_stimuli: Vec<f32>) -> Vec<f32> {
+        let mut input = self.memory.clone();
+        input.append(&mut external_stimuli);
+
         let in_len = input.len();
         let len = self.weights[0].shape().0;
         if in_len != len {
             panic!("brain can only receive {} inputs, received {}", len, in_len);
         }
 
-        let x = NxNMatrix::from_vec(1, input.len(), input);
-        let res = self.step_forward(x, 0);
+        let x = NxNMatrix::from_vec(1, in_len, input);
+        let y = self.step_forward(x, 0);
+        let output = y.iter().map(|x| *x).collect::<Vec<f32>>();
 
-        return res.iter().map(|x| *x).collect();
+        return output;
     }
+
     fn step_forward(&self, x: NxNMatrix, i: usize) -> NxNMatrix {
         let mut res = x * self.weights[i].clone() + self.biases[i].clone();
         for cell in res.iter_mut() {
@@ -61,23 +66,17 @@ impl Brain {
         }
     }
 
-    pub fn mutate(&mut self, mut_rate: f32, mut_factor: f32) {
+    pub fn mutate(&mut self, learning_rate: f32, learning_factor: f32) {
         for weight in self.weights.iter_mut() {
-            Self::mutate_matrix(weight, mut_rate, mut_factor);
+            Self::mutate_matrix(weight, learning_rate, learning_factor);
         }
 
         for bias in self.biases.iter_mut() {
-            Self::mutate_matrix(bias, mut_rate, mut_factor);
+            Self::mutate_matrix(bias, learning_rate, learning_factor);
         }
     }
 
     fn mutate_matrix(m: &mut NxNMatrix, mut_rate: f32, mut_factor: f32) {
-        // let (rows, cols) = m.shape();
-        // for y in 0..rows {
-        //     for x in 0..cols {
-        //         m[(y, x)] += 1.0;
-        //     }
-        // }
         let mut rng = rand::thread_rng();
         for cell in m.iter_mut() {
             if rng.gen::<f32>() <= mut_rate {

@@ -72,7 +72,7 @@ pub fn update_control_state(
     }
 
     if td != Vec2::ZERO {
-        cs.translate_delta = td;
+        cs.translate_delta = td * 5.0;
     }
     if zd != 0.0 {
         cs.zoom_delta = zd;
