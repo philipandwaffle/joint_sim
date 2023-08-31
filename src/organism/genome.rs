@@ -33,7 +33,7 @@ impl Default for Allele {
     fn default() -> Self {
         Self {
             val: 0.5,
-            mutate_rate: 1.0,
+            mutate_rate: 0.5,
             mutate_factor: 0.5,
         }
     }
