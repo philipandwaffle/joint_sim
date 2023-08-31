@@ -1,22 +1,38 @@
+use bevy::{
+    math::vec2,
+    prelude::{
+        resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut, Transform,
+        Update, Vec2, With,
+    },
+    time::{Time, Timer, TimerMode},
+};
+use rand::Rng;
 use std::time::Duration;
 
-use bevy::{ecs::query, math::vec2, prelude::*};
-use bevy_rapier2d::prelude::Damping;
-use rand::Rng;
-
+use self::config::GenerationConfig;
 use crate::organism::{
-    bone::Bone,
-    joint::{self, Joint, JointBundle},
-    muscle::{self, Muscle},
+    joint::Joint,
     organism::{Organism, OrganismList},
 };
 
-#[derive(Resource)]
-pub struct GenerationConfig {
-    num_organisms: usize,
-    timer: Timer,
-    unfreeze_flag: bool,
+mod config;
+
+pub struct GenerationPlugin;
+impl Plugin for GenerationPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(GenerationConfig {
+            num_organisms: 1,
+            timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
+            unfreeze_flag: true,
+        })
+        .insert_resource(OrganismList::new());
+        app.add_systems(
+            Update,
+            handle_generation.run_if(resource_exists::<OrganismList>()),
+        );
+    }
 }
+
 pub fn handle_generation(
     mut commands: Commands,
     mut config: ResMut<GenerationConfig>,
@@ -25,6 +41,7 @@ pub fn handle_generation(
     joint_transforms: Query<&Transform, With<Joint>>,
 ) {
     config.timer.tick(time.delta());
+
     if ol.organisms.is_empty() {
         spawn_generation(&mut commands, &config);
         return;
@@ -79,24 +96,6 @@ pub fn handle_generation(
     }
 }
 
-pub struct OrganismTestingPlugin;
-impl Plugin for OrganismTestingPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(GenerationConfig {
-            num_organisms: 500,
-            timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
-            unfreeze_flag: true,
-        })
-        .insert_resource(OrganismList::new());
-        app.add_systems(
-            Update,
-            handle_generation.run_if(resource_exists::<OrganismList>()),
-        );
-        // app.add_systems(Startup, spawn_generation);
-        // app.add_systems(Startup, spawn_organism_test);
-    }
-}
-
 fn spawn_generation(commands: &mut Commands, config: &GenerationConfig) {
     let mut organisms = vec![];
     for i in 0..config.num_organisms {
@@ -138,46 +137,14 @@ fn spawn_runner2(commands: &mut Commands, offset: Vec2) -> Organism {
         [6, 4],
     ];
 
-    let o = Organism::new(commands, offset, brain_structure, joint_pos, bones, muscles);
-    return o;
-}
-
-fn spawn_running_organism(commands: &mut Commands) -> Organism {
-    let brain_structure = vec![6, 6, 6];
-    let joint_pos = vec![
-        vec2(-80.0, 200.0),
-        vec2(80.0, 200.0),
-        vec2(-120.0, 140.0),
-        vec2(0.0, 160.0),
-        vec2(120.0, 140.0),
-        vec2(-60.0, 100.0),
-        vec2(60.0, 100.0),
-        vec2(-90.0, 10.0),
-        vec2(90.0, 10.0),
-    ];
-    let bones = vec![
-        [0, 1],
-        [0, 2],
-        [3, 0],
-        [3, 1],
-        [1, 4],
-        [2, 3],
-        [4, 3],
-        [2, 5],
-        [4, 6],
-        [5, 7],
-        [6, 8],
-    ];
-    let muscles = vec![[2, 7], [3, 5], [3, 6], [4, 8]];
-
-    // let organism = Organism::new(commands, brain_structure, joint_pos, vec![], vec![]);
-    let organism = Organism::new(
+    let o = Organism::new(
         commands,
-        Vec2::ZERO,
+        offset,
+        1,
         brain_structure,
         joint_pos,
         bones,
         muscles,
     );
-    return organism;
+    return o;
 }

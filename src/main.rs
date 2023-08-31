@@ -8,20 +8,19 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use generation::GenerationPlugin;
 use organism::bone::Bone;
 use organism::brain::Brain;
 use organism::joint::{self, JointBundle};
 use organism::muscle::Muscle;
 use organism::organism::{Organism, OrganismList};
 use organism::OrganismPlugin;
-use organism_tester::OrganismTestingPlugin;
 use rand::Rng;
 use scrolling_cam::ScrollingCamPlugin;
 
+mod generation;
 mod organism;
-mod organism_tester;
 mod scrolling_cam;
-
 fn main() {
     let profiling_mode = false;
     let debug_mode = true;
@@ -56,7 +55,7 @@ fn main() {
         RapierPhysicsPlugin::<NoUserData>::default(),
         // RegisterTraitPlugin,
         ScrollingCamPlugin,
-        OrganismTestingPlugin,
+        GenerationPlugin,
         OrganismPlugin,
     ))
     .add_systems(Startup, spawn_ground);
@@ -121,59 +120,5 @@ fn spawn_ground(mut commands: Commands) {
             RigidBody::Fixed,
             Collider::cuboid(width * 0.5, height * 0.5),
         ));
-    }
-}
-
-fn bone_testing(mut commands: Commands) {
-    let a_pos = vec2(-100.0, 50.0);
-    let b_pos = vec2(100.0, 50.0);
-
-    let joint_a = commands.spawn(JointBundle::new(a_pos, 5.0, 0.5, 0.5)).id();
-    let joint_b = commands.spawn(JointBundle::new(b_pos, 5.0, 0.5, 0.5)).id();
-
-    let bone_ab_node0 = commands.spawn(RigidBody::Dynamic).id();
-    let bone_ab_node1 = commands.spawn(RigidBody::Dynamic).id();
-
-    let joint = RevoluteJointBuilder::new()
-        .local_anchor1(a_pos)
-        .local_anchor2(b_pos)
-        .build();
-
-    // let mut a_child;
-    // commands.get_entity(joint_a).unwrap().with_children(|p| {
-    //     a_child = p.spawn(RigidBody::Dynamic).id();
-    // });
-}
-
-fn spawn_test_scene(mut commands: Commands) {
-    let a_pos = vec2(-100.0, 0.0);
-    let b_pos = vec2(100.0, 0.0);
-    let c_pos = vec2(0.0, 100.0);
-    let d_pos = vec2(-200.0, 50.0);
-    let e_pos = vec2(200.0, 50.0);
-
-    let a_ent = commands.spawn(JointBundle::from_translation(a_pos)).id();
-    let b_ent = commands.spawn(JointBundle::from_translation(b_pos)).id();
-    let c_ent = commands.spawn(JointBundle::from_translation(c_pos)).id();
-    let d_ent = commands.spawn(JointBundle::from_translation(d_pos)).id();
-    let e_ent = commands.spawn(JointBundle::from_translation(e_pos)).id();
-
-    Bone::new(&mut commands, [a_ent, b_ent], [a_pos, b_pos], None);
-    Bone::new(&mut commands, [b_ent, c_ent], [b_pos, c_pos], None);
-    Bone::new(&mut commands, [c_ent, a_ent], [c_pos, a_pos], None);
-    Bone::new(&mut commands, [c_ent, d_ent], [c_pos, d_pos], None);
-    Bone::new(&mut commands, [c_ent, e_ent], [c_pos, e_pos], None);
-}
-
-fn spawn_performance_test_scene(mut commands: Commands) {
-    let mut pos_grid = vec![];
-    for y in 0..20 {
-        let mut row = vec![];
-        for x in 0..20 {
-            let pos = vec2(x as f32, y as f32) * 20.0;
-            let entity = commands.spawn(JointBundle::new(pos, 5.0, 0.5, 0.5)).id();
-            row.push(pos);
-        }
-        pos_grid.push(row);
     }
 }

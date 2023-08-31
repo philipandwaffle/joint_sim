@@ -14,15 +14,10 @@ pub struct Brain {
     activation_fn: fn(f32) -> f32,
 }
 impl Brain {
-    pub fn new(
-        mut structure: Vec<usize>,
-        memory_size: usize,
-        activation_fn: fn(f32) -> f32,
-    ) -> Self {
+    pub fn new(structure: Vec<usize>, activation_fn: fn(f32) -> f32) -> Self {
         let mut weights = vec![];
         let mut biases = vec![];
         let num_layers = structure.len();
-        structure[0] += memory_size;
 
         for i in 1..num_layers {
             weights.push(gen_rand_matrix(structure[i - 1], structure[i]));
@@ -30,11 +25,18 @@ impl Brain {
         }
 
         return Self {
-            memory: Vec::with_capacity(memory_size),
+            memory: vec![0.0; structure[num_layers - 1]],
             weights,
             biases,
             activation_fn,
         };
+    }
+
+    pub fn set_memory(&mut self, memory: Vec<f32>) {
+        if self.memory.capacity() != memory.capacity() {
+            panic!("Creature trying to remember more that allocated");
+        }
+        self.memory = memory;
     }
 
     pub fn feed_forward(&mut self, mut external_stimuli: Vec<f32>) -> Vec<f32> {

@@ -49,7 +49,8 @@ impl Organism {
     pub fn new(
         commands: &mut Commands,
         offset: Vec2,
-        brain_structure: Vec<usize>,
+        external_stimuli_count: usize,
+        brain_hidden_structure: Vec<usize>,
         joint_pos: Vec<Vec2>,
         bones: Vec<[usize; 2]>,
         muscles: Vec<[usize; 2]>,
@@ -83,13 +84,13 @@ impl Organism {
             );
             muscles_ents.push(m);
         }
-
-        let mut structure = vec![num_muscles];
-        structure.extend(brain_structure.iter());
-        structure.push(num_muscles);
+        println!("{:?}", external_stimuli_count);
+        let mut brain_structure = vec![num_muscles + external_stimuli_count];
+        brain_structure.extend(brain_hidden_structure.iter());
+        brain_structure.push(num_muscles);
 
         return Self {
-            brain: Brain::new(structure, 1, |x| f32::tanh(x)),
+            brain: Brain::new(brain_structure, |x| f32::tanh(x)),
             genome: Genome::default(),
             joints: joint_ents,
             muscles: muscles_ents,
@@ -121,18 +122,11 @@ impl Organism {
         self.tick_brain(external_stimuli);
     }
 
-    fn tick_brain(&mut self, mut external_stimuli: Vec<f32>) {
-        external_stimuli.append(
-            &mut self
-                .muscles
-                .iter()
-                .map(|m| m.len_modifier)
-                .collect::<Vec<f32>>(),
-        );
-        let cur_muscle_state = self.brain.feed_forward(external_stimuli);
-
-        for i in 0..cur_muscle_state.len() {
-            self.muscles[i].len_modifier = cur_muscle_state[0];
+    fn tick_brain(&mut self, external_stimuli: Vec<f32>) {
+        let brain_out = self.brain.feed_forward(external_stimuli);
+        self.brain.set_memory(brain_out.clone());
+        for i in 0..brain_out.len() {
+            self.muscles[i].len_modifier = brain_out[0];
         }
     }
 }
