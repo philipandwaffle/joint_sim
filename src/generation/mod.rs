@@ -10,10 +10,7 @@ use rand::Rng;
 use std::time::Duration;
 
 use self::config::GenerationConfig;
-use crate::organism::{
-    joint::Joint,
-    organism::{Organism, OrganismList},
-};
+use crate::organism::{joint::Joint, organism::Organism, organism_list::OrganismList};
 
 mod config;
 
@@ -21,7 +18,7 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            num_organisms: 1,
+            num_organisms: 10,
             timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
             unfreeze_flag: true,
         })

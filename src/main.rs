@@ -13,7 +13,7 @@ use organism::bone::Bone;
 use organism::brain::Brain;
 use organism::joint::{self, JointBundle};
 use organism::muscle::Muscle;
-use organism::organism::{Organism, OrganismList};
+use organism::organism::Organism;
 use organism::OrganismPlugin;
 use rand::Rng;
 use scrolling_cam::ScrollingCamPlugin;

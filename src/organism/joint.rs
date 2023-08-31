@@ -1,6 +1,12 @@
-use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy::prelude::{default, Bundle, Color, Component, Transform, Vec2};
+use bevy_prototype_lyon::{
+    prelude::{Fill, GeometryBuilder, ShapeBundle, Stroke},
+    shapes,
+};
+use bevy_rapier2d::prelude::{
+    AdditionalMassProperties, Ccd, Collider, Damping, ExternalImpulse, Friction, GravityScale,
+    RigidBody,
+};
 
 #[derive(Bundle)]
 pub struct JointBundle {

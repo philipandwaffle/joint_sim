@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy::prelude::{BuildChildren, Commands, Entity, Vec2};
+use bevy_rapier2d::prelude::{ImpulseJoint, RevoluteJointBuilder};
 
 pub struct Bone;
 impl Bone {
@@ -18,8 +18,6 @@ impl Bone {
             a_pos += correction_vec;
             b_pos -= correction_vec;
         }
-
-        
 
         let joint_ab = RevoluteJointBuilder::new()
             .local_anchor1(a_pos - a_pos)
