@@ -19,6 +19,8 @@ impl Bone {
             b_pos -= correction_vec;
         }
 
+        
+
         let joint_ab = RevoluteJointBuilder::new()
             .local_anchor1(a_pos - a_pos)
             .local_anchor2(b_pos - a_pos)

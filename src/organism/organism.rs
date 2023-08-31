@@ -140,10 +140,10 @@ pub fn update_muscles(
     ol: Res<OrganismList>,
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
-    let cur_id = 0;
+    let cur_id = -1;
     for i in 0..ol.organisms.len() {
         let body = &ol.organisms[i];
-        if i == cur_id {
+        if i as i32 == cur_id {
             println!(
                 "{:?}",
                 body.muscles
@@ -159,8 +159,8 @@ pub fn update_muscles(
             let diff = dir.length() - muscle.get_target_len();
             let modifier = 1.0;
             if diff != 0.0 {
-                a_ei.impulse = dir * -diff * modifier;
-                b_ei.impulse = dir * diff * modifier;
+                a_ei.impulse = dir * diff * modifier;
+                b_ei.impulse = dir * -diff * modifier;
             }
             // let impulse_scale = muscle.impulse_scale * 2500.0;
             // let dir = b_t.translation.truncate() - a_t.translation.truncate();

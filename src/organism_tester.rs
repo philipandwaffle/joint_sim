@@ -32,7 +32,7 @@ pub fn handle_generation(
         return;
     }
 
-    if config.unfreeze_flag && config.timer.elapsed_secs() > 0.2 {
+    if config.unfreeze_flag && config.timer.elapsed_secs() > 0.4 {
         ol.toggle_freeze();
         config.unfreeze_flag = false;
     }
@@ -45,10 +45,15 @@ pub fn handle_generation(
         let num_organism = config.num_organisms;
         let mut fitness = Vec::with_capacity(num_organism);
         for o in ol.organisms.iter() {
-            let mut score = 0.0;
-            for j in o.joints.iter() {
-                score += joint_transforms.get(*j).unwrap().translation.x;
-            }
+            let score = o
+                .joints
+                .iter()
+                .map(|x| joint_transforms.get(*x).unwrap().translation.x)
+                .sum::<f32>()
+                / o.joints.len() as f32;
+            // for j in o.joints.iter() {
+            //     score += joint_transforms.get(*j).unwrap().translation.x;
+            // }
             fitness.push(score);
         }
 
@@ -110,30 +115,30 @@ fn spawn_generation(commands: &mut Commands, config: &GenerationConfig) {
 fn spawn_runner2(commands: &mut Commands, offset: Vec2) -> Organism {
     let brain_structure = vec![6, 6, 6];
     let joint_pos = vec![
-        vec2(-80.0, 140.0),
-        vec2(80.0, 140.0),
-        vec2(-130.0, 100.0),
-        vec2(0.0, 100.0),
-        vec2(130.0, 100.0),
+        vec2(-40.0, 120.0),
+        vec2(40.0, 120.0),
+        vec2(-140.0, 80.0),
+        vec2(0.0, 80.0),
+        vec2(140.0, 80.0),
         vec2(-80.0, 10.0),
         vec2(80.0, 10.0),
     ];
     let bones = vec![
         [0, 1],
-        [0, 2],
-        [1, 4],
-        [3, 0],
-        [3, 1],
-        [2, 3],
-        [4, 3],
-        [5, 0],
-        [6, 1],
+        [2, 0],
+        [0, 3],
+        [1, 3],
+        [4, 1],
+        [0, 5],
+        [1, 6],
+        [3, 2],
+        [3, 4],
     ];
     let muscles = vec![
         [5, 2],
         // [5, 3],
         // [6, 3],
-        [6, 3],
+        [6, 4],
     ];
 
     let o = Organism::new(commands, offset, brain_structure, joint_pos, bones, muscles);

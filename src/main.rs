@@ -10,7 +10,7 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use organism::bone::Bone;
 use organism::brain::Brain;
-use organism::joint::JointBundle;
+use organism::joint::{self, JointBundle};
 use organism::muscle::Muscle;
 use organism::organism::{Organism, OrganismList};
 use organism::OrganismPlugin;
@@ -97,6 +97,27 @@ fn spawn_ground(mut commands: Commands) {
             Collider::cuboid(width * 0.5, height * 0.5),
         ));
     }
+}
+
+fn bone_testing(mut commands: Commands) {
+    let a_pos = vec2(-100.0, 50.0);
+    let b_pos = vec2(100.0, 50.0);
+
+    let joint_a = commands.spawn(JointBundle::new(a_pos, 5.0, 0.5, 0.5)).id();
+    let joint_b = commands.spawn(JointBundle::new(b_pos, 5.0, 0.5, 0.5)).id();
+
+    let bone_ab_node0 = commands.spawn(RigidBody::Dynamic).id();
+    let bone_ab_node1 = commands.spawn(RigidBody::Dynamic).id();
+
+    let joint = RevoluteJointBuilder::new()
+        .local_anchor1(a_pos)
+        .local_anchor2(b_pos)
+        .build();
+
+    // let mut a_child;
+    // commands.get_entity(joint_a).unwrap().with_children(|p| {
+    //     a_child = p.spawn(RigidBody::Dynamic).id();
+    // });
 }
 
 fn spawn_test_scene(mut commands: Commands) {
