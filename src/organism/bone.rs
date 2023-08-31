@@ -20,8 +20,8 @@ impl Bone {
         }
 
         let joint_ab = RevoluteJointBuilder::new()
-            .local_anchor1(a_pos - a_pos)
-            .local_anchor2(b_pos - a_pos)
+            .local_anchor1(b_pos - a_pos)
+            .local_anchor2(a_pos - a_pos)
             .build();
 
         let impulse_joint = commands.spawn(ImpulseJoint::new(joints[0], joint_ab)).id();

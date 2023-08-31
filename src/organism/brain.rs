@@ -8,10 +8,10 @@ type NxNMatrix = DMatrix<f32>;
 
 #[derive(Clone)]
 pub struct Brain {
-    memory: Vec<f32>,
-    weights: Vec<NxNMatrix>,
-    biases: Vec<NxNMatrix>,
-    activation_fn: fn(f32) -> f32,
+    pub memory: Vec<f32>,
+    pub weights: Vec<NxNMatrix>,
+    pub biases: Vec<NxNMatrix>,
+    pub activation_fn: fn(f32) -> f32,
 }
 impl Brain {
     pub fn new(structure: Vec<usize>, activation_fn: fn(f32) -> f32) -> Self {

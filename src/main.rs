@@ -36,7 +36,8 @@ fn main() {
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Particle Sim".into(),
-                    resolution: (1900. / 4.0, 1280. / 4.0).into(),
+                    position: WindowPosition::At(IVec2::ZERO),
+                    resolution: (1900. / 6.0, 1000.).into(),
                     // present_mode: PresentMode::AutoVsync,
                     mode: WindowMode::Windowed,
                     // Tells wasm to resize the window according to the available canvas
@@ -53,12 +54,10 @@ fn main() {
     .add_plugins((
         ShapePlugin,
         RapierPhysicsPlugin::<NoUserData>::default(),
-        // RegisterTraitPlugin,
         ScrollingCamPlugin,
         GenerationPlugin,
         OrganismPlugin,
-    ))
-    .add_systems(Startup, spawn_ground);
+    ));
 
     if profiling_mode {
         app.add_plugins((
@@ -74,51 +73,4 @@ fn main() {
     }
 
     app.run();
-}
-
-fn spawn_ground(mut commands: Commands) {
-    let num_creatures = 500;
-    let vertical_sep = 200.0;
-    let width = 2000.0;
-    let height = 20.0;
-
-    let platform = shapes::Rectangle {
-        extents: vec2(width, height),
-        ..default()
-    };
-    let wall = shapes::Rectangle {
-        extents: vec2(height, num_creatures as f32 * vertical_sep),
-        ..default()
-    };
-
-    commands.spawn((
-        ShapeBundle {
-            path: GeometryBuilder::build_as(&wall),
-            transform: Transform::from_translation(vec3(
-                -200.0,
-                (vertical_sep * num_creatures as f32 * 0.5) - 20.0,
-                0.0,
-            )),
-            ..default()
-        },
-        Fill::color(Color::BLACK),
-        RigidBody::Fixed,
-        Collider::cuboid(height * 0.5, vertical_sep * num_creatures as f32 * 0.5),
-    ));
-    for i in 0..=num_creatures {
-        commands.spawn((
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&platform),
-                transform: Transform::from_translation(vec3(
-                    (width / 2.0) - 200.0,
-                    (i as f32 * 200.0) - 20.0,
-                    0.0,
-                )),
-                ..default()
-            },
-            Fill::color(Color::BLACK),
-            RigidBody::Fixed,
-            Collider::cuboid(width * 0.5, height * 0.5),
-        ));
-    }
 }
