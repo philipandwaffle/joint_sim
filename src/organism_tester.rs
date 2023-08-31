@@ -13,8 +13,6 @@ use crate::organism::{
 
 #[derive(Resource)]
 pub struct GenerationConfig {
-    mutate_rate: f32,
-    mutate_factor: f32,
     num_organisms: usize,
     timer: Timer,
     unfreeze_flag: bool,
@@ -51,17 +49,20 @@ pub fn handle_generation(
                 .map(|x| joint_transforms.get(*x).unwrap().translation.x)
                 .sum::<f32>()
                 / o.joints.len() as f32;
-            // for j in o.joints.iter() {
-            //     score += joint_transforms.get(*j).unwrap().translation.x;
-            // }
             fitness.push(score);
         }
 
+        fitness.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let avg_fitness = fitness.iter().sum::<f32>() / fitness.len() as f32;
-        println!("average fitness {:?}", avg_fitness);
+        let median_fitness = fitness[fitness.len() / 2];
+        println!(
+            "average fitness {:?}, median fitness {:?}",
+            avg_fitness, median_fitness
+        );
+
         let mut new_organisms = Vec::with_capacity(num_organism);
         for i in 0..num_organism {
-            if fitness[i] > avg_fitness {
+            if fitness[i] >= median_fitness && fitness[i] > 0.0 {
                 new_organisms.push(ol.organisms[i].clone());
             }
         }
@@ -82,9 +83,7 @@ pub struct OrganismTestingPlugin;
 impl Plugin for OrganismTestingPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            mutate_rate: 0.5,
-            mutate_factor: 1.0,
-            num_organisms: 200,
+            num_organisms: 500,
             timer: Timer::new(Duration::from_secs(5), TimerMode::Once),
             unfreeze_flag: true,
         })

@@ -78,18 +78,43 @@ fn main() {
 }
 
 fn spawn_ground(mut commands: Commands) {
+    let num_creatures = 500;
+    let vertical_sep = 200.0;
     let width = 2000.0;
     let height = 20.0;
-    let rectangle = shapes::Rectangle {
+
+    let platform = shapes::Rectangle {
         extents: vec2(width, height),
         ..default()
     };
+    let wall = shapes::Rectangle {
+        extents: vec2(height, num_creatures as f32 * vertical_sep),
+        ..default()
+    };
 
-    for i in 0..200 {
+    commands.spawn((
+        ShapeBundle {
+            path: GeometryBuilder::build_as(&wall),
+            transform: Transform::from_translation(vec3(
+                -200.0,
+                (vertical_sep * num_creatures as f32 * 0.5) - 20.0,
+                0.0,
+            )),
+            ..default()
+        },
+        Fill::color(Color::BLACK),
+        RigidBody::Fixed,
+        Collider::cuboid(height * 0.5, vertical_sep * num_creatures as f32 * 0.5),
+    ));
+    for i in 0..=num_creatures {
         commands.spawn((
             ShapeBundle {
-                path: GeometryBuilder::build_as(&rectangle),
-                transform: Transform::from_translation(vec3(0.0, (i as f32 * 200.0) - 20.0, 0.0)),
+                path: GeometryBuilder::build_as(&platform),
+                transform: Transform::from_translation(vec3(
+                    (width / 2.0) - 200.0,
+                    (i as f32 * 200.0) - 20.0,
+                    0.0,
+                )),
                 ..default()
             },
             Fill::color(Color::BLACK),
