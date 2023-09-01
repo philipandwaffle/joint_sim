@@ -13,7 +13,7 @@ use super::config::GenerationConfig;
 pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) {
     let num_organisms = config.num_organisms;
     let vertical_sep = config.vertical_sep;
-    let width = 2000.0;
+    let width = 4000.0;
     let height = 20.0;
 
     let platform = shapes::Rectangle {
@@ -45,7 +45,7 @@ pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) 
                 path: GeometryBuilder::build_as(&platform),
                 transform: Transform::from_translation(vec3(
                     (width / 2.0) - 200.0,
-                    (i as f32 * 200.0) - 20.0,
+                    (i as f32 * vertical_sep) - 20.0,
                     0.0,
                 )),
                 ..default()

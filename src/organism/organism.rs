@@ -70,9 +70,8 @@ impl OrganismBuilder {
             brain: self.brain.clone(),
             genome: self.genome.clone(),
             joints: joint_ents,
-            muscles: muscles_ents,
-            frozen: true,
-            queue_freeze: false,
+            muscles: muscles_ents,            
+            freeze_progress: 0.0,
         };
     }
 
@@ -91,8 +90,7 @@ pub struct Organism {
     pub genome: Genome,
     pub joints: Vec<Entity>,
     pub muscles: Vec<Muscle>,
-    pub frozen: bool,
-    pub queue_freeze: bool,
+    pub freeze_progress: f32,
 }
 
 impl Organism {

@@ -18,18 +18,18 @@ impl Default for Genome {
         Self {
             learning_rate: Allele {
                 val: 0.1,
-                mutate_rate: 0.1,
+                mutate_rate: 0.05,
                 mutate_factor: 0.01,
             },
             learning_factor: Allele {
                 val: 0.1,
-                mutate_rate: 0.1,
+                mutate_rate: 0.05,
                 mutate_factor: 0.01,
             },
             internal_clock: Allele {
                 val: 3.0,
-                mutate_rate: 0.01,
-                mutate_factor: 0.01,
+                mutate_rate: 0.05,
+                mutate_factor: 0.1,
             },
         }
     }

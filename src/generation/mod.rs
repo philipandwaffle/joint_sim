@@ -19,11 +19,11 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            num_organisms: 500,
-            vertical_sep: 200.0,
+            num_organisms: 20,
+            vertical_sep: 500.0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,
-            debug_flag: true,
+            debug_flag: false,
         })
         .insert_resource(OrganismList::new())
         .add_systems(Startup, (spawn_environment, setup_organism_list))
@@ -45,17 +45,17 @@ pub fn handle_generation(
     if ol.builders.is_empty() {
         return;
     } else if ol.organisms.is_empty() {
-        ol.spawn(&mut commands, 200.0);
+        ol.spawn(&mut commands, config.vertical_sep);
         return;
     }
 
-    if config.unfreeze_flag && config.timer.elapsed_secs() > 0.4 {
+    let elapsed_secs = config.timer.elapsed_secs();
+    if config.unfreeze_flag && elapsed_secs > 0.5 {
         ol.toggle_freeze();
         config.unfreeze_flag = false;
     }
-    if config.debug_flag && (config.timer.elapsed_secs() % 0.5) <= 0.05 {
+    if config.debug_flag && (elapsed_secs % 0.5) <= 0.05 {
         println!("{:?}", ol.organisms[0].brain.memory);
-        // config.debug_flag = false;
     }
 
     if config.timer.finished() {
@@ -100,10 +100,11 @@ fn get_next_generation_builders(
     let avg_fitness = fitness.iter().sum::<f32>() / fitness.len() as f32;
     let median_fitness = fitness[fitness.len() / 2];
     let upper_10 = fitness[(fitness.len() as f32 * 0.9) as usize];
-    println!(
-        "average fitness {:?}\t median fitness {:?}\t upper_10 {:?}",
-        avg_fitness, median_fitness, upper_10
-    );
+    // println!(
+    //     "average fitness {:?}\t median fitness {:?}\t upper_10 {:?}",
+    //     avg_fitness, median_fitness, upper_10
+    // );
+    println!("{:?},{:?},{:?}", avg_fitness, median_fitness, upper_10);
     let mut new_builders = Vec::with_capacity(num_organism);
     for i in 0..num_organism {
         if fitness_unsorted[i] >= median_fitness {
@@ -112,7 +113,7 @@ fn get_next_generation_builders(
     }
 
     // Clone random organisms to fill the vec
-    println!("num builders {}", new_builders.len());
+    // println!("num builders {}", new_builders.len());
     let mut rng = rand::thread_rng();
     while new_builders.len() < num_organism {
         let index = rng.gen_range(0..new_builders.len());

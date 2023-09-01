@@ -29,7 +29,7 @@ impl OrganismList {
 
     pub fn toggle_freeze(&mut self) {
         for o in self.organisms.iter_mut() {
-            o.queue_freeze = true;
+            o.freeze_progress = 0.0;
         }
     }
 
@@ -50,21 +50,37 @@ impl OrganismList {
     }
 }
 
-pub fn freeze_queued(mut ol: ResMut<OrganismList>, mut joints: Query<&mut Damping, With<Joint>>) {
+pub fn freeze_queued(
+    mut ol: ResMut<OrganismList>,
+    mut joints: Query<&mut Damping, With<Joint>>,
+    time: Res<Time>,
+) {
     for o in ol.organisms.iter_mut() {
-        if !o.queue_freeze {
-            return;
+        if o.freeze_progress == -1.0 {
+            continue;
         }
-        o.queue_freeze = false;
+        o.freeze_progress += time.delta_seconds();
 
-        o.frozen = !o.frozen;
-        let linear_damping = match o.frozen {
-            true => 1000.0,
-            false => 0.5,
+        let x = o.freeze_progress;
+        let linear_damping = match x >= 1.0 {
+            true => {
+                o.freeze_progress = -1.0;
+                0.5
+            }
+            false => 1000.0 * f32::powf(x - 1.0, 2.0) + 0.5,
         };
 
         for j in o.joints.iter_mut() {
-            joints.get_mut(*j).unwrap().linear_damping = linear_damping;
+            match joints.get_mut(*j) {
+                Ok(mut d) => {
+                    d.linear_damping = linear_damping;
+                }
+                Err(_) => {
+                    //TODO this is dumb make system only run when joints are spawned
+                    o.freeze_progress = 1.0;
+                    continue;
+                }
+            }
         }
     }
 }
@@ -91,7 +107,7 @@ pub fn update_muscles(
                 Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
                     let dir = b_t.translation.truncate() - a_t.translation.truncate();
                     let diff = dir.length() - muscle.get_target_len();
-                    let modifier = 1.0;
+                    let modifier = 2.0;
                     if diff != 0.0 {
                         a_ei.impulse = dir * diff * modifier;
                         b_ei.impulse = dir * -diff * modifier;
