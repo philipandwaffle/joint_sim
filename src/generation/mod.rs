@@ -19,7 +19,7 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            num_organisms: 20,
+            num_organisms: 500,
             vertical_sep: 500.0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,
@@ -68,7 +68,7 @@ pub fn handle_generation(
         // Spawn new generation
         ol.despawn(&mut commands);
         ol.builders = new_builders;
-        ol.spawn(&mut commands, 200.0);
+        ol.spawn(&mut commands, config.vertical_sep);
     }
 }
 
