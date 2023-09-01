@@ -6,6 +6,8 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 
+use crate::generation::config::GenerationConfig;
+
 use super::{
     joint::Joint,
     organism::{Organism, OrganismBuilder},
@@ -65,9 +67,9 @@ pub fn freeze_queued(
         let linear_damping = match x >= 1.0 {
             true => {
                 o.freeze_progress = -1.0;
-                0.5
+                0.2
             }
-            false => 1000.0 * f32::powf(x - 1.0, 2.0) + 0.5,
+            false => 1000.0 * f32::powf(x - 1.0, 2.0) + 0.2,
         };
 
         for j in o.joints.iter_mut() {
@@ -124,10 +126,11 @@ pub fn update_muscles(
 
 pub fn update_brains(
     mut ol: ResMut<OrganismList>,
-    time: Res<Time>,
+    config: Res<GenerationConfig>,
     joints: Query<&Transform, With<Joint>>,
 ) {
-    let external_stimuli = vec![time.elapsed_seconds()];
+    let elasped_seconds = config.timer.elapsed_secs();
+    let external_stimuli = vec![elasped_seconds];
 
     for body in ol.organisms.iter_mut() {
         let mut stimuli = external_stimuli.clone();

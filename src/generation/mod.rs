@@ -12,7 +12,7 @@ use std::time::Duration;
 use self::{config::GenerationConfig, environment::spawn_environment};
 use crate::organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList};
 
-mod config;
+pub mod config;
 mod environment;
 
 pub struct GenerationPlugin;
