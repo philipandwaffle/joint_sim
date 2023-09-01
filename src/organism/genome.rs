@@ -1,6 +1,6 @@
 use rand::Rng;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Genome {
     pub learning_rate: Allele,
     pub learning_factor: Allele,
@@ -16,14 +16,26 @@ impl Genome {
 impl Default for Genome {
     fn default() -> Self {
         Self {
-            learning_rate: Allele::default(),
-            learning_factor: Allele::default(),
-            internal_clock: Allele::default(),
+            learning_rate: Allele {
+                val: 0.1,
+                mutate_rate: 0.05,
+                mutate_factor: 0.01,
+            },
+            learning_factor: Allele {
+                val: 0.1,
+                mutate_rate: 0.05,
+                mutate_factor: 0.01,
+            },
+            internal_clock: Allele {
+                val: 3.0,
+                mutate_rate: 0.05,
+                mutate_factor: 0.1,
+            },
         }
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Allele {
     pub val: f32,
     pub mutate_rate: f32,
@@ -33,8 +45,8 @@ impl Default for Allele {
     fn default() -> Self {
         Self {
             val: 0.5,
-            mutate_rate: 0.5,
-            mutate_factor: 0.5,
+            mutate_rate: 0.1,
+            mutate_factor: 0.1,
         }
     }
 }

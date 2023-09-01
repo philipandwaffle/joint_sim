@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::prelude::{Entity, Vec2};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Muscle {
     pub joints: [Entity; 2],
     pub base_len: f32,

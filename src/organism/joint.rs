@@ -1,6 +1,12 @@
-use bevy::prelude::*;
-use bevy_prototype_lyon::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy::prelude::{default, Bundle, Color, Component, Transform, Vec2};
+use bevy_prototype_lyon::{
+    prelude::{Fill, GeometryBuilder, ShapeBundle, Stroke},
+    shapes,
+};
+use bevy_rapier2d::prelude::{
+    AdditionalMassProperties, Ccd, Collider, Damping, ExternalImpulse, Friction, GravityScale,
+    RigidBody,
+};
 
 #[derive(Bundle)]
 pub struct JointBundle {
@@ -52,10 +58,10 @@ impl JointBundle {
 }
 impl Default for JointBundle {
     fn default() -> Self {
-        let linear_damping = 100000.0;
+        let linear_damping = 10000.0;
         let angular_damping = 0.0;
         let radius = 10.0;
-        let mass = 1.0;
+        let mass = 0.5;
         let circle = shapes::RegularPolygon {
             sides: 16,
             feature: shapes::RegularPolygonFeature::Radius(radius),
