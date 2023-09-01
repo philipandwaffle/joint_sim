@@ -7,7 +7,7 @@ use bevy::{
     time::{Time, Timer, TimerMode},
 };
 use rand::Rng;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use self::{config::GenerationConfig, environment::spawn_environment};
 use crate::organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList};
@@ -19,7 +19,7 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            num_organisms: 500,
+            num_organisms: 200,
             vertical_sep: 500.0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,
@@ -41,6 +41,7 @@ pub fn handle_generation(
     time: Res<Time>,
     joint_transforms: Query<&Transform, With<Joint>>,
 ) {
+    let now = Instant::now();
     config.timer.tick(time.delta());
     if ol.builders.is_empty() {
         return;
@@ -70,6 +71,7 @@ pub fn handle_generation(
         ol.builders = new_builders;
         ol.spawn(&mut commands, config.vertical_sep);
     }
+    println!("handle_generation time: {:?}", now.elapsed());
 }
 
 fn get_next_generation_builders(
@@ -131,7 +133,7 @@ fn get_next_generation_builders(
 fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     let mut builders = vec![];
     for _ in 0..config.num_organisms {
-        builders.push(get_runner_builder());
+        builders.push(get_simple_builder());
     }
     let ol = OrganismList {
         builders: builders,
@@ -139,6 +141,37 @@ fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     };
 
     commands.insert_resource(ol);
+}
+
+fn get_simple_builder() -> OrganismBuilder {
+    let brain_structure = vec![6, 6];
+    let joint_pos = vec![
+        vec2(-40.0, 120.0),
+        vec2(40.0, 120.0),
+        vec2(-140.0, 80.0),
+        vec2(0.0, 80.0),
+        vec2(140.0, 80.0),
+        vec2(-120.0, 10.0),
+        vec2(-40.0, 10.0),
+        vec2(40.0, 10.0),
+        vec2(120.0, 10.0),
+    ];
+    let bones = vec![
+        [0, 1],
+        [2, 0],
+        [0, 3],
+        [1, 3],
+        [4, 1],
+        [3, 2],
+        [2, 4],
+        [5, 0],
+        [6, 3],
+        [7, 3],
+        [8, 1],
+    ];
+    let muscles = vec![[5, 2], [6, 3], [7, 3], [8, 4]];
+
+    return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
 }
 
 fn get_runner_builder() -> OrganismBuilder {

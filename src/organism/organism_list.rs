@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use bevy::{
     math::vec2,
     prelude::{Commands, EulerRot, Query, Res, ResMut, Resource, Transform, With},
@@ -57,6 +59,7 @@ pub fn freeze_queued(
     mut joints: Query<&mut Damping, With<Joint>>,
     time: Res<Time>,
 ) {
+    let now = Instant::now();
     for o in ol.organisms.iter_mut() {
         if o.freeze_progress == -1.0 {
             continue;
@@ -85,12 +88,14 @@ pub fn freeze_queued(
             }
         }
     }
+    println!("freeze_queued: {:?}", now.elapsed());
 }
 
 pub fn update_muscles(
     ol: Res<OrganismList>,
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
+    let now = Instant::now();
     let cur_id = -1;
     for i in 0..ol.organisms.len() {
         let body = &ol.organisms[i];
@@ -109,7 +114,7 @@ pub fn update_muscles(
                 Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
                     let dir = b_t.translation.truncate() - a_t.translation.truncate();
                     let diff = dir.length() - muscle.get_target_len();
-                    let modifier = 2.0;
+                    let modifier = 0.5;
                     if diff != 0.0 {
                         a_ei.impulse = dir * diff * modifier;
                         b_ei.impulse = dir * -diff * modifier;
@@ -122,6 +127,7 @@ pub fn update_muscles(
             }
         }
     }
+    println!("update_muscles: {:?}", now.elapsed());
 }
 
 pub fn update_brains(
@@ -129,6 +135,7 @@ pub fn update_brains(
     config: Res<GenerationConfig>,
     joints: Query<&Transform, With<Joint>>,
 ) {
+    let now = Instant::now();
     let elasped_seconds = config.timer.elapsed_secs();
     let external_stimuli = vec![elasped_seconds];
 
@@ -160,4 +167,5 @@ pub fn update_brains(
         }
         body.process_stimuli(stimuli.clone());
     }
+    println!("update_brains: {:?}", now.elapsed());
 }
