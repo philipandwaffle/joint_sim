@@ -70,7 +70,7 @@ impl OrganismBuilder {
             brain: self.brain.clone(),
             genome: self.genome.clone(),
             joints: joint_ents,
-            muscles: muscles_ents,            
+            muscles: muscles_ents,
             freeze_progress: 0.0,
         };
     }
@@ -102,7 +102,7 @@ impl Organism {
 
     pub fn process_stimuli(&mut self, mut stimuli: Vec<f32>) {
         // 0th = time
-        let a = f32::sqrt(self.genome.internal_clock.val);
+        let a = self.genome.internal_clock.val;
         let x = stimuli[0] / a;
         stimuli[0] = (2.0 * x.rem_euclid(a) / a) - 1.0;
 
@@ -111,9 +111,8 @@ impl Organism {
 
     fn tick_brain(&mut self, stimuli: Vec<f32>) {
         let brain_out = self.brain.feed_forward(stimuli);
-        self.brain.set_memory(brain_out.clone());
         for i in 0..brain_out.len() {
-            self.muscles[i].len_modifier = brain_out[0];
+            self.muscles[i].len_modifier = brain_out[i];
         }
     }
 }

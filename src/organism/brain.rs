@@ -32,6 +32,10 @@ impl Brain {
         };
     }
 
+    pub fn get_num_inputs(&self) -> usize {
+        return self.weights[0].shape().0;
+    }
+
     pub fn set_memory(&mut self, memory: Vec<f32>) {
         if self.memory.capacity() != memory.capacity() {
             panic!("Creature trying to remember more that allocated");
@@ -52,6 +56,7 @@ impl Brain {
         let x = NxNMatrix::from_vec(1, in_len, input);
         let y = self.step_forward(x, 0);
         let output = y.iter().map(|x| *x).collect::<Vec<f32>>();
+        self.set_memory(output.clone());
 
         return output;
     }

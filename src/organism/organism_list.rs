@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use bevy::{
     math::vec2,
-    prelude::{Commands, EulerRot, Query, Res, ResMut, Resource, Transform, With},
+    prelude::{Commands, EulerRot, Quat, Query, Res, ResMut, Resource, Transform, With},
     time::Time,
     transform::commands,
 };
@@ -19,12 +19,14 @@ use super::{
 pub struct OrganismList {
     pub builders: Vec<OrganismBuilder>,
     pub organisms: Vec<Organism>,
+    pub is_spawned: bool,
 }
 impl OrganismList {
     pub fn new() -> Self {
         return Self {
             builders: vec![],
             organisms: vec![],
+            is_spawned: false,
         };
     }
     pub fn push(&mut self, o: Organism) {
@@ -38,6 +40,7 @@ impl OrganismList {
     }
 
     pub fn despawn(&mut self, commands: &mut Commands) {
+        self.is_spawned = false;
         for o in self.organisms.iter() {
             o.despawn(commands);
         }
@@ -51,6 +54,7 @@ impl OrganismList {
                 .push(self.builders[i].spawn(commands, cur_translation));
             cur_translation.y += vertical_sep;
         }
+        self.is_spawned = true;
     }
 }
 
@@ -59,7 +63,6 @@ pub fn freeze_queued(
     mut joints: Query<&mut Damping, With<Joint>>,
     time: Res<Time>,
 ) {
-    let now = Instant::now();
     for o in ol.organisms.iter_mut() {
         if o.freeze_progress == -1.0 {
             continue;
@@ -88,14 +91,12 @@ pub fn freeze_queued(
             }
         }
     }
-    println!("freeze_queued: {:?}", now.elapsed());
 }
 
 pub fn update_muscles(
     ol: Res<OrganismList>,
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
-    let now = Instant::now();
     let cur_id = -1;
     for i in 0..ol.organisms.len() {
         let body = &ol.organisms[i];
@@ -127,7 +128,6 @@ pub fn update_muscles(
             }
         }
     }
-    println!("update_muscles: {:?}", now.elapsed());
 }
 
 pub fn update_brains(
@@ -135,17 +135,21 @@ pub fn update_brains(
     config: Res<GenerationConfig>,
     joints: Query<&Transform, With<Joint>>,
 ) {
-    let now = Instant::now();
-    let elasped_seconds = config.timer.elapsed_secs();
-    let external_stimuli = vec![elasped_seconds];
+    if !ol.is_spawned {
+        return;
+    }
+
+    let elapsed_seconds = config.timer.elapsed_secs();
+    // let external_stimuli = vec![elapsed_seconds];
+    let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
+    external_stimuli.push(elapsed_seconds);
 
     for body in ol.organisms.iter_mut() {
         let mut stimuli = external_stimuli.clone();
 
         match joints.get(body.joints[0]) {
             Ok(j) => {
-                let j_rotation = j.rotation.to_euler(EulerRot::ZYX).0;
-                stimuli.push(j_rotation);
+                stimuli.push(get_z_rot(j.rotation));
             }
             Err(_) => {
                 //TODO this is dumb make system only run when joints are spawned
@@ -156,8 +160,7 @@ pub fn update_brains(
         for m in body.muscles.iter() {
             match joints.get(m.joints[0]) {
                 Ok(j) => {
-                    let j_rotation = j.rotation.to_euler(EulerRot::ZYX).0;
-                    stimuli.push(j_rotation);
+                    stimuli.push(get_z_rot(j.rotation));
                 }
                 Err(_) => {
                     //TODO this is dumb make system only run when joints are spawned
@@ -167,5 +170,10 @@ pub fn update_brains(
         }
         body.process_stimuli(stimuli.clone());
     }
-    println!("update_brains: {:?}", now.elapsed());
+}
+fn get_z_rot(q: Quat) -> f32 {
+    return f32::atan2(
+        2.0 * (q.w * q.z + q.x * q.y),
+        1.0 - 2.0 * (q.y * q.y + q.z * q.z),
+    );
 }

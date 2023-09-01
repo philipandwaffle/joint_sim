@@ -71,7 +71,7 @@ pub fn handle_generation(
         ol.builders = new_builders;
         ol.spawn(&mut commands, config.vertical_sep);
     }
-    println!("handle_generation time: {:?}", now.elapsed());
+    // println!("handle_generation time: {:?}", now.elapsed());
 }
 
 fn get_next_generation_builders(
@@ -138,6 +138,7 @@ fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     let ol = OrganismList {
         builders: builders,
         organisms: vec![],
+        is_spawned: false,
     };
 
     commands.insert_resource(ol);
