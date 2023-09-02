@@ -115,7 +115,7 @@ pub fn update_muscles(
                 Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
                     let dir = b_t.translation.truncate() - a_t.translation.truncate();
                     let diff = dir.length() - muscle.get_target_len();
-                    let modifier = 0.5;
+                    let modifier = 2.0;
                     if diff != 0.0 {
                         a_ei.impulse = dir * diff * modifier;
                         b_ei.impulse = dir * -diff * modifier;

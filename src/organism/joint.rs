@@ -60,7 +60,7 @@ impl Default for JointBundle {
     fn default() -> Self {
         let linear_damping = 10000.0;
         let angular_damping = 0.0;
-        let radius = 10.0;
+        let radius = 5.0;
         let mass = 0.5;
         let circle = shapes::RegularPolygon {
             sides: 16,
@@ -86,7 +86,7 @@ impl Default for JointBundle {
             fill: Fill::color(Color::hsl(108.0, 0.83, 0.33)),
             stroke: Stroke::new(Color::hsl(108.0, 0.89, 0.14), 0.0),
             collider: Collider::ball(radius),
-            gravity: GravityScale::default(),
+            gravity: GravityScale(5.0),
             ccd: Ccd::default(),
         };
     }
