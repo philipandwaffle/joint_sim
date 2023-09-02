@@ -19,7 +19,7 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            num_organisms: 500,
+            num_organisms: 100,
             vertical_sep: 200.0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,

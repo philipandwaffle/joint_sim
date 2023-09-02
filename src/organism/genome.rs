@@ -4,6 +4,8 @@ use rand::Rng;
 pub struct Genome {
     pub learning_rate: Allele,
     pub learning_factor: Allele,
+    pub joint_mutate_rate: Allele,
+    pub joint_mutate_factor: Allele,
     pub internal_clock: Allele,
 }
 impl Genome {
@@ -23,6 +25,16 @@ impl Default for Genome {
             },
             learning_factor: Allele {
                 val: 0.1,
+                mutate_rate: 0.2,
+                mutate_factor: 0.2,
+            },
+            joint_mutate_rate: Allele {
+                val: 0.1,
+                mutate_rate: 0.2,
+                mutate_factor: 0.2,
+            },
+            joint_mutate_factor: Allele {
+                val: 10.0,
                 mutate_rate: 0.2,
                 mutate_factor: 0.2,
             },

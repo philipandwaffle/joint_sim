@@ -1,7 +1,9 @@
 use bevy::{
+    math::vec2,
     prelude::{Commands, Entity, Resource, Vec2},
     transform::commands,
 };
+use rand::Rng;
 
 use super::{bone::Bone, brain::Brain, genome::Genome, joint::JointBundle, muscle::Muscle};
 
@@ -77,10 +79,20 @@ impl OrganismBuilder {
 
     pub fn mutate(&mut self) {
         self.genome.mutate();
+
         self.brain.mutate(
             self.genome.learning_rate.val,
             self.genome.learning_factor.val,
         );
+        let mut rng = rand::thread_rng();
+        for j_pos in self.joint_pos.iter_mut() {
+            if rng.gen::<f32>() <= self.genome.joint_mutate_rate.val {
+                let mf = self.genome.joint_mutate_factor.val;
+                let dx = rng.gen_range(-mf..mf);
+                let dy = rng.gen_range(-mf..mf);
+                *j_pos += vec2(dx, dy);
+            }
+        }
     }
 }
 
