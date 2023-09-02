@@ -75,6 +75,6 @@ pub fn update_control_state(
         cs.translate_delta = td * 5.0;
     }
     if zd != 0.0 {
-        cs.zoom_delta = zd;
+        cs.zoom_delta = zd * 0.5;
     }
 }

@@ -118,12 +118,11 @@ fn get_next_generation_builders(
     while new_builders.len() < num_organism {
         let index = rng.gen_range(0..new_builders.len());
         let mut new_builder = new_builders[index].clone();
-        new_builder.mutate();
         new_builders.push(new_builder);
     }
 
-    // // Mutate each organism
-    // new_builders.iter_mut().for_each(|x| x.mutate());
+    // Mutate each organism
+    new_builders.iter_mut().for_each(|x| x.mutate());
 
     return new_builders;
 }
