@@ -1,6 +1,7 @@
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Genome {
     pub learning_rate: Allele,
     pub learning_factor: Allele,
@@ -29,14 +30,14 @@ impl Default for Genome {
                 mutate_factor: 0.2,
             },
             joint_mutate_rate: Allele {
-                val: 0.1,
+                val: 0.3,
                 mutate_rate: 0.2,
                 mutate_factor: 0.2,
             },
             joint_mutate_factor: Allele {
                 val: 10.0,
-                mutate_rate: 0.2,
-                mutate_factor: 0.2,
+                mutate_rate: 1.0,
+                mutate_factor: 1.0,
             },
             internal_clock: Allele {
                 val: 3.0,
@@ -47,7 +48,7 @@ impl Default for Genome {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Allele {
     pub val: f32,
     pub mutate_rate: f32,

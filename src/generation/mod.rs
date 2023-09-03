@@ -19,7 +19,7 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GenerationConfig {
-            num_organisms: 1,
+            num_organisms: 500,
             vertical_sep: 200.0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,
@@ -175,23 +175,24 @@ fn get_simple_builder() -> OrganismBuilder {
 fn get_runner_builder() -> OrganismBuilder {
     let brain_structure = vec![3, 3];
     let joint_pos = vec![
-        vec2(-20.0, 60.0),
-        vec2(20.0, 60.0),
-        vec2(-70.0, 40.0),
-        vec2(0.0, 40.0),
-        vec2(70.0, 40.0),
-        vec2(-40.0, 5.0),
-        vec2(40.0, 5.0),
+        vec2(-20.0, 80.0),
+        vec2(20.0, 80.0),
+        vec2(-70.0, 60.0),
+        vec2(0.0, 60.0),
+        vec2(70.0, 60.0),
+        vec2(-40.0, 25.0),
+        vec2(40.0, 25.0),
     ];
     // let joint_pos = vec![
-    //     vec2(-40.0, 120.0),
-    //     vec2(40.0, 120.0),
-    //     vec2(-140.0, 80.0),
-    //     vec2(0.0, 80.0),
-    //     vec2(140.0, 80.0),
-    //     vec2(-80.0, 10.0),
-    //     vec2(80.0, 10.0),
+    //     vec2(-20.0, 60.0),
+    //     vec2(20.0, 60.0),
+    //     vec2(-70.0, 40.0),
+    //     vec2(0.0, 40.0),
+    //     vec2(70.0, 40.0),
+    //     vec2(-40.0, 5.0),
+    //     vec2(40.0, 5.0),
     // ];
+
     let bones = vec![
         [0, 1],
         [2, 0],

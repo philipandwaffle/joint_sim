@@ -60,7 +60,8 @@ impl Default for JointBundle {
     fn default() -> Self {
         // let linear_damping = 10000.0;
         let linear_damping = 0.5;
-        let angular_damping = 10000.0;
+        // let angular_damping = 10000.0;
+        let angular_damping = 0.0;
         let radius = 5.0;
         let mass = 0.5;
         let circle = shapes::RegularPolygon {

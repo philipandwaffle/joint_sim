@@ -8,14 +8,37 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use generation::GenerationPlugin;
+use organism::brain::{Brain, Matrix, MxMMatrix};
 use organism::joint::JointBundle;
-use organism::OrganismPlugin;
+use organism::{brain, OrganismPlugin};
 use scrolling_cam::ScrollingCamPlugin;
 
 mod generation;
 mod organism;
 mod scrolling_cam;
 fn main() {
+    // let matrix = Matrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+    // let m_string = serde_json::to_string(&MxMMatrix(matrix)).unwrap();
+    // match serde_json::from_str::<MxMMatrix>(&m_string) {
+    //     Ok(m) => {
+    //         println!("Hello, {:?}", m.0);
+    //     }
+    //     Err(err) => println!("{:?}", err),
+    // }
+
+    // return;
+
+    // let brain = Brain::new(vec![5, 5]);
+    // let foo = serde_json::to_string(&brain).unwrap();
+    // println!("{:?}", foo);
+
+    // match serde_json::from_str::<Brain>(&foo) {
+    //     Ok(b) => {
+    //         println!("Hello");
+    //     }
+    //     Err(err) => println!("{:?}", err),
+    // }
+
     let profiling_mode = false;
     let debug_mode = true;
 
@@ -66,7 +89,7 @@ fn main() {
         ));
     }
 
-    app.add_systems(Startup, spawn_test_bone);
+    // app.add_systems(Startup, spawn_test_bone);
 
     app.run();
 }

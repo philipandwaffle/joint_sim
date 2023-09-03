@@ -7,7 +7,7 @@ use super::joint::JointBundle;
 
 pub struct Bone;
 impl Bone {
-    pub fn new1(
+    pub fn new(
         commands: &mut Commands,
         joints: [Entity; 2],
         joint_pos: [Vec2; 2],
@@ -36,7 +36,7 @@ impl Bone {
             .add_child(impulse_joint);
     }
 
-    pub fn new(
+    pub fn new1(
         commands: &mut Commands,
         joints: [Entity; 2],
         joint_pos: [Vec2; 2],

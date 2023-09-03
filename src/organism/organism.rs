@@ -29,7 +29,7 @@ impl OrganismBuilder {
         brain_structure.push(num_muscles);
 
         return Self {
-            brain: Brain::new(brain_structure, |x| f32::tanh(x)),
+            brain: Brain::new(brain_structure),
             genome: Genome::default(),
             joint_pos,
             bones,
@@ -90,7 +90,9 @@ impl OrganismBuilder {
                 let mf = self.genome.joint_mutate_factor.val;
                 let dx = rng.gen_range(-mf..mf);
                 let dy = rng.gen_range(-mf..mf);
-                *j_pos += vec2(dx, dy);
+
+                let unclamped = j_pos.clone() + vec2(dx, dy);
+                *j_pos = unclamped.clamp(vec2(-100.0, 0.0), vec2(100.0, 200.0));
             }
         }
     }
