@@ -1,10 +1,7 @@
-use std::time::Instant;
-
 use bevy::{
     math::vec2,
-    prelude::{Commands, EulerRot, Quat, Query, Res, ResMut, Resource, Transform, With},
+    prelude::{Commands, Quat, Query, Res, ResMut, Resource, Transform, With},
     time::Time,
-    transform::commands,
 };
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 
@@ -15,6 +12,7 @@ use super::{
     organism::{Organism, OrganismBuilder},
 };
 
+// Contains every organism
 #[derive(Resource)]
 pub struct OrganismList {
     pub builders: Vec<OrganismBuilder>,
@@ -33,12 +31,15 @@ impl OrganismList {
         self.organisms.push(o);
     }
 
-    pub fn toggle_freeze(&mut self) {
+    // Sets the freeze progress to 0
+    pub fn unfreeze(&mut self) {
+        // Set the freeze progress to 0 for every organism
         for o in self.organisms.iter_mut() {
             o.freeze_progress = 0.0;
         }
     }
 
+    // Despawn every organism
     pub fn despawn(&mut self, commands: &mut Commands) {
         self.is_spawned = false;
         for o in self.organisms.iter() {
@@ -46,30 +47,43 @@ impl OrganismList {
         }
     }
 
+    // Spawn every organism using the builders
     pub fn spawn(&mut self, commands: &mut Commands, vertical_sep: f32) {
         let mut cur_translation = vec2(0.0, 0.0);
+
+        // Pre-allocate organisms vec
         self.organisms = Vec::with_capacity(self.builders.len());
+
+        // Spawn and push organism to vec
         for i in 0..self.builders.len() {
             self.organisms
                 .push(self.builders[i].spawn(commands, cur_translation));
             cur_translation.y += vertical_sep;
         }
+
+        // Set list as spawned
         self.is_spawned = true;
     }
 }
 
-pub fn freeze_queued(
+// System to unfreeze organisms
+pub fn unfreeze_queued(
     mut ol: ResMut<OrganismList>,
     mut joints: Query<&mut Damping, With<Joint>>,
     time: Res<Time>,
 ) {
+    //TODO move freeze progress to OrganismList so each Organism doesn't need individually checked
+
+    // Loop through each organism
     for o in ol.organisms.iter_mut() {
+        // Skip if unfrozen
         if o.freeze_progress == -1.0 {
             continue;
         }
         o.freeze_progress += time.delta_seconds();
 
         let x = o.freeze_progress;
+        // Calc linear damping
         let linear_damping = match x >= 1.0 {
             true => {
                 o.freeze_progress = -1.0;
@@ -78,6 +92,7 @@ pub fn freeze_queued(
             false => 1000.0 * f32::powf(x - 1.0, 2.0) + 0.2,
         };
 
+        // Update damping for each joint
         for j in o.joints.iter_mut() {
             match joints.get_mut(*j) {
                 Ok(mut d) => {
@@ -93,26 +108,21 @@ pub fn freeze_queued(
     }
 }
 
+// Update muscle lengths
 pub fn update_muscles(
     ol: Res<OrganismList>,
     mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
 ) {
-    let cur_id = -1;
+    // Loop through each organisms
     for i in 0..ol.organisms.len() {
-        let body = &ol.organisms[i];
-        if i as i32 == cur_id {
-            println!(
-                "{:?}",
-                body.muscles
-                    .iter()
-                    .map(|x| x.len_modifier)
-                    .collect::<Vec<f32>>()
-            );
-        }
+        let o = &ol.organisms[i];
 
-        for muscle in body.muscles.iter() {
+        // Loop through each muscle
+        for muscle in o.muscles.iter() {
+            // Get joints making up muscle
             match muscles.get_many_mut(muscle.joints) {
                 Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
+                    // Apply impulse to joints
                     let dir = b_t.translation.truncate() - a_t.translation.truncate();
                     let diff = dir.length() - muscle.get_target_len();
                     let modifier = 2.0;
@@ -130,25 +140,30 @@ pub fn update_muscles(
     }
 }
 
+// Make brains process stimuli
 pub fn update_brains(
     mut ol: ResMut<OrganismList>,
     config: Res<GenerationConfig>,
     joints: Query<&Transform, With<Joint>>,
 ) {
+    // Short circuit if organisms haven't spawned;
     if !ol.is_spawned {
         return;
     }
 
+    // Gather global
     let elapsed_seconds = config.timer.elapsed_secs();
-    // let external_stimuli = vec![elapsed_seconds];
     let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
     external_stimuli.push(elapsed_seconds);
 
-    for body in ol.organisms.iter_mut() {
+    // Process stimuli for each organism
+    for o in ol.organisms.iter_mut() {
         let mut stimuli = external_stimuli.clone();
 
-        match joints.get(body.joints[0]) {
+        // Gather local and push to stimuli vec
+        match joints.get(o.joints[0]) {
             Ok(j) => {
+                // Get joint rotation
                 stimuli.push(get_z_rot(j.rotation));
             }
             Err(_) => {
@@ -157,9 +172,11 @@ pub fn update_brains(
             }
         }
 
-        for m in body.muscles.iter() {
+        // Gather local and push to stimuli vec
+        for m in o.muscles.iter() {
             match joints.get(m.joints[0]) {
                 Ok(j) => {
+                    // Get joint rotation
                     stimuli.push(get_z_rot(j.rotation));
                 }
                 Err(_) => {
@@ -168,9 +185,12 @@ pub fn update_brains(
                 }
             }
         }
-        body.process_stimuli(stimuli.clone());
+        // Process stimuli
+        o.process_stimuli(stimuli.clone());
     }
 }
+
+// Get z rotation from a quaternion
 fn get_z_rot(q: Quat) -> f32 {
     return f32::atan2(
         2.0 * (q.w * q.z + q.x * q.y),

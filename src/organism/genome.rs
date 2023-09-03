@@ -1,6 +1,7 @@
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
+// Stores the genetic info of the creature
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Genome {
     pub learning_rate: Allele,
@@ -48,30 +49,28 @@ impl Default for Genome {
     }
 }
 
+// Encodes data the trait of an organism
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Allele {
     pub val: f32,
     pub mutate_rate: f32,
     pub mutate_factor: f32,
 }
-impl Default for Allele {
-    fn default() -> Self {
-        Self {
-            val: 0.5,
-            mutate_rate: 0.1,
-            mutate_factor: 0.1,
-        }
-    }
-}
 impl Allele {
+    // Mutate allele based on mutate rate and factor
     pub fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
+
+        // Check if allele mutates based on mutate rate
         if rng.gen::<f32>() <= self.mutate_rate {
             let mf = self.mutate_factor;
+
+            // Alter allele based of mutate factor
             self.val += rng.gen_range(-mf..mf);
             self.mutate_rate += rng.gen_range(-mf..mf);
             self.mutate_factor += rng.gen_range(-mf..mf);
 
+            // Clamp rate between 0 and 1
             self.mutate_rate = self.mutate_rate.clamp(0.0, 1.0);
         }
     }

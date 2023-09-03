@@ -1,14 +1,15 @@
 use core::panic;
-use std::{arch::x86_64::_mm_lddqu_si128, cell, fmt::Debug, str::FromStr};
 
 use nalgebra::DMatrix;
 use rand::Rng;
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Deserializer, Serialize};
 
 pub type Matrix = DMatrix<f32>;
+
+// Wrapper struct so that the nalgebra crate can be extended
 #[derive(Clone)]
-pub struct MxMMatrix(pub DMatrix<f32>);
-impl Serialize for MxMMatrix {
+pub struct MxNMatrix(pub DMatrix<f32>);
+impl Serialize for MxNMatrix {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -28,7 +29,7 @@ impl Serialize for MxMMatrix {
         return m_seq.end();
     }
 }
-impl<'de> Deserialize<'de> for MxMMatrix {
+impl<'de> Deserialize<'de> for MxNMatrix {
     fn deserialize<D>(d: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -38,9 +39,10 @@ impl<'de> Deserialize<'de> for MxMMatrix {
     }
 }
 
+// Visitor for deserializing MxMMatrix
 pub struct MxMMatrixVisitor;
 impl<'de> Visitor<'de> for MxMMatrixVisitor {
-    type Value = MxMMatrix;
+    type Value = MxNMatrix;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         return formatter.write_str("Matrix");
@@ -67,17 +69,19 @@ impl<'de> Visitor<'de> for MxMMatrixVisitor {
         }
         println!("{:?}", data);
 
-        return Ok(MxMMatrix(Matrix::from_vec(shape[0], shape[1], data)));
+        return Ok(MxNMatrix(Matrix::from_vec(shape[0], shape[1], data)));
     }
 }
 
+// Basic neural network
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Brain {
     pub memory: Vec<f32>,
-    pub weights: Vec<MxMMatrix>,
-    pub biases: Vec<MxMMatrix>,
+    pub weights: Vec<MxNMatrix>,
+    pub biases: Vec<MxNMatrix>,
 }
 impl Brain {
+    // Create a new brain based on the structure provided
     pub fn new(structure: Vec<usize>) -> Self {
         let mut weights = vec![];
         let mut biases = vec![];
@@ -99,7 +103,8 @@ impl Brain {
         return self.weights[0].0.shape().0;
     }
 
-    pub fn set_memory(&mut self, memory: Vec<f32>) {
+    // Set the memory used for feed forward
+    fn set_memory(&mut self, memory: Vec<f32>) {
         if self.memory.capacity() != memory.capacity() {
             panic!("Creature trying to remember more that allocated");
         }
@@ -107,7 +112,9 @@ impl Brain {
     }
 
     pub fn feed_forward(&mut self, mut external_stimuli: Vec<f32>) -> Vec<f32> {
+        // Create input from memory
         let mut input = self.memory.clone();
+        // Append external stimuli to memory
         input.append(&mut external_stimuli);
 
         let in_len = input.len();
@@ -116,14 +123,18 @@ impl Brain {
             panic!("brain can only receive {} inputs, received {}", len, in_len);
         }
 
+        // Feed forward input
         let x = Matrix::from_vec(1, in_len, input);
         let y = self.step_forward(x, 0);
         let output = y.iter().map(|x| *x).collect::<Vec<f32>>();
+
+        // Set memory to previous output
         self.set_memory(output.clone());
 
         return output;
     }
 
+    // Process a layer
     fn step_forward(&self, x: Matrix, i: usize) -> Matrix {
         let mut res = x * self.weights[i].0.clone() + self.biases[i].0.clone();
         for cell in res.iter_mut() {
@@ -136,6 +147,7 @@ impl Brain {
         }
     }
 
+    // Mutate brain based on learning rate and learning factor
     pub fn mutate(&mut self, learning_rate: f32, learning_factor: f32) {
         for weight in self.weights.iter_mut() {
             Self::mutate_matrix(weight, learning_rate, learning_factor);
@@ -146,7 +158,7 @@ impl Brain {
         }
     }
 
-    fn mutate_matrix(m: &mut MxMMatrix, mut_rate: f32, mut_factor: f32) {
+    fn mutate_matrix(m: &mut MxNMatrix, mut_rate: f32, mut_factor: f32) {
         let mut rng = rand::thread_rng();
         for cell in m.0.iter_mut() {
             if rng.gen::<f32>() <= mut_rate {
@@ -156,7 +168,7 @@ impl Brain {
     }
 }
 
-fn gen_rand_matrix(rows: usize, cols: usize) -> MxMMatrix {
+fn gen_rand_matrix(rows: usize, cols: usize) -> MxNMatrix {
     let mut rng = rand::thread_rng();
     let mut m = Matrix::zeros(rows, cols);
 
@@ -164,5 +176,5 @@ fn gen_rand_matrix(rows: usize, cols: usize) -> MxMMatrix {
         *cell = rng.gen_range(-1.0..=1.0);
     }
 
-    return MxMMatrix(m);
+    return MxNMatrix(m);
 }
