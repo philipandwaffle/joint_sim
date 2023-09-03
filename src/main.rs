@@ -8,7 +8,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use generation::GenerationPlugin;
-use organism::brain::{Brain, Matrix, MxMMatrix};
+use organism::brain::{Brain, Matrix, MxNMatrix};
 use organism::joint::JointBundle;
 use organism::{brain, OrganismPlugin};
 use scrolling_cam::ScrollingCamPlugin;
@@ -19,9 +19,9 @@ mod scrolling_cam;
 fn main() {
     let matrix = Matrix::from_vec(6, 1, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
     println!("in {:?}", matrix);
-    let m_string = serde_json::to_string(&MxMMatrix(matrix)).unwrap();
+    let m_string = serde_json::to_string(&MxNMatrix(matrix)).unwrap();
     println!("matrix, {:?}", &m_string);
-    let m = serde_json::from_str::<MxMMatrix>(&m_string).unwrap();
+    let m = serde_json::from_str::<MxNMatrix>(&m_string).unwrap();
     println!("result {:?}", m.0);
     // match serde_json::from_str::<MxMMatrix>(&m_string) {
     //     Ok(m) => {

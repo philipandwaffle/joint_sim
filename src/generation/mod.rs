@@ -51,7 +51,7 @@ pub fn handle_generation(
 
     let elapsed_secs = config.timer.elapsed_secs();
     if config.unfreeze_flag && elapsed_secs > 0.5 {
-        ol.toggle_freeze();
+        ol.unfreeze();
         config.unfreeze_flag = false;
     }
     if config.debug_flag && (elapsed_secs % 0.5) <= 0.05 {

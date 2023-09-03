@@ -8,6 +8,7 @@ use bevy_rapier2d::prelude::{
     RigidBody,
 };
 
+// Bundle for spawning an organisms joint
 #[derive(Bundle)]
 pub struct JointBundle {
     joint: Joint,
@@ -94,5 +95,6 @@ impl Default for JointBundle {
     }
 }
 
+// Component that marks entities as joints
 #[derive(Component)]
 pub struct Joint;

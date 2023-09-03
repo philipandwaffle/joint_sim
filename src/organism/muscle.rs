@@ -1,5 +1,6 @@
 use bevy::prelude::{Entity, Vec2};
 
+// Muscle containing 2 joints and length data
 #[derive(Clone, Debug)]
 pub struct Muscle {
     pub joints: [Entity; 2],
@@ -7,6 +8,7 @@ pub struct Muscle {
     pub len_modifier: f32,
 }
 impl Muscle {
+    // Create a new muscle
     pub fn new(joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Self {
         return Self {
             joints: joints,
@@ -15,6 +17,7 @@ impl Muscle {
         };
     }
 
+    // Get the target length of the muscle
     pub fn get_target_len(&self) -> f32 {
         return self.base_len + (self.base_len * self.len_modifier);
     }
