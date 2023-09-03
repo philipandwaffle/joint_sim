@@ -24,6 +24,7 @@ impl Plugin for GenerationPlugin {
             num_organisms: 500,
             vertical_sep: 200.0,
             generation_duration: 20.0,
+            cur_generation: 0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,
             debug_flag: false,
@@ -39,49 +40,49 @@ impl Plugin for GenerationPlugin {
 
 pub fn handle_generation(
     mut commands: Commands,
-    mut config: ResMut<GenerationConfig>,
+    mut gc: ResMut<GenerationConfig>,
     mut ol: ResMut<OrganismList>,
     time: Res<Time>,
     joint_transforms: Query<&Transform, With<Joint>>,
 ) {
-    config.timer.tick(time.delta());
+    gc.timer.tick(time.delta());
     if ol.builders.is_empty() {
         return;
     } else if ol.organisms.is_empty() {
-        ol.spawn(&mut commands, config.vertical_sep);
+        ol.spawn(&mut commands, gc.vertical_sep);
         return;
     }
 
-    let elapsed_secs = config.timer.elapsed_secs();
-    if config.unfreeze_flag && elapsed_secs > 0.5 {
+    let elapsed_secs = gc.timer.elapsed_secs();
+    if gc.unfreeze_flag && elapsed_secs > 0.5 {
         ol.unfreeze();
-        config.unfreeze_flag = false;
+        gc.unfreeze_flag = false;
     }
-    if config.debug_flag && (elapsed_secs % 0.5) <= 0.05 {
+    if gc.debug_flag && (elapsed_secs % 0.5) <= 0.05 {
         println!("{:?}", ol.organisms[0].brain.memory);
     }
 
-    if config.timer.finished() {
-        config.timer.reset();
-        config.timer.unpause();
-        config.unfreeze_flag = true;
+    if gc.timer.finished() {
+        gc.timer.reset();
+        gc.timer.unpause();
+        gc.unfreeze_flag = true;
 
-        let new_builders = get_next_generation_builders(&mut ol, &mut config, &joint_transforms);
+        let new_builders = get_next_generation_builders(&mut ol, &mut gc, &joint_transforms);
 
         // Spawn new generation
         ol.despawn(&mut commands);
         ol.builders = new_builders;
-        ol.spawn(&mut commands, config.vertical_sep);
+        ol.spawn(&mut commands, gc.vertical_sep);
     }
 }
 
 fn get_next_generation_builders(
     ol: &mut OrganismList,
-    config: &mut GenerationConfig,
+    gc: &mut GenerationConfig,
     joint_transforms: &Query<&Transform, With<Joint>>,
 ) -> Vec<OrganismBuilder> {
     // Calculate fitness
-    let num_organism = config.num_organisms;
+    let num_organism = gc.num_organisms;
     let mut fitness = Vec::with_capacity(num_organism);
     for o in ol.organisms.iter() {
         let score = o
@@ -127,6 +128,7 @@ fn get_next_generation_builders(
     // Mutate each organism
     new_builders.iter_mut().for_each(|x| x.mutate());
 
+    gc.cur_generation += 1;
     return new_builders;
 }
 

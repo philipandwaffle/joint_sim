@@ -1,6 +1,6 @@
-use crate::scrolling_cam::control_state::ControlState;
+use crate::controls::control_state::ControlState;
 
-use bevy::prelude::*;
+use bevy::{math::vec3, prelude::*};
 
 #[derive(Component)]
 pub struct ScrollingCam;
@@ -19,4 +19,14 @@ pub fn translate_cam(
         }
         Err(err) => println!("More than one cam in the scene, {:?}", err),
     }
+}
+
+pub fn spawn_cam(mut commands: Commands) {
+    commands.spawn((
+        Camera2dBundle {
+            transform: Transform::from_translation(vec3(0.0, 0.0, 1.0)),
+            ..default()
+        },
+        ScrollingCam,
+    ));
 }

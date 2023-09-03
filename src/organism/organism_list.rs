@@ -14,12 +14,10 @@ use super::{
 };
 
 // Contains every organism
-#[derive(Resource, Serialize, Deserialize)]
+#[derive(Resource)]
 pub struct OrganismList {
     pub builders: Vec<OrganismBuilder>,
-    #[serde(skip_serializing)]
     pub organisms: Vec<Organism>,
-    #[serde(skip_serializing)]
     pub is_spawned: bool,
 }
 impl OrganismList {

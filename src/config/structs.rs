@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::Resource,
+    prelude::{App, Resource},
     time::{Timer, TimerMode},
 };
 use core::panic;
@@ -18,6 +18,7 @@ pub struct GenerationConfig {
     pub num_organisms: usize,
     pub vertical_sep: f32,
     pub generation_duration: f32,
+    pub cur_generation: u32,
     #[serde(skip_serializing, skip_deserializing)]
     pub timer: Timer,
     pub unfreeze_flag: bool,
@@ -32,10 +33,16 @@ impl GenerationConfig {
     }
 }
 
+#[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
+pub struct SaveConfig {
+    pub save_folder: String,
+}
+
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Config {
     pub camera: CameraConfig,
     pub generation: GenerationConfig,
+    pub save: SaveConfig,
 }
 impl Config {
     pub fn load_cfg(path: &str) -> Config {

@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use bevy::{
@@ -8,19 +10,26 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use controls::ControlPlugin;
 use generation::GenerationPlugin;
 use organism::joint::JointBundle;
 use organism::OrganismPlugin;
-use scrolling_cam::ScrollingCamPlugin;
 
 use crate::config::ConfigPlugin;
 
 mod config;
+mod controls;
 mod generation;
 mod organism;
-mod scrolling_cam;
 
 fn main() {
+    // println!(
+    //     "{}",
+    //     chrono::offset::Local::now()
+    //         .format("%d-%m-%Y-%H:%M")
+    //         .to_string()
+    // );
+
     let profiling_mode = false;
     let debug_mode = true;
 
@@ -53,7 +62,7 @@ fn main() {
     .add_plugins((
         ShapePlugin,
         RapierPhysicsPlugin::<NoUserData>::default(),
-        ScrollingCamPlugin,
+        ControlPlugin,
         GenerationPlugin,
         OrganismPlugin,
         ConfigPlugin,

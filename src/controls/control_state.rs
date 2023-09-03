@@ -6,12 +6,14 @@ use crate::config::structs::CameraConfig;
 pub struct ControlState {
     pub translate_delta: Vec2,
     pub zoom_delta: f32,
+    pub save: bool,
 }
 impl Default for ControlState {
     fn default() -> Self {
         Self {
             translate_delta: Vec2::ZERO,
             zoom_delta: 0.0,
+            save: false,
         }
     }
 }
@@ -32,6 +34,7 @@ pub struct Bindings {
     right: KeyCode,
     zoom_in: KeyCode,
     zoom_out: KeyCode,
+    save: KeyCode,
 }
 impl Default for Bindings {
     fn default() -> Self {
@@ -42,6 +45,7 @@ impl Default for Bindings {
             right: KeyCode::D,
             zoom_in: KeyCode::Up,
             zoom_out: KeyCode::Down,
+            save: KeyCode::P,
         }
     }
 }
@@ -72,6 +76,10 @@ pub fn update_control_state(
     }
     if input.pressed(bindings.zoom_out) {
         zd -= 1.0
+    }
+
+    if !cs.save && input.just_pressed(bindings.save) {
+        cs.save = true;
     }
 
     if td != Vec2::ZERO {
