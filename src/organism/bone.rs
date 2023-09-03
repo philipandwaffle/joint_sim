@@ -7,7 +7,7 @@ pub struct Bone;
 impl Bone {
     // Create a new bone
     pub fn new(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) {
-        let [mut a_pos, mut b_pos] = joint_pos;
+        let [a_pos, b_pos] = joint_pos;
 
         // Create joint
         let joint_ab = RevoluteJointBuilder::new()
