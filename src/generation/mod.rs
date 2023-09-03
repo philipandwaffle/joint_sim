@@ -1,13 +1,13 @@
 use bevy::{
     math::vec2,
     prelude::{
-        default, resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut,
-        Startup, Transform, Update, Vec2, With,
+        resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut, Startup,
+        Transform, Update, With,
     },
     time::{Time, Timer, TimerMode},
 };
 use rand::Rng;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use self::environment::spawn_environment;
 use crate::{
@@ -120,7 +120,7 @@ fn get_next_generation_builders(
     let mut rng = rand::thread_rng();
     while new_builders.len() < num_organism {
         let index = rng.gen_range(0..new_builders.len());
-        let mut new_builder = new_builders[index].clone();
+        let new_builder = new_builders[index].clone();
         new_builders.push(new_builder);
     }
 

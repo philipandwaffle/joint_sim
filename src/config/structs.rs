@@ -1,4 +1,3 @@
-use bevy::prelude::*;
 use bevy::{
     prelude::Resource,
     time::{Timer, TimerMode},
@@ -25,26 +24,6 @@ pub struct GenerationConfig {
     pub debug_flag: bool,
 }
 impl GenerationConfig {
-    pub fn new(
-        num_organisms: usize,
-        vertical_sep: f32,
-        generation_duration: f32,
-        unfreeze_flag: bool,
-        debug_flag: bool,
-    ) -> Self {
-        return Self {
-            num_organisms,
-            vertical_sep,
-            generation_duration,
-            timer: Timer::new(
-                Duration::from_secs_f32(generation_duration),
-                TimerMode::Once,
-            ),
-            unfreeze_flag,
-            debug_flag,
-        };
-    }
-
     pub fn reset_timer(&mut self) {
         self.timer = Timer::new(
             Duration::from_secs_f32(self.generation_duration),
@@ -59,11 +38,6 @@ pub struct Config {
     pub generation: GenerationConfig,
 }
 impl Config {
-    pub fn insert_config_resources(&self, app: &mut App) {
-        app.insert_resource(self.camera.clone())
-            .insert_resource(self.generation.clone());
-    }
-    
     pub fn load_cfg(path: &str) -> Config {
         let file = File::open(path);
         if let Err(err) = file {

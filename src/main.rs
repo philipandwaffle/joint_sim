@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use bevy::{
@@ -9,11 +7,10 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use config::structs::{CameraConfig, Config, GenerationConfig};
+
 use generation::GenerationPlugin;
-use organism::brain::{Brain, Matrix, MxNMatrix};
 use organism::joint::JointBundle;
-use organism::{brain, OrganismPlugin};
+use organism::OrganismPlugin;
 use scrolling_cam::ScrollingCamPlugin;
 
 use crate::config::ConfigPlugin;
