@@ -9,10 +9,12 @@ use bevy::{
 use rand::Rng;
 use std::time::{Duration, Instant};
 
-use self::{config::GenerationConfig, environment::spawn_environment};
-use crate::organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList};
+use self::environment::spawn_environment;
+use crate::{
+    config::structs::GenerationConfig,
+    organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList},
+};
 
-pub mod config;
 mod environment;
 
 pub struct GenerationPlugin;
@@ -21,6 +23,7 @@ impl Plugin for GenerationPlugin {
         app.insert_resource(GenerationConfig {
             num_organisms: 500,
             vertical_sep: 200.0,
+            generation_duration: 20.0,
             timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
             unfreeze_flag: true,
             debug_flag: false,

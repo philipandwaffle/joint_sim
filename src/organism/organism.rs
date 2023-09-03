@@ -3,11 +3,12 @@ use bevy::{
     prelude::{Commands, Entity, Resource, Vec2},
 };
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
 use super::{bone::Bone, brain::Brain, genome::Genome, joint::JointBundle, muscle::Muscle};
 
 // Acts as a blueprint for organisms so mutations can occur before spawning
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OrganismBuilder {
     brain: Brain,
     genome: Genome,
@@ -111,7 +112,7 @@ impl OrganismBuilder {
 }
 
 // Container for the components making up an organism
-#[derive(Resource, Clone)]
+#[derive(Resource, Clone, Serialize, Deserialize)]
 pub struct Organism {
     pub brain: Brain,
     pub genome: Genome,

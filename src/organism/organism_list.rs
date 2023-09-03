@@ -4,8 +4,9 @@ use bevy::{
     time::Time,
 };
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
+use serde::{Deserialize, Serialize};
 
-use crate::generation::config::GenerationConfig;
+use crate::config::structs::GenerationConfig;
 
 use super::{
     joint::Joint,
@@ -13,10 +14,12 @@ use super::{
 };
 
 // Contains every organism
-#[derive(Resource)]
+#[derive(Resource, Serialize, Deserialize)]
 pub struct OrganismList {
     pub builders: Vec<OrganismBuilder>,
+    #[serde(skip_serializing)]
     pub organisms: Vec<Organism>,
+    #[serde(skip_serializing)]
     pub is_spawned: bool,
 }
 impl OrganismList {

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::config::structs::CameraConfig;
+
 #[derive(Resource)]
 pub struct ControlState {
     pub translate_delta: Vec2,
@@ -48,6 +50,7 @@ pub fn update_control_state(
     input: Res<Input<KeyCode>>,
     mut cs: ResMut<ControlState>,
     bindings: Res<Bindings>,
+    camera_config: Res<CameraConfig>,
 ) {
     let mut td = Vec2::ZERO;
     if input.pressed(bindings.up) {
@@ -72,9 +75,9 @@ pub fn update_control_state(
     }
 
     if td != Vec2::ZERO {
-        cs.translate_delta = td * 5.0;
+        cs.translate_delta = td * camera_config.move_modifier;
     }
     if zd != 0.0 {
-        cs.zoom_delta = zd * 0.5;
+        cs.zoom_delta = zd * camera_config.zoom_modifier;
     }
 }

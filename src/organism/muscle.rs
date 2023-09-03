@@ -1,7 +1,8 @@
 use bevy::prelude::{Entity, Vec2};
+use serde::{Deserialize, Serialize};
 
 // Muscle containing 2 joints and length data
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Muscle {
     pub joints: [Entity; 2],
     pub base_len: f32,

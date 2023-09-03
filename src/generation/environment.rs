@@ -8,7 +8,7 @@ use bevy_prototype_lyon::{
 };
 use bevy_rapier2d::prelude::{Collider, RigidBody};
 
-use super::config::GenerationConfig;
+use crate::config::structs::GenerationConfig;
 
 pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) {
     let num_organisms = config.num_organisms;
