@@ -17,16 +17,16 @@ mod generation;
 mod organism;
 mod scrolling_cam;
 fn main() {
-    // let matrix = Matrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
-    // let m_string = serde_json::to_string(&MxMMatrix(matrix)).unwrap();
-    // match serde_json::from_str::<MxMMatrix>(&m_string) {
-    //     Ok(m) => {
-    //         println!("Hello, {:?}", m.0);
-    //     }
-    //     Err(err) => println!("{:?}", err),
-    // }
+    let matrix = Matrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+    let m_string = serde_json::to_string(&MxMMatrix(matrix)).unwrap();
+    match serde_json::from_str::<MxMMatrix>(&m_string) {
+        Ok(m) => {
+            println!("Hello, {:?}", m.0);
+        }
+        Err(err) => println!("{:?}", err),
+    }
 
-    // return;
+    return;
 
     // let brain = Brain::new(vec![5, 5]);
     // let foo = serde_json::to_string(&brain).unwrap();

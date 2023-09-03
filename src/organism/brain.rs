@@ -4,7 +4,7 @@ use std::{fmt::Debug, str::FromStr};
 use nalgebra::DMatrix;
 use rand::Rng;
 use serde::{
-    de::Visitor,
+    de::{value::SeqDeserializer, Visitor},
     ser::{SerializeSeq, SerializeStruct},
     Deserialize, Deserializer, Serialize,
 };
@@ -30,9 +30,11 @@ impl<'de> Deserialize<'de> for MxMMatrix {
     where
         D: Deserializer<'de>,
     {
+        
+        // SeqDeserializer::deserialize_seq(d);
         // Printing d to check what's inside
-        println!("des {:?}", f32::deserialize(d));
-        // d.desera
+        let foo = Vec::deserialize(d);
+        println!("des {:?}", foo);
         // Return dummy data for now
         Ok(MxMMatrix(Matrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0])))
     }
