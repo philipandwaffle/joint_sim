@@ -17,14 +17,18 @@ mod generation;
 mod organism;
 mod scrolling_cam;
 fn main() {
-    let matrix = Matrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+    let matrix = Matrix::from_vec(6, 1, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+    println!("in {:?}", matrix);
     let m_string = serde_json::to_string(&MxMMatrix(matrix)).unwrap();
-    match serde_json::from_str::<MxMMatrix>(&m_string) {
-        Ok(m) => {
-            println!("Hello, {:?}", m.0);
-        }
-        Err(err) => println!("{:?}", err),
-    }
+    println!("matrix, {:?}", &m_string);
+    let m = serde_json::from_str::<MxMMatrix>(&m_string).unwrap();
+    println!("result {:?}", m.0);
+    // match serde_json::from_str::<MxMMatrix>(&m_string) {
+    //     Ok(m) => {
+    //         println!("worked, {:?}", m.0);
+    //     }
+    //     Err(err) => println!("{:?}", err),
+    // }
 
     return;
 

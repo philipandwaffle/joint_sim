@@ -1,13 +1,9 @@
 use core::panic;
-use std::{fmt::Debug, str::FromStr};
+use std::{arch::x86_64::_mm_lddqu_si128, cell, fmt::Debug, str::FromStr};
 
 use nalgebra::DMatrix;
 use rand::Rng;
-use serde::{
-    de::{value::SeqDeserializer, Visitor},
-    ser::{SerializeSeq, SerializeStruct},
-    Deserialize, Deserializer, Serialize,
-};
+use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Deserializer, Serialize};
 
 pub type Matrix = DMatrix<f32>;
 #[derive(Clone)]
@@ -18,9 +14,16 @@ impl Serialize for MxMMatrix {
         S: serde::Serializer,
     {
         let m = &self.0;
+        // Allocate space for sequence
         let mut m_seq = serializer.serialize_seq(Some(m.iter().len()))?;
-        for row in m.row_iter() {
-            m_seq.serialize_element(&row.iter().map(|x| *x).collect::<Vec<f32>>())?;
+
+        // Add matrix shape data to sequence
+        m_seq.serialize_element(&m.shape().0)?;
+        m_seq.serialize_element(&m.shape().1)?;
+
+        // Add each cell value to the sequence
+        for cell in m.iter() {
+            m_seq.serialize_element(&cell)?;
         }
         return m_seq.end();
     }
@@ -30,13 +33,41 @@ impl<'de> Deserialize<'de> for MxMMatrix {
     where
         D: Deserializer<'de>,
     {
-        
-        // SeqDeserializer::deserialize_seq(d);
-        // Printing d to check what's inside
-        let foo = Vec::deserialize(d);
-        println!("des {:?}", foo);
-        // Return dummy data for now
-        Ok(MxMMatrix(Matrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0])))
+        let m = d.deserialize_seq(MxMMatrixVisitor)?;
+        return Ok(m);
+    }
+}
+
+pub struct MxMMatrixVisitor;
+impl<'de> Visitor<'de> for MxMMatrixVisitor {
+    type Value = MxMMatrix;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        return formatter.write_str("Matrix");
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        // Get the shape of the matrix
+        let shape = [
+            seq.next_element::<f32>()?.unwrap() as usize,
+            seq.next_element::<f32>()?.unwrap() as usize,
+        ];
+
+        // Loop through element to get matrix data
+        let mut data = vec![];
+        loop {
+            let cell = seq.next_element::<f32>()?;
+            match cell {
+                Some(val) => data.push(val),
+                None => break,
+            }
+        }
+        println!("{:?}", data);
+
+        return Ok(MxMMatrix(Matrix::from_vec(shape[0], shape[1], data)));
     }
 }
 
