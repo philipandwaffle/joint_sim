@@ -6,7 +6,7 @@ use bevy::{
     },
     time::{Time, Timer, TimerMode},
 };
-use rand::Rng;
+use rand::distributions::{Distribution, Uniform};
 use std::time::Duration;
 
 use self::environment::spawn_environment;
@@ -56,7 +56,7 @@ pub fn handle_generation(
     }
 
     let elapsed_secs = gc.timer.elapsed_secs();
-    if gc.unfreeze_flag && elapsed_secs > 0.5 {
+    if gc.unfreeze_flag && elapsed_secs > 0.1 {
         ol.unfreeze();
         gc.unfreeze_flag = false;
     }
@@ -94,11 +94,12 @@ fn get_next_generation_builders(
             .map(|x| joint_transforms.get(*x).unwrap().translation.x)
             .sum::<f32>()
             / o.joints.len() as f32;
-        if score.is_nan() {
-            fitness.push(0.0);
-        } else {
-            fitness.push(score)
-        };
+        // if score.is_nan() {
+        //     fitness.push(0.0);
+        // } else {
+        //     fitness.push(score);
+        // };
+        fitness.push(score);
     }
 
     // Pick the 'best' organisms
@@ -114,14 +115,20 @@ fn get_next_generation_builders(
 
     // Clone random organisms to fill the vec
     // println!("num builders {}", new_builders.len());
+    println!("finished fitness eval");
+    println!("Cur builders: {:?}", new_builders.len());
     let mut rng = rand::thread_rng();
+    let sample = Uniform::from(0..new_builders.len());
     while new_builders.len() < num_organism {
-        let index;
-        if new_builders.len() == 0 {
-            index = 0;
-        } else {
-            index = rng.gen_range(0..new_builders.len());
-        }
+        // let index;
+        // if new_builders.len() == 0 {
+        //     index = 0;
+        // } else {
+        //     index = rng.gen_range(0..new_builders.len());
+        // }
+        println!("sampling index");
+        let index = sample.sample(&mut rng);
+        println!("sampled index");
         let new_builder = new_builders[index].clone();
         new_builders.push(new_builder);
     }

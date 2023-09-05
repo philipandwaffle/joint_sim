@@ -72,8 +72,10 @@ impl Allele {
             self.mutate_rate += rng.gen_range(-mf..mf);
             self.mutate_factor += rng.gen_range(-mf..mf);
 
-            // Clamp rate between 0 and 1
-            self.mutate_rate = self.mutate_rate.clamp(0.0, 1.0);
+            // Clamp values
+            self.val = self.mutate_factor.max(0.01);
+            self.mutate_rate = self.mutate_rate.clamp(0.01, 1.0);
+            self.mutate_factor = self.mutate_factor.max(0.01);
         }
     }
 }
