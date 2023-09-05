@@ -12,6 +12,7 @@ use std::time::Duration;
 use self::environment::spawn_environment;
 use crate::{
     config::structs::GenerationConfig,
+    controls::control_state::ControlState,
     organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList},
 };
 
@@ -44,6 +45,7 @@ pub fn handle_generation(
     mut ol: ResMut<OrganismList>,
     time: Res<Time>,
     joint_transforms: Query<&Transform, With<Joint>>,
+    mut cs: ResMut<ControlState>,
 ) {
     gc.timer.tick(time.delta());
     if ol.builders.is_empty() {
@@ -73,6 +75,7 @@ pub fn handle_generation(
         ol.despawn(&mut commands);
         ol.builders = new_builders;
         ol.spawn(&mut commands, gc.vertical_sep);
+        cs.save = true;
     }
 }
 
@@ -101,14 +104,7 @@ fn get_next_generation_builders(
     // Pick the 'best' organisms
     let fitness_unsorted = fitness.clone();
     fitness.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let avg_fitness = fitness.iter().sum::<f32>() / fitness.len() as f32;
     let median_fitness = fitness[fitness.len() / 2];
-    let upper_10 = fitness[(fitness.len() as f32 * 0.9) as usize];
-    // println!(
-    //     "average fitness {:?}\t median fitness {:?}\t upper_10 {:?}",
-    //     avg_fitness, median_fitness, upper_10
-    // );
-    println!("{:?},{:?},{:?}", avg_fitness, median_fitness, upper_10);
     let mut new_builders = Vec::with_capacity(num_organism);
     for i in 0..num_organism {
         if fitness_unsorted[i] >= median_fitness {
@@ -120,7 +116,12 @@ fn get_next_generation_builders(
     // println!("num builders {}", new_builders.len());
     let mut rng = rand::thread_rng();
     while new_builders.len() < num_organism {
-        let index = rng.gen_range(0..new_builders.len());
+        let index;
+        if new_builders.len() == 0 {
+            index = 0;
+        } else {
+            index = rng.gen_range(0..new_builders.len());
+        }
         let new_builder = new_builders[index].clone();
         new_builders.push(new_builder);
     }

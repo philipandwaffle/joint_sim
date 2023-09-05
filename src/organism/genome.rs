@@ -14,6 +14,8 @@ impl Genome {
     pub fn mutate(&mut self) {
         self.learning_rate.mutate();
         self.learning_factor.mutate();
+        self.joint_mutate_rate.mutate();
+        self.joint_mutate_factor.mutate();
         self.internal_clock.mutate();
     }
 }

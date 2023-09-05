@@ -14,11 +14,12 @@ use super::control_state::ControlState;
 
 pub fn save_generation(
     ol: Res<OrganismList>,
-    cs: ResMut<ControlState>,
+    mut cs: ResMut<ControlState>,
     gc: Res<GenerationConfig>,
     sc: Res<SaveConfig>,
 ) {
     if cs.save {
+        cs.save = false;
         let json = match serde_json::to_string(&ol.builders) {
             Ok(res) => res,
             Err(err) => {
@@ -28,7 +29,7 @@ pub fn save_generation(
         };
 
         let path = format!(
-            "{}\\{}_gen{}",
+            "{}\\{}_gen{}.json",
             sc.save_folder,
             chrono::offset::Local::now()
                 .format("%d-%m-%Y_%H-%M")
