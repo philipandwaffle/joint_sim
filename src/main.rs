@@ -14,6 +14,7 @@ use controls::ControlPlugin;
 use generation::GenerationPlugin;
 use organism::joint::JointBundle;
 use organism::OrganismPlugin;
+use rand::Rng;
 
 use crate::config::ConfigPlugin;
 
@@ -23,12 +24,10 @@ mod generation;
 mod organism;
 
 fn main() {
-    // println!(
-    //     "{}",
-    //     chrono::offset::Local::now()
-    //         .format("%d-%m-%Y-%H:%M")
-    //         .to_string()
-    // );
+    let mut rng = rand::thread_rng();
+    for _ in 0..20 {
+        println!("{}", rng.gen::<f32>());
+    }
 
     let profiling_mode = false;
     let debug_mode = true;
