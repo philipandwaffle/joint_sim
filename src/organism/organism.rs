@@ -2,7 +2,7 @@ use bevy::{
     math::vec2,
     prelude::{Commands, Entity, Resource, Vec2},
 };
-use rand::Rng;
+use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 
 use super::{bone::Bone, brain::Brain, genome::Genome, joint::JointBundle, muscle::Muscle};
@@ -48,6 +48,7 @@ impl OrganismBuilder {
 
         // Pre-allocate vectors
         let mut joint_ents = Vec::with_capacity(self.joint_pos.len());
+        let mut bone_ents = Vec::with_capacity(self.bones.len());
         let mut muscles_ents = Vec::with_capacity(num_muscles);
 
         // Create a joint for each position supplied
@@ -59,12 +60,14 @@ impl OrganismBuilder {
         }
 
         // Create a bone for each bone given
+
         for [j_a, j_b] in self.bones.iter() {
-            Bone::new(
+            let ent = Bone::new(
                 commands,
                 [joint_ents[*j_a], joint_ents[*j_b]],
                 [self.joint_pos[*j_a], self.joint_pos[*j_b]],
             );
+            bone_ents.push(ent);
         }
 
         // Create a muscle for each muscle given
@@ -80,35 +83,41 @@ impl OrganismBuilder {
             brain: self.brain.clone(),
             genome: self.genome.clone(),
             joints: joint_ents,
+            bones: bone_ents,
             muscles: muscles_ents,
             freeze_progress: 0.0,
         };
     }
 
     // Mutate the builder
-    pub fn mutate(&mut self) {
+    pub fn mutate(&mut self, rng: &mut ThreadRng) {
         // Mutate genome
-        self.genome.mutate();
+        self.genome.mutate(rng);
 
         // Mutate brain
         self.brain.mutate(
+            rng,
             self.genome.learning_rate.val,
             self.genome.learning_factor.val,
         );
 
         // Mutate joint positions
-        let mut rng = rand::thread_rng();
-        for j_pos in self.joint_pos.iter_mut() {
+        for i in 0..self.joint_pos.len() {
             if rng.gen::<f32>() <= self.genome.joint_mutate_rate.val {
                 let mf = self.genome.joint_mutate_factor.val;
-                let dx = rng.gen_range(-mf..mf);
-                let dy = rng.gen_range(-mf..mf);
-
-                let unclamped = j_pos.clone() + vec2(dx, dy);
-                *j_pos = unclamped.clamp(vec2(-100.0, 0.0), vec2(100.0, 200.0));
+                self.move_joint(rng, i, mf);
             }
         }
     }
+
+    pub fn move_joint(&mut self, rng: &mut ThreadRng, i: usize, mf: f32) {
+        let dx = rng.gen_range(-mf..mf);
+        let dy = rng.gen_range(-mf..mf);
+        let unclamped = self.joint_pos[i] + vec2(dx, dy);
+        self.joint_pos[i] = unclamped.clamp(vec2(-100.0, 0.0), vec2(100.0, 200.0));
+    }
+
+    // pub fn add_joint
 }
 
 // Container for the components making up an organism
@@ -118,6 +127,7 @@ pub struct Organism {
     pub genome: Genome,
     pub joints: Vec<Entity>,
     pub muscles: Vec<Muscle>,
+    pub bones: Vec<Entity>,
     pub freeze_progress: f32,
 }
 
@@ -126,6 +136,9 @@ impl Organism {
     pub fn despawn(&self, commands: &mut Commands) {
         for j in self.joints.iter() {
             commands.get_entity(*j).unwrap().despawn();
+        }
+        for b in self.bones.iter() {
+            commands.get_entity(*b).unwrap().despawn();
         }
     }
 

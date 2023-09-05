@@ -1,4 +1,11 @@
-use bevy::prelude::{BuildChildren, Commands, Entity, Vec2};
+use bevy::{
+    math::vec2,
+    prelude::{default, BuildChildren, Color, Commands, Entity, Quat, Transform, Vec2, Vec3},
+};
+use bevy_prototype_lyon::{
+    prelude::{Fill, GeometryBuilder, ShapeBundle},
+    shapes,
+};
 use bevy_rapier2d::prelude::{ImpulseJoint, RevoluteJointBuilder};
 
 use super::joint::JointBundle;
@@ -6,21 +13,49 @@ use super::joint::JointBundle;
 pub struct Bone;
 impl Bone {
     // Create a new bone
-    pub fn new(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) {
+    pub fn new(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
         let [a_pos, b_pos] = joint_pos;
 
         // Create joint
+        let ab = b_pos - a_pos;
         let joint_ab = RevoluteJointBuilder::new()
-            .local_anchor1(b_pos - a_pos)
+            .local_anchor1(ab)
             .local_anchor2(Vec2::ZERO)
             .build();
         let impulse_joint = commands.spawn(ImpulseJoint::new(joints[0], joint_ab)).id();
+        let len = ab.length();
 
         // Add impulse joint as child
         commands
             .get_entity(joints[1])
             .unwrap()
             .add_child(impulse_joint);
+
+        let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
+        let z_rot = x * f32::acos(ab.y / len);
+        let bone_width = 3.0;
+        let bone_rect = shapes::Rectangle {
+            extents: vec2(bone_width, len),
+            origin: shapes::RectangleOrigin::CustomCenter(vec2(0.0, -0.5 * len)),
+            ..default()
+        };
+
+        let bone_ent = commands
+            .spawn((
+                ShapeBundle {
+                    path: GeometryBuilder::build_as(&bone_rect),
+                    transform: Transform {
+                        translation: ab.extend(-0.1),
+                        rotation: Quat::from_rotation_z(z_rot),
+                        ..default()
+                    },
+                    ..default()
+                },
+                Fill::color(Color::hsl(360.0, 0.37, 0.84)),
+            ))
+            .id();
+        commands.get_entity(joints[0]).unwrap().add_child(bone_ent);
+        return bone_ent;
     }
 
     // Development fn for testing new bone

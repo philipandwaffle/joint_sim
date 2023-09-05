@@ -94,11 +94,7 @@ fn get_next_generation_builders(
             .map(|x| joint_transforms.get(*x).unwrap().translation.x)
             .sum::<f32>()
             / o.joints.len() as f32;
-        // if score.is_nan() {
-        //     fitness.push(0.0);
-        // } else {
-        //     fitness.push(score);
-        // };
+
         fitness.push(score);
     }
 
@@ -113,28 +109,17 @@ fn get_next_generation_builders(
         }
     }
 
-    // Clone random organisms to fill the vec
-    // println!("num builders {}", new_builders.len());
-    println!("finished fitness eval");
-    println!("Cur builders: {:?}", new_builders.len());
     let mut rng = rand::thread_rng();
     let sample = Uniform::from(0..new_builders.len());
     while new_builders.len() < num_organism {
-        // let index;
-        // if new_builders.len() == 0 {
-        //     index = 0;
-        // } else {
-        //     index = rng.gen_range(0..new_builders.len());
-        // }
-        println!("sampling index");
         let index = sample.sample(&mut rng);
-        println!("sampled index");
         let new_builder = new_builders[index].clone();
         new_builders.push(new_builder);
     }
 
     // Mutate each organism
-    new_builders.iter_mut().for_each(|x| x.mutate());
+    let mut rng = rand::thread_rng();
+    new_builders.iter_mut().for_each(|x| x.mutate(&mut rng));
 
     gc.cur_generation += 1;
     return new_builders;
@@ -159,9 +144,9 @@ fn get_simple_builder() -> OrganismBuilder {
     let joint_pos = vec![
         vec2(-20.0, 60.0),
         vec2(20.0, 60.0),
-        vec2(-70.0, 40.0),
+        vec2(-40.0, 40.0),
         vec2(0.0, 40.0),
-        vec2(70.0, 40.0),
+        vec2(40.0, 40.0),
         vec2(-60.0, 5.0),
         vec2(-20.0, 5.0),
         vec2(20.0, 5.0),
@@ -190,9 +175,9 @@ fn get_runner_builder() -> OrganismBuilder {
     let joint_pos = vec![
         vec2(-20.0, 80.0),
         vec2(20.0, 80.0),
-        vec2(-70.0, 60.0),
+        vec2(-40.0, 60.0),
         vec2(0.0, 60.0),
-        vec2(70.0, 60.0),
+        vec2(40.0, 60.0),
         vec2(-40.0, 25.0),
         vec2(40.0, 25.0),
     ];

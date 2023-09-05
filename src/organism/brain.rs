@@ -1,7 +1,7 @@
 use core::panic;
 
 use nalgebra::DMatrix;
-use rand::Rng;
+use rand::{rngs::ThreadRng, Rng};
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Deserializer, Serialize};
 
 pub type Matrix = DMatrix<f32>;
@@ -148,18 +148,17 @@ impl Brain {
     }
 
     // Mutate brain based on learning rate and learning factor
-    pub fn mutate(&mut self, learning_rate: f32, learning_factor: f32) {
+    pub fn mutate(&mut self, rng: &mut ThreadRng, learning_rate: f32, learning_factor: f32) {
         for weight in self.weights.iter_mut() {
-            Self::mutate_matrix(weight, learning_rate, learning_factor);
+            Self::mutate_matrix(rng, weight, learning_rate, learning_factor);
         }
 
         for bias in self.biases.iter_mut() {
-            Self::mutate_matrix(bias, learning_rate, learning_factor);
+            Self::mutate_matrix(rng, bias, learning_rate, learning_factor);
         }
     }
 
-    fn mutate_matrix(m: &mut MxNMatrix, mut_rate: f32, mut_factor: f32) {
-        let mut rng = rand::thread_rng();
+    fn mutate_matrix(rng: &mut ThreadRng, m: &mut MxNMatrix, mut_rate: f32, mut_factor: f32) {
         for cell in m.0.iter_mut() {
             if rng.gen::<f32>() <= mut_rate {
                 *cell += (rng.gen::<f32>() - 0.5) * mut_factor;

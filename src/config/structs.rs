@@ -8,6 +8,8 @@ use std::fs::File;
 use std::io::BufReader;
 use std::time::Duration;
 
+use crate::organism::genome::Genome;
+
 #[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
 pub struct CameraConfig {
     pub move_modifier: f32,
@@ -38,11 +40,18 @@ pub struct SaveConfig {
     pub save_folder: String,
 }
 
+// defunct for now
+#[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
+pub struct GenomeConfig {
+    pub default: Genome,
+}
+
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Config {
     pub camera: CameraConfig,
     pub generation: GenerationConfig,
     pub save: SaveConfig,
+    // pub starting: GenomeConfig,
 }
 impl Config {
     pub fn load_cfg(path: &str) -> Config {
