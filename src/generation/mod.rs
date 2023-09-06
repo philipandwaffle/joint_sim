@@ -100,7 +100,10 @@ fn get_next_generation_builders(
 
     // Pick the 'best' organisms
     let fitness_unsorted = fitness.clone();
-    fitness.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    fitness.sort_by(|a, b| match a.partial_cmp(b) {
+        Some(res) => res,
+        None => std::cmp::Ordering::Less,
+    });
     let median_fitness = fitness[fitness.len() / 2];
     let mut new_builders = Vec::with_capacity(num_organism);
     for i in 0..num_organism {

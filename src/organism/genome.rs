@@ -41,8 +41,8 @@ impl Default for Genome {
             genome_mutate_factor: Allele::new(0.1, 0.1, 0.1),
             learning_rate: Allele::new(0.1, 0.2, 0.2),
             learning_factor: Allele::new(0.1, 0.2, 0.2),
-            joint_mutate_rate: Allele::new(0.3, 0.2, 0.2),
-            joint_mutate_factor: Allele::new(10.0, 0.2, 1.0),
+            joint_mutate_rate: Allele::new(0.1, 0.2, 0.2),
+            joint_mutate_factor: Allele::new(1.0, 0.2, 1.0),
             internal_clock: Allele::new(3.0, 0.2, 0.2),
         }
     }

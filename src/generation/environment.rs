@@ -30,7 +30,7 @@ pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) 
             path: GeometryBuilder::build_as(&wall),
             transform: Transform::from_translation(vec3(
                 -200.0,
-                (vertical_sep * num_organisms as f32 * 0.5) - 20.0,
+                (vertical_sep * num_organisms as f32 * 0.5) - 40.0,
                 0.0,
             )),
             ..default()
