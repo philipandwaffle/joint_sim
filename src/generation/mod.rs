@@ -13,7 +13,7 @@ use self::environment::spawn_environment;
 use crate::{
     config::structs::GenerationConfig,
     controls::control_state::ControlState,
-    organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList},
+    organism::{brain, joint::Joint, organism::OrganismBuilder, organism_list::OrganismList},
 };
 
 mod environment;
@@ -128,7 +128,7 @@ fn get_next_generation_builders(
 fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     let mut builders = vec![];
     for _ in 0..config.num_organisms {
-        builders.push(get_runner_builder());
+        builders.push(bone_test_organism());
     }
     let ol = OrganismList {
         builders: builders,
@@ -168,6 +168,29 @@ fn get_simple_builder() -> OrganismBuilder {
     let muscles = vec![[5, 2], [6, 3], [7, 3], [8, 4]];
 
     return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
+}
+
+fn bone_test_organism() -> OrganismBuilder {
+    let brain_structure = vec![2, 2];
+
+    let dx = 40.0;
+    let dy0 = 40.0;
+    let dy1 = 80.0;
+    let dy2 = 120.0;
+    let dy3 = 160.0;
+    let joint_pos = vec![
+        vec2(-dx, dy0),
+        vec2(dx, dy0),
+        vec2(0.0, dy1),
+        vec2(0.0, dy2),
+        vec2(-dx, dy3),
+        vec2(dx, dy3),
+    ];
+    // let bones = vec![[0, 1], [1, 2], [2, 0]];
+    let bones = vec![[0, 1], [2, 0], [2, 1], [2, 3], [3, 4], [4, 5], [5, 3]];
+    let muscles = vec![];
+    let ob = OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
+    return ob;
 }
 
 fn get_runner_builder() -> OrganismBuilder {

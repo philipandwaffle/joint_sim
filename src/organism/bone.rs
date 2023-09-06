@@ -1,19 +1,24 @@
+use std::f32::consts::PI;
+
 use bevy::{
     math::vec2,
-    prelude::{default, BuildChildren, Color, Commands, Entity, Quat, Transform, Vec2, Vec3},
+    prelude::{
+        default, BuildChildren, Color, Commands, ComputedVisibility, Entity, GlobalTransform, Quat,
+        Transform, Vec2, Vec3,
+    },
 };
 use bevy_prototype_lyon::{
     prelude::{Fill, GeometryBuilder, ShapeBundle},
     shapes,
 };
-use bevy_rapier2d::prelude::{ImpulseJoint, RevoluteJointBuilder};
+use bevy_rapier2d::prelude::{Collider, ImpulseJoint, LockedAxes, RevoluteJointBuilder, RigidBody};
 
 use super::joint::JointBundle;
 
 pub struct Bone;
 impl Bone {
     // Create a new bone
-    pub fn new(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
+    fn old(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
         let [a_pos, b_pos] = joint_pos;
 
         // Create joint
@@ -59,7 +64,53 @@ impl Bone {
     }
 
     // Development fn for testing new bone
-    pub fn new_dev(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) {
+    pub fn new(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
+        let [a_pos, b_pos] = joint_pos;
+
+        // Create joint
+        let ab = b_pos - a_pos;
+        let dir = ab * 0.5;
+        let len = ab.length();
+        let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
+        let z_rot = x * f32::acos(ab.y / len);
+        let bone_width = 3.0;
+
+        let bone_rect = shapes::Rectangle {
+            extents: vec2(bone_width, len),
+            origin: shapes::RectangleOrigin::Center,
+        };
+
+        let bone_ent = commands
+            .spawn((
+                RigidBody::Dynamic,
+                GlobalTransform::default(),
+                ComputedVisibility::default(),
+                Transform::from_translation((a_pos + dir).extend(-0.1)),
+            ))
+            .with_children(|p| {
+                p.spawn((
+                    ShapeBundle {
+                        path: GeometryBuilder::build_as(&bone_rect),
+                        transform: Transform::from_rotation(Quat::from_rotation_z(z_rot)),
+                        ..default()
+                    },
+                    Collider::cuboid(bone_width * 0.5, (len - 10.0) * 0.5),
+                    Fill::color(Color::hsl(360.0, 0.37, 0.84)),
+                ));
+            })
+            .id();
+
+        let bearing_a = RevoluteJointBuilder::new().local_anchor1(-dir).build();
+        let bearing_b = RevoluteJointBuilder::new().local_anchor1(dir).build();
+        let axel_a = commands.spawn(ImpulseJoint::new(bone_ent, bearing_a)).id();
+        let axel_b = commands.spawn(ImpulseJoint::new(bone_ent, bearing_b)).id();
+
+        commands.get_entity(joints[0]).unwrap().add_child(axel_a);
+        commands.get_entity(joints[1]).unwrap().add_child(axel_b);
+        return bone_ent;
+    }
+
+    pub fn new_dev_broken(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) {
         let dir = (joint_pos[1] - joint_pos[0]) / 2.0;
         let mid = (joint_pos[0] + joint_pos[1]) / 2.0;
         let bone_joint = JointBundle::new(mid, 0.1, 0.0, 0.5);

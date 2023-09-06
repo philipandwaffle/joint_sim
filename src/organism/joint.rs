@@ -5,7 +5,7 @@ use bevy_prototype_lyon::{
 };
 use bevy_rapier2d::prelude::{
     AdditionalMassProperties, Ccd, Collider, Damping, ExternalImpulse, Friction, GravityScale,
-    RigidBody,
+    LockedAxes, RigidBody,
 };
 
 // Bundle for spawning an organisms joint
@@ -23,6 +23,7 @@ pub struct JointBundle {
     collider: Collider,
     gravity: GravityScale,
     ccd: Ccd,
+    locked_axis: LockedAxes,
 }
 impl JointBundle {
     pub fn new(
@@ -59,10 +60,11 @@ impl JointBundle {
 }
 impl Default for JointBundle {
     fn default() -> Self {
-        let linear_damping = 10000.0;
+        // let linear_damping = 1000000000.0;
         // let linear_damping = 0.5;
         // let angular_damping = 10000.0;
-        let angular_damping = 0.0;
+        // let angular_damping = 0.0;
+        let starting_damping = 10000000.0;
         let radius = 5.0;
         let mass = 0.5;
         let circle = shapes::RegularPolygon {
@@ -77,8 +79,8 @@ impl Default for JointBundle {
             mass: AdditionalMassProperties::Mass(mass),
             external_impulse: ExternalImpulse::default(),
             damping: Damping {
-                linear_damping,
-                angular_damping,
+                linear_damping: starting_damping,
+                angular_damping: 0.0,
             },
             friction: Friction::coefficient(0.7),
             shape_bundle: ShapeBundle {
@@ -91,6 +93,7 @@ impl Default for JointBundle {
             collider: Collider::ball(radius),
             gravity: GravityScale(5.0),
             ccd: Ccd::default(),
+            locked_axis: LockedAxes::ROTATION_LOCKED,
         };
     }
 }

@@ -85,7 +85,7 @@ pub fn unfreeze_queued(
 
         let x = o.freeze_progress;
         // Calc linear damping
-        let linear_damping = match x >= 1.0 {
+        let damping = match x >= 1.0 {
             true => {
                 o.freeze_progress = -1.0;
                 0.2
@@ -97,7 +97,8 @@ pub fn unfreeze_queued(
         for j in o.joints.iter_mut() {
             match joints.get_mut(*j) {
                 Ok(mut d) => {
-                    d.linear_damping = linear_damping;
+                    d.linear_damping = damping;
+                    // d.linear_damping = damping;
                 }
                 Err(_) => {
                     //TODO this is dumb make system only run when joints are spawned

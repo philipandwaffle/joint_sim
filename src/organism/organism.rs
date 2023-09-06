@@ -1,6 +1,6 @@
 use bevy::{
     math::vec2,
-    prelude::{Commands, Entity, Resource, Vec2},
+    prelude::{Commands, DespawnRecursiveExt, Entity, Resource, Vec2},
 };
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
@@ -135,10 +135,10 @@ impl Organism {
     // Despawn all entities associated with the organism
     pub fn despawn(&self, commands: &mut Commands) {
         for j in self.joints.iter() {
-            commands.get_entity(*j).unwrap().despawn();
+            commands.get_entity(*j).unwrap().despawn_recursive();
         }
         for b in self.bones.iter() {
-            commands.get_entity(*b).unwrap().despawn();
+            commands.get_entity(*b).unwrap().despawn_recursive();
         }
     }
 
