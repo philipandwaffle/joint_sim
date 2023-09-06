@@ -4,14 +4,17 @@ use bevy::{
     math::vec2,
     prelude::{
         default, BuildChildren, Color, Commands, ComputedVisibility, Entity, GlobalTransform, Quat,
-        Transform, Vec2, Vec3,
+        SpatialBundle, Transform, Vec2, Vec3,
     },
+    transform::TransformBundle,
 };
 use bevy_prototype_lyon::{
     prelude::{Fill, GeometryBuilder, ShapeBundle},
     shapes,
 };
-use bevy_rapier2d::prelude::{Collider, ImpulseJoint, LockedAxes, RevoluteJointBuilder, RigidBody};
+use bevy_rapier2d::prelude::{
+    Collider, ImpulseJoint, LockedAxes, RevoluteJointBuilder, RigidBody, Sensor,
+};
 
 use super::joint::JointBundle;
 
@@ -83,9 +86,9 @@ impl Bone {
         let bone_ent = commands
             .spawn((
                 RigidBody::Dynamic,
-                GlobalTransform::default(),
-                ComputedVisibility::default(),
-                Transform::from_translation((a_pos + dir).extend(-0.1)),
+                SpatialBundle::from_transform(Transform::from_translation(
+                    (a_pos + dir).extend(-0.1),
+                )),
             ))
             .with_children(|p| {
                 p.spawn((
@@ -94,8 +97,9 @@ impl Bone {
                         transform: Transform::from_rotation(Quat::from_rotation_z(z_rot)),
                         ..default()
                     },
-                    Collider::cuboid(bone_width * 0.5, (len - 10.0) * 0.5),
                     Fill::color(Color::hsl(360.0, 0.37, 0.84)),
+                    Collider::cuboid(bone_width * 0.5, (len - 10.0) * 0.5),
+                    Sensor,
                 ));
             })
             .id();

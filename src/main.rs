@@ -24,13 +24,8 @@ mod generation;
 mod organism;
 
 fn main() {
-    let mut rng = rand::thread_rng();
-    for _ in 0..20 {
-        println!("{}", rng.gen::<f32>());
-    }
-
     let profiling_mode = false;
-    let debug_mode = true;
+    let debug_mode = false;
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {
