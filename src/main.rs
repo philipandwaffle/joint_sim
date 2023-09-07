@@ -18,6 +18,7 @@ use rand::Rng;
 
 use crate::config::ConfigPlugin;
 
+mod collider_layer;
 mod config;
 mod controls;
 mod generation;
