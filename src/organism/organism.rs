@@ -65,7 +65,10 @@ impl OrganismBuilder {
             let ent = Bone::new(
                 commands,
                 [joint_ents[*j_a], joint_ents[*j_b]],
-                [self.joint_pos[*j_a], self.joint_pos[*j_b]],
+                [
+                    translation + self.joint_pos[*j_a],
+                    translation + self.joint_pos[*j_b],
+                ],
             );
             bone_ents.push(ent);
         }

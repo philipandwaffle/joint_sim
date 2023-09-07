@@ -30,7 +30,7 @@ pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) 
             path: GeometryBuilder::build_as(&wall),
             transform: Transform::from_translation(vec3(
                 -200.0,
-                (vertical_sep * num_organisms as f32 * 0.5) - 40.0,
+                vertical_sep * num_organisms as f32 * 0.5,
                 0.0,
             )),
             ..default()
@@ -40,12 +40,13 @@ pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) 
         Collider::cuboid(height * 0.5, vertical_sep * num_organisms as f32 * 0.5),
     ));
     for i in 0..=num_organisms {
+        println!("{:?}", i as f32 * vertical_sep);
         commands.spawn((
             ShapeBundle {
                 path: GeometryBuilder::build_as(&platform),
                 transform: Transform::from_translation(vec3(
                     (width / 2.0) - 200.0,
-                    (i as f32 * vertical_sep) - 20.0,
+                    (i as f32) * vertical_sep,
                     0.0,
                 )),
                 ..default()
