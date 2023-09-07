@@ -103,6 +103,48 @@ impl Brain {
         return self.weights[0].0.shape().0;
     }
 
+    pub fn add_io(&mut self) {
+        let last_index = self.weights.len() - 1;
+        let insert_index = self.get_num_inputs() - 1;
+        let mem_len = self.memory.len();
+
+        // add input
+        let temp = self.weights[0].clone();
+        self.weights[0] = MxNMatrix(temp.0.insert_row(insert_index, 0.0));
+        let temp = self.biases[0].clone();
+        self.biases[0] = MxNMatrix(temp.0.insert_column(insert_index, 0.0));
+
+        // Add output
+        let temp = self.weights[last_index].clone();
+        self.weights[last_index] = MxNMatrix(temp.0.insert_row(insert_index - mem_len - 1, 0.0));
+        let temp = self.biases[last_index].clone();
+        self.biases[last_index] = MxNMatrix(temp.0.insert_column(insert_index - mem_len - 1, 0.0));
+    }
+
+    pub fn remove_io(&mut self) {
+        let last_index = self.weights.len() - 1;
+        let remove_index = self.get_num_inputs() - 1;
+        let mem_len = self.memory.len();
+
+        println!(
+            "remove index: {:?}, last index: {:?}",
+            remove_index, last_index
+        );
+        // Remove input
+        let temp = self.weights[0].clone();
+        self.weights[0] = MxNMatrix(temp.0.remove_row(remove_index));
+        let temp = self.biases[0].clone();
+        println!("m: {:?}", temp.0.shape());
+        self.biases[0] = MxNMatrix(temp.0.remove_column(remove_index));
+
+        // Remove output
+        let temp = self.weights[last_index].clone();
+        self.weights[last_index] = MxNMatrix(temp.0.remove_row(remove_index - mem_len - 1));
+        let temp = self.biases[last_index].clone();
+        println!("m: {:?}", temp.0.shape());
+        self.biases[last_index] = MxNMatrix(temp.0.remove_column(remove_index - mem_len - 1));
+    }
+
     // Set the memory used for feed forward
     fn set_memory(&mut self, memory: Vec<f32>) {
         if self.memory.capacity() != memory.capacity() {

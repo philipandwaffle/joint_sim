@@ -57,7 +57,6 @@ impl OrganismList {
 
         // Spawn and push organism to vec
         for i in 0..self.builders.len() {
-            println!("{:?}", cur_translation.y);
             self.organisms
                 .push(self.builders[i].spawn(commands, cur_translation));
             cur_translation.y += vertical_sep;

@@ -98,17 +98,30 @@ impl OrganismBuilder {
         self.genome.mutate(rng);
 
         // Mutate brain
-        self.brain.mutate(
-            rng,
-            self.genome.learning_rate.val,
-            self.genome.learning_factor.val,
-        );
+        self.brain
+            .mutate(rng, self.genome.lr.val, self.genome.lf.val);
 
         // Mutate joint positions
         for i in 0..self.joint_pos.len() {
-            if rng.gen::<f32>() <= self.genome.joint_mutate_rate.val {
-                let mf = self.genome.joint_mutate_factor.val;
+            if rng.gen::<f32>() <= self.genome.joint_mr.val {
+                let mf = self.genome.joint_mf.val;
                 self.move_joint(rng, i, mf);
+            }
+        }
+
+        // Add/remove bone
+        if rng.gen::<f32>() <= self.genome.bone_mr.val {
+            match rng.gen::<f32>() <= 0.5 {
+                true => self.add_bone(rng, self.genome.muscle_mr.val),
+                false => self.remove_bone(rng),
+            }
+        }
+
+        // Add/remove muscle
+        if rng.gen::<f32>() <= self.genome.muscle_mr.val {
+            match rng.gen::<f32>() <= 0.5 {
+                true => self.add_muscle(rng),
+                false => self.remove_muscle(rng),
             }
         }
     }
@@ -120,7 +133,54 @@ impl OrganismBuilder {
         self.joint_pos[i] = unclamped.clamp(vec2(-100.0, 0.0), vec2(100.0, 200.0));
     }
 
-    // pub fn add_joint
+    pub fn add_bone(&mut self, rng: &mut ThreadRng, mf: f32) {
+        let index = rng.gen::<usize>();
+
+        let joint_pos =
+            vec2(rng.gen_range(-mf..mf), rng.gen_range(-mf..mf)) + self.joint_pos[index];
+        self.joint_pos.push(joint_pos);
+
+        let bone = [self.joint_pos.len(), index];
+        self.bones.push(bone);
+    }
+
+    pub fn remove_bone(&mut self, rng: &mut ThreadRng) {
+        let num_bones = self.bones.len();
+        if num_bones == 0 {
+            return;
+        }
+
+        let index = rng.gen_range(0..num_bones);
+        self.bones.remove(index);
+    }
+
+    pub fn add_muscle(&mut self, rng: &mut ThreadRng) {
+        let num_joints = self.joint_pos.len();
+        if num_joints < 2 {
+            return;
+        }
+
+        let a = rng.gen_range(0..num_joints);
+        let mut b = rng.gen_range(0..num_joints);
+
+        while a == b {
+            b = rng.gen_range(0..self.joint_pos.len());
+        }
+
+        self.brain.add_io();
+        self.muscles.push([a, b]);
+    }
+
+    pub fn remove_muscle(&mut self, rng: &mut ThreadRng) {
+        let num_muscles = self.muscles.len();
+        if num_muscles == 0 {
+            return;
+        }
+        let index = rng.gen_range(0..num_muscles);
+
+        self.brain.remove_io();
+        self.muscles.remove(index);
+    }
 }
 
 // Container for the components making up an organism

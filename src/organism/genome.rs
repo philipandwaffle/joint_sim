@@ -4,45 +4,57 @@ use serde::{Deserialize, Serialize};
 // Stores the genetic info of the creature
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Genome {
-    pub genome_mutate_rate: Allele,
-    pub genome_mutate_factor: Allele,
-    pub learning_rate: Allele,
-    pub learning_factor: Allele,
-    pub joint_mutate_rate: Allele,
-    pub joint_mutate_factor: Allele,
+    pub genome_mr: Allele,
+    pub genome_mf: Allele,
+    pub lr: Allele,
+    pub lf: Allele,
+    pub joint_mr: Allele,
+    pub joint_mf: Allele,
+    pub bone_mr: Allele,
+    pub bone_mf: Allele,
+    pub muscle_mr: Allele,
     pub internal_clock: Allele,
 }
 impl Genome {
     pub fn mutate(&mut self, rng: &mut ThreadRng) {
-        let mr = self.genome_mutate_rate.val;
-        let mf = self.genome_mutate_factor.val;
+        let mr = self.genome_mr.val;
+        let mf = self.genome_mf.val;
 
-        self.genome_mutate_rate.mutate_meta(rng, mr, mf);
-        self.genome_mutate_factor.mutate_meta(rng, mr, mf);
-        self.learning_rate.mutate_meta(rng, mr, mf);
-        self.learning_factor.mutate_meta(rng, mr, mf);
-        self.joint_mutate_rate.mutate_meta(rng, mr, mf);
-        self.joint_mutate_factor.mutate_meta(rng, mr, mf);
+        self.genome_mr.mutate_meta(rng, mr, mf);
+        self.genome_mf.mutate_meta(rng, mr, mf);
+        self.lr.mutate_meta(rng, mr, mf);
+        self.lf.mutate_meta(rng, mr, mf);
+        self.joint_mr.mutate_meta(rng, mr, mf);
+        self.joint_mf.mutate_meta(rng, mr, mf);
+        self.bone_mr.mutate_meta(rng, mr, mf);
+        self.bone_mf.mutate_meta(rng, mr, mf);
+        self.muscle_mr.mutate_meta(rng, mr, mf);
         self.internal_clock.mutate_meta(rng, mr, mf);
 
-        self.genome_mutate_rate.mutate_val(rng);
-        self.genome_mutate_factor.mutate_val(rng);
-        self.learning_rate.mutate_val(rng);
-        self.learning_factor.mutate_val(rng);
-        self.joint_mutate_rate.mutate_val(rng);
-        self.joint_mutate_factor.mutate_val(rng);
+        self.genome_mr.mutate_val(rng);
+        self.genome_mf.mutate_val(rng);
+        self.lr.mutate_val(rng);
+        self.lf.mutate_val(rng);
+        self.joint_mr.mutate_val(rng);
+        self.joint_mf.mutate_val(rng);
+        self.bone_mr.mutate_val(rng);
+        self.bone_mf.mutate_val(rng);
+        self.muscle_mr.mutate_val(rng);
         self.internal_clock.mutate_val(rng);
     }
 }
 impl Default for Genome {
     fn default() -> Self {
         Self {
-            genome_mutate_rate: Allele::new(0.1, 0.1, 0.1),
-            genome_mutate_factor: Allele::new(0.1, 0.1, 0.1),
-            learning_rate: Allele::new(0.1, 0.2, 0.2),
-            learning_factor: Allele::new(0.1, 0.2, 0.2),
-            joint_mutate_rate: Allele::new(0.1, 0.2, 0.2),
-            joint_mutate_factor: Allele::new(1.0, 0.2, 1.0),
+            genome_mr: Allele::new(0.1, 0.1, 0.1),
+            genome_mf: Allele::new(0.1, 0.1, 0.1),
+            lr: Allele::new(0.1, 0.2, 0.2),
+            lf: Allele::new(0.1, 0.2, 0.2),
+            joint_mr: Allele::new(0.1, 0.2, 0.2),
+            joint_mf: Allele::new(1.0, 0.2, 1.0),
+            bone_mr: Allele::new(0.01, 0.2, 0.01),
+            bone_mf: Allele::new(10.0, 0.2, 0.01),
+            muscle_mr: Allele::new(0.01, 0.2, 1.0),
             internal_clock: Allele::new(3.0, 0.2, 0.2),
         }
     }
