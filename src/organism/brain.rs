@@ -104,56 +104,53 @@ impl Brain {
     }
 
     pub fn add_io(&mut self) {
-        let last_index = self.weights.len() - 1;
-        let insert_index = self.get_num_inputs() - 1;
-        let mem_len = self.memory.len();
+        println!("adding io");
+        debug_matrix_shapes(&self.weights, &"weights");
+        debug_matrix_shapes(&self.biases, &"biases");
+        let num_weights = self.weights.len();
+        let num_biases = self.biases.len();
 
-        println!(
-            "remove index: {:?}, last index: {:?}",
-            insert_index, last_index
-        );
         // add input
-        let temp = self.weights[0].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.weights[0] = MxNMatrix(temp.0.insert_row(insert_index, 0.0));
-        let temp = self.biases[0].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.biases[0] = MxNMatrix(temp.0.insert_row(insert_index, 0.0));
+        insert_row(&mut self.weights[0]);
+        insert_row(&mut self.weights[0]);
+        // insert_col(&mut self.biases[0]);
 
         // Add output
-        let temp = self.weights[last_index].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.weights[last_index] = MxNMatrix(temp.0.insert_row(insert_index - mem_len - 1, 0.0));
-        let temp = self.biases[last_index].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.biases[last_index] = MxNMatrix(temp.0.insert_row(insert_index - mem_len - 1, 0.0));
+        insert_row(&mut self.weights[num_weights - 1]);
+        insert_row(&mut self.weights[num_weights - 1]);
+        insert_col(&mut self.biases[num_biases - 1]);
+        insert_col(&mut self.biases[num_biases - 1]);
+
+        self.memory.push(0.0);
+        self.memory.push(0.0);
+
+        debug_matrix_shapes(&self.weights, &"weights");
+        debug_matrix_shapes(&self.biases, &"biases");
     }
 
     pub fn remove_io(&mut self) {
-        let last_index = self.weights.len() - 1;
-        let num_inputs = self.get_num_inputs() - 1;
-        let num_outputs = self.weights[last_index].0.shape().1;
-        let mem_len = self.memory.len();
+        println!("removing io");
+        debug_matrix_shapes(&self.weights, &"weights");
+        debug_matrix_shapes(&self.biases, &"biases");
+        let num_weights = self.weights.len();
+        let num_biases = self.biases.len();
 
-        println!(
-            "remove index: {:?}, last index: {:?}",
-            num_inputs, last_index
-        );
-        // Remove input
-        let temp = self.weights[0].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.weights[0] = MxNMatrix(temp.0.remove_row(num_inputs));
-        let temp = self.biases[0].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.biases[0] = MxNMatrix(temp.0.remove_column(num_outputs - 1));
+        // add input
+        remove_row(&mut self.weights[0]);
+        remove_row(&mut self.weights[0]);
+        // remove_col(&mut self.biases[0]);
 
-        // Remove output
-        let temp = self.weights[last_index].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.weights[last_index] = MxNMatrix(temp.0.remove_row(num_inputs - mem_len - 1));
-        let temp = self.biases[last_index].clone();
-        println!("m: {:?}", temp.0.shape());
-        self.biases[last_index] = MxNMatrix(temp.0.remove_column(num_outputs - 1));
+        // Add output
+        remove_row(&mut self.weights[num_weights - 1]);
+        remove_row(&mut self.weights[num_weights - 1]);
+        remove_col(&mut self.biases[num_biases - 1]);
+        remove_col(&mut self.biases[num_biases - 1]);
+
+        self.memory.pop();
+        self.memory.pop();
+
+        debug_matrix_shapes(&self.weights, &"weights");
+        debug_matrix_shapes(&self.biases, &"biases");
     }
 
     // Set the memory used for feed forward
@@ -201,7 +198,7 @@ impl Brain {
     }
 
     // Mutate brain based on learning rate and learning factor
-    pub fn mutate(&mut self, rng: &mut ThreadRng, learning_rate: f32, learning_factor: f32) {
+    pub fn learn(&mut self, rng: &mut ThreadRng, learning_rate: f32, learning_factor: f32) {
         for weight in self.weights.iter_mut() {
             Self::mutate_matrix(rng, weight, learning_rate, learning_factor);
         }
@@ -229,4 +226,36 @@ fn gen_rand_matrix(rows: usize, cols: usize) -> MxNMatrix {
     }
 
     return MxNMatrix(m);
+}
+
+fn insert_row(m: &mut MxNMatrix) {
+    let temp = m.0.clone();
+    let rows = temp.shape().0;
+    m.0 = temp.insert_row(rows, 0.0);
+}
+fn remove_row(m: &mut MxNMatrix) {
+    let temp = m.0.clone();
+    let rows = temp.shape().0;
+    m.0 = temp.remove_row(rows - 1);
+}
+
+fn insert_col(m: &mut MxNMatrix) {
+    let temp = m.0.clone();
+    let cols = temp.shape().1;
+    m.0 = temp.insert_column(cols, 0.0);
+}
+fn remove_col(m: &mut MxNMatrix) {
+    let temp = m.0.clone();
+    let cols = temp.shape().1;
+    m.0 = temp.remove_column(cols - 1);
+}
+
+fn debug_matrix_shapes(m: &Vec<MxNMatrix>, msg: &str) {
+    println!(
+        "{} {:?}",
+        msg,
+        m.iter()
+            .map(|x| x.0.shape())
+            .collect::<Vec<(usize, usize)>>()
+    );
 }

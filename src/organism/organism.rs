@@ -99,7 +99,7 @@ impl OrganismBuilder {
 
         // Mutate brain
         self.brain
-            .mutate(rng, self.genome.lr.val, self.genome.lf.val);
+            .learn(rng, self.genome.lr.val, self.genome.lf.val);
 
         // Mutate joint positions
         for i in 0..self.joint_pos.len() {
@@ -108,7 +108,7 @@ impl OrganismBuilder {
                 self.move_joint(rng, i, mf);
             }
         }
-
+        return;
         // Add/remove bone
         if rng.gen::<f32>() <= self.genome.bone_mr.val {
             match rng.gen::<f32>() <= 0.5 {
