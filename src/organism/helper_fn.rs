@@ -1,4 +1,7 @@
-use bevy::prelude::{Quat, Vec2};
+use bevy::{
+    math::vec2,
+    prelude::{Quat, Vec2},
+};
 
 pub fn vec2_z_rot(a: Vec2, b: Vec2) -> f32 {
     let ab = b - a;
@@ -14,3 +17,11 @@ pub fn quat_z_rot(q: Quat) -> f32 {
         1.0 - 2.0 * (q.y * q.y + q.z * q.z),
     );
 }
+
+pub fn rotate_vec(v: Vec2, z_rot: f32) -> Vec2 {
+    let cos_theta = f32::cos(z_rot);
+    let sin_theta = f32::sin(z_rot);
+    return vec2(v.x * (cos_theta - sin_theta), v.y * (cos_theta + sin_theta));
+}
+
+// pub fn angle_between_vec

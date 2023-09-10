@@ -21,7 +21,6 @@ pub struct BoneBundle {
     rigid_body: RigidBody,
     external_impulse: ExternalImpulse,
     mass: AdditionalMassProperties,
-    collider_mass: ColliderMassProperties,
 }
 impl BoneBundle {
     pub fn spawn(
@@ -29,6 +28,8 @@ impl BoneBundle {
         joints: [Entity; 2],
         joint_pos: [Vec2; 2],
     ) -> (Entity, Vec2) {
+        let width = 3.0;
+
         let [a_pos, b_pos] = joint_pos;
 
         // Create joint
@@ -40,9 +41,9 @@ impl BoneBundle {
         let mid = a_pos + dir;
 
         let bone_ent = commands
-            .spawn(BoneBundle::new(mid))
+            .spawn(BoneBundle::new(mid, 0.0))
             .with_children(|p| {
-                p.spawn(BoneDisplayBundle::new(len, z_rot));
+                p.spawn(BoneDisplayBundle::new(width, len, z_rot));
             })
             .id();
 
@@ -56,16 +57,17 @@ impl BoneBundle {
         return (bone_ent, mid);
     }
 
-    pub fn new(translation: Vec2) -> Self {
+    pub fn new(translation: Vec2, z_rot: f32) -> Self {
         return Self {
             bone: Bone,
-            spatial_bundle: SpatialBundle::from_transform(Transform::from_translation(
-                translation.extend(-0.1),
-            )),
+            spatial_bundle: SpatialBundle::from_transform(Transform {
+                translation: translation.extend(-0.1),
+                rotation: Quat::from_rotation_z(z_rot),
+                ..default()
+            }),
             rigid_body: RigidBody::Dynamic,
             external_impulse: ExternalImpulse::default(),
             mass: AdditionalMassProperties::Mass(0.5),
-            collider_mass: ColliderMassProperties::Density(0.2),
         };
     }
 }
@@ -76,13 +78,12 @@ pub struct BoneDisplayBundle {
     fill: Fill,
     collider: Collider,
     sensor: Sensor,
+    collider_mass: ColliderMassProperties,
 }
 impl BoneDisplayBundle {
-    pub fn new(len: f32, z_rot: f32) -> Self {
-        let bone_width = 3.0;
-
+    pub fn new(width: f32, len: f32, z_rot: f32) -> Self {
         let bone_rect = shapes::Rectangle {
-            extents: vec2(bone_width, len),
+            extents: vec2(width, len),
             origin: shapes::RectangleOrigin::Center,
         };
 
@@ -93,7 +94,8 @@ impl BoneDisplayBundle {
                 ..default()
             },
             fill: Fill::color(Color::hsl(360.0, 0.37, 0.84)),
-            collider: Collider::cuboid(bone_width * 0.5, (len - 10.0) * 0.5),
+            collider_mass: ColliderMassProperties::Density(0.2),
+            collider: Collider::cuboid(width * 0.5, (len - 10.0) * 0.5),
             sensor: Sensor,
         };
     }

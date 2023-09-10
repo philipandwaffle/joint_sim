@@ -176,9 +176,9 @@ fn get_simple_builder() -> OrganismBuilder {
 }
 
 fn muscle_test_organism() -> OrganismBuilder {
-    let joint_pos = vec![vec2(0.0, 0.0), vec2(75.0, 25.0), vec2(0.0, 50.0)];
-    let bones = vec![[0, 1], [1, 2]];
-    let muscles = vec![[0, 1]];
+    let joint_pos = vec![vec2(0.0, 0.0), vec2(25.0, 50.0), vec2(50.0, 0.0)];
+    let bones = vec![[1, 2], [0, 1]];
+    let muscles = vec![[1, 0]];
 
     return OrganismBuilder::new(1, vec![3, 3], joint_pos, bones, muscles);
 }

@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use std::time::SystemTime;
 
 use bevy::math::{vec2, vec3};
@@ -17,6 +18,7 @@ use organism::OrganismPlugin;
 use rand::Rng;
 
 use crate::config::ConfigPlugin;
+use crate::organism::helper_fn::rotate_vec;
 
 mod collider_layer;
 mod config;
@@ -25,6 +27,11 @@ mod generation;
 mod organism;
 
 fn main() {
+    let v = vec2(0.0, 1.0);
+    println!("{:?}", rotate_vec(v, PI * 0.5));
+
+    // return;
+
     let profiling_mode = true;
     let debug_mode = true;
 

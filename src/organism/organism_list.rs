@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{
     math::vec2,
     prelude::{Color, Commands, Quat, Query, Res, ResMut, Resource, Transform, With, Without},
@@ -121,6 +123,7 @@ pub fn update_muscles(
     for (m, mut t, mut f) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
             Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
+                // readout(a_t, b_t);
                 // Apply impulse to joints
                 let a_pos = a_t.translation.truncate();
                 let b_pos = b_t.translation.truncate();
@@ -138,6 +141,7 @@ pub fn update_muscles(
                     f.color = Color::BLUE;
                 }
                 let modifier = 2000.0;
+                // let modifier = 0.0;
 
                 if diff != 0.0 {
                     a_ei.impulse = -ab.normalize() * foo * modifier;
@@ -146,8 +150,8 @@ pub fn update_muscles(
 
                 let r = quat_z_rot(a_t.rotation);
                 t.rotation = Quat::from_rotation_z(vec2_z_rot(b_pos, a_pos) - r);
-                // let y_scale = len / m.base_len;
-                let y_scale = 1.0 * (1.0 + m.len_modifier);
+                let y_scale = len / m.base_len;
+                // let y_scale = 1.0 * (1.0 + m.len_modifier);
                 t.scale.y = y_scale;
             }
             Err(_) => {
@@ -156,6 +160,22 @@ pub fn update_muscles(
             }
         }
     }
+}
+
+fn readout(a: &Transform, b: &Transform) {
+    let a_rot = quat_z_rot(a.rotation) * 180.0 / PI;
+    let b_rot = quat_z_rot(b.rotation) * 180.0 / PI;
+
+    let norm_a_rot = f32::acos(a.rotation.dot(Quat::IDENTITY)) * 180.0 / PI;
+    let norm_b_rot = f32::acos(b.rotation.dot(Quat::IDENTITY)) * 180.0 / PI;
+
+    // let id_a_rot = quat_z_rot(Quat::IDENTITY - a.rotation) * 180.0 / PI;
+    // let id_b_rot = quat_z_rot(Quat::IDENTITY - b.rotation) * 180.0 / PI;
+
+    println!(
+        "a_rot: {}, b_rot:{}, a_norm: {}, b_norm: {}",
+        a_rot, b_rot, norm_a_rot, norm_b_rot
+    );
 }
 
 // Make brains process stimuli
