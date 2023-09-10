@@ -5,7 +5,13 @@ use bevy::{
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 
-use super::{bone::Bone, brain::Brain, genome::Genome, joint::JointBundle, muscle::Muscle};
+use super::{
+    bone::{Bone, BoneBundle},
+    brain::Brain,
+    genome::Genome,
+    joint::JointBundle,
+    muscle::Muscle,
+};
 
 // Acts as a blueprint for organisms so mutations can occur before spawning
 #[derive(Clone, Serialize, Deserialize)]
@@ -62,7 +68,7 @@ impl OrganismBuilder {
         // Create a bone for each bone given
 
         for [j_a, j_b] in self.bones.iter() {
-            let ent = Bone::spawn(
+            let ent = BoneBundle::spawn(
                 commands,
                 [joint_ents[*j_a], joint_ents[*j_b]],
                 [

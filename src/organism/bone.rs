@@ -1,23 +1,18 @@
-use std::f32::consts::PI;
-
 use bevy::{
     math::vec2,
     prelude::{
-        default, BuildChildren, Bundle, Color, Commands, Component, ComputedVisibility, Entity,
-        GlobalTransform, Quat, SpatialBundle, Transform, Vec2, Vec3,
+        default, BuildChildren, Bundle, Color, Commands, Component, Entity, Quat, SpatialBundle,
+        Transform, Vec2,
     },
-    transform::TransformBundle,
 };
 use bevy_prototype_lyon::{
     prelude::{Fill, GeometryBuilder, ShapeBundle},
     shapes,
 };
 use bevy_rapier2d::prelude::{
-    AdditionalMassProperties, Collider, ExternalImpulse, ImpulseJoint, LockedAxes,
-    RevoluteJointBuilder, RigidBody, Sensor,
+    AdditionalMassProperties, Collider, ExternalImpulse, ImpulseJoint, RevoluteJointBuilder,
+    RigidBody, Sensor,
 };
-
-use super::joint::JointBundle;
 
 #[derive(Bundle)]
 pub struct BoneBundle {
@@ -28,6 +23,33 @@ pub struct BoneBundle {
     mass: AdditionalMassProperties,
 }
 impl BoneBundle {
+    pub fn spawn(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
+        let [a_pos, b_pos] = joint_pos;
+
+        // Create joint
+        let ab = b_pos - a_pos;
+        let dir = ab * 0.5;
+        let len = ab.length();
+        let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
+        let z_rot = x * f32::acos(ab.y / len);
+
+        let bone_ent = commands
+            .spawn(BoneBundle::new(a_pos + dir))
+            .with_children(|p| {
+                p.spawn(BoneDisplayBundle::new(len, z_rot));
+            })
+            .id();
+
+        let bearing_a = RevoluteJointBuilder::new().local_anchor1(-dir).build();
+        let bearing_b = RevoluteJointBuilder::new().local_anchor1(dir).build();
+        let axel_a = commands.spawn(ImpulseJoint::new(bone_ent, bearing_a)).id();
+        let axel_b = commands.spawn(ImpulseJoint::new(bone_ent, bearing_b)).id();
+
+        commands.get_entity(joints[0]).unwrap().add_child(axel_a);
+        commands.get_entity(joints[1]).unwrap().add_child(axel_b);
+        return bone_ent;
+    }
+
     pub fn new(translation: Vec2) -> Self {
         return Self {
             bone: Bone,
@@ -74,32 +96,3 @@ impl BoneDisplayBundle {
 // Used for muscles to pull on
 #[derive(Component)]
 pub struct Bone;
-impl Bone {
-    // Development fn for testing new bone
-    pub fn spawn(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
-        let [a_pos, b_pos] = joint_pos;
-
-        // Create joint
-        let ab = b_pos - a_pos;
-        let dir = ab * 0.5;
-        let len = ab.length();
-        let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
-        let z_rot = x * f32::acos(ab.y / len);
-
-        let bone_ent = commands
-            .spawn(BoneBundle::new(a_pos + dir))
-            .with_children(|p| {
-                p.spawn(BoneDisplayBundle::new(len, z_rot));
-            })
-            .id();
-
-        let bearing_a = RevoluteJointBuilder::new().local_anchor1(-dir).build();
-        let bearing_b = RevoluteJointBuilder::new().local_anchor1(dir).build();
-        let axel_a = commands.spawn(ImpulseJoint::new(bone_ent, bearing_a)).id();
-        let axel_b = commands.spawn(ImpulseJoint::new(bone_ent, bearing_b)).id();
-
-        commands.get_entity(joints[0]).unwrap().add_child(axel_a);
-        commands.get_entity(joints[1]).unwrap().add_child(axel_b);
-        return bone_ent;
-    }
-}
