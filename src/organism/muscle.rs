@@ -1,19 +1,24 @@
-use bevy::prelude::{Entity, Vec2, Commands, Component, Query, Transform, With};
+use bevy::prelude::{Commands, Component, Entity, Query, Transform, Vec2, With};
 use bevy_prototype_lyon::{prelude::ShapeBundle, shapes};
 
-use super::{ bone::Bone};
+use super::bone::Bone;
 
 pub struct MuscleBundle {
     shape_bundle: ShapeBundle,
 }
 impl MuscleBundle {
-    pub fn new(commands: &mut Commands, bones: Query<&Transform, With<Bone>> , muscles: [Entity; 2]) -> Entity {
-        
-        commands.get_entity(muscles[0]).unwrap().;
-        let bone_rect = shapes::Rectangle {
-            extents: vec2(bone_width, len),
-            origin: shapes::RectangleOrigin::Center,
-        };
+    pub fn new(
+        commands: &mut Commands,
+        bones: Query<&Transform, With<Bone>>,
+        muscles: [Entity; 2],
+    ) -> Entity {
+        // commands.get_entity(muscles[0]).unwrap();
+        // let bone_rect = shapes::Rectangle {
+        //     extents: vec2(bone_width, len),
+        //     origin: shapes::RectangleOrigin::Center,
+        // };
+
+        todo!();
     }
 }
 // Muscle containing 2 joints and length data
@@ -33,9 +38,7 @@ impl Muscle {
         };
     }
 
-    pub fn spawn(){
-
-    }
+    pub fn spawn() {}
 
     // Get the target length of the muscle
     pub fn get_target_len(&self) -> f32 {

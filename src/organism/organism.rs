@@ -62,7 +62,7 @@ impl OrganismBuilder {
         // Create a bone for each bone given
 
         for [j_a, j_b] in self.bones.iter() {
-            let ent = Bone::new(
+            let ent = Bone::spawn(
                 commands,
                 [joint_ents[*j_a], joint_ents[*j_b]],
                 [

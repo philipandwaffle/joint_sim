@@ -41,6 +41,37 @@ impl BoneBundle {
     }
 }
 
+#[derive(Bundle)]
+pub struct BoneDisplayBundle {
+    shape_bundle: ShapeBundle,
+    fill: Fill,
+    collider: Collider,
+    sensor: Sensor,
+}
+impl BoneDisplayBundle {
+    pub fn new(len: f32, z_rot: f32) -> Self {
+        let bone_width = 3.0;
+
+        let bone_rect = shapes::Rectangle {
+            extents: vec2(bone_width, len),
+            origin: shapes::RectangleOrigin::Center,
+        };
+
+        return Self {
+            shape_bundle: ShapeBundle {
+                path: GeometryBuilder::build_as(&bone_rect),
+                transform: Transform::from_rotation(Quat::from_rotation_z(z_rot)),
+                ..default()
+            },
+            fill: Fill::color(Color::hsl(360.0, 0.37, 0.84)),
+            collider: Collider::cuboid(bone_width * 0.5, (len - 10.0) * 0.5),
+            sensor: Sensor,
+        };
+    }
+}
+
+// Component to mark the mid point of a bone
+// Used for muscles to pull on
 #[derive(Component)]
 pub struct Bone;
 impl Bone {
@@ -54,32 +85,11 @@ impl Bone {
         let len = ab.length();
         let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
         let z_rot = x * f32::acos(ab.y / len);
-        let bone_width = 3.0;
-
-        let bone_rect = shapes::Rectangle {
-            extents: vec2(bone_width, len),
-            origin: shapes::RectangleOrigin::Center,
-        };
 
         let bone_ent = commands
-            .spawn((
-                Bone,
-                RigidBody::Dynamic,
-                SpatialBundle::from_transform(Transform::from_translation(
-                    (a_pos + dir).extend(-0.1),
-                )),
-            ))
+            .spawn(BoneBundle::new(a_pos + dir))
             .with_children(|p| {
-                p.spawn((
-                    ShapeBundle {
-                        path: GeometryBuilder::build_as(&bone_rect),
-                        transform: Transform::from_rotation(Quat::from_rotation_z(z_rot)),
-                        ..default()
-                    },
-                    Fill::color(Color::hsl(360.0, 0.37, 0.84)),
-                    Collider::cuboid(bone_width * 0.5, (len - 10.0) * 0.5),
-                    Sensor,
-                ));
+                p.spawn(BoneDisplayBundle::new(len, z_rot));
             })
             .id();
 
