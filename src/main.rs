@@ -25,7 +25,7 @@ mod generation;
 mod organism;
 
 fn main() {
-    let profiling_mode = false;
+    let profiling_mode = true;
     let debug_mode = false;
 
     let mut app = App::new();

@@ -1,6 +1,6 @@
 use bevy::{
     math::vec2,
-    prelude::{Commands, DespawnRecursiveExt, Entity, Resource, Vec2},
+    prelude::{Commands, DespawnRecursiveExt, Entity, Query, Resource, Vec2},
 };
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use super::{
     brain::Brain,
     genome::Genome,
     joint::JointBundle,
-    muscle::Muscle,
+    muscle::{Muscle, MuscleBundle},
 };
 
 // Acts as a blueprint for organisms so mutations can occur before spawning
@@ -33,9 +33,10 @@ impl OrganismBuilder {
     ) -> Self {
         // Get num muscles
         let num_muscles = muscles.len();
+        let num_bones = bones.len();
 
         // Calculate brain structure
-        let mut brain_structure = vec![(num_muscles * 2) + 1 + external_stimuli_count];
+        let mut brain_structure = vec![num_bones + num_muscles + external_stimuli_count];
         brain_structure.extend(brain_hidden_structure.iter());
         brain_structure.push(num_muscles);
 
@@ -55,6 +56,7 @@ impl OrganismBuilder {
         // Pre-allocate vectors
         let mut joint_ents = Vec::with_capacity(self.joint_pos.len());
         let mut bone_ents = Vec::with_capacity(self.bones.len());
+        let mut bone_pos = Vec::with_capacity(self.bones.len());
         let mut muscles_ents = Vec::with_capacity(num_muscles);
 
         // Create a joint for each position supplied
@@ -66,9 +68,8 @@ impl OrganismBuilder {
         }
 
         // Create a bone for each bone given
-
         for [j_a, j_b] in self.bones.iter() {
-            let ent = BoneBundle::spawn(
+            let bone = BoneBundle::spawn(
                 commands,
                 [joint_ents[*j_a], joint_ents[*j_b]],
                 [
@@ -76,14 +77,16 @@ impl OrganismBuilder {
                     translation + self.joint_pos[*j_b],
                 ],
             );
-            bone_ents.push(ent);
+            bone_ents.push(bone.0);
+            bone_pos.push(bone.1);
         }
 
         // Create a muscle for each muscle given
         for [j_a, j_b] in self.muscles.iter() {
-            let m = Muscle::new(
-                [joint_ents[*j_a], joint_ents[*j_b]],
-                [self.joint_pos[*j_a], self.joint_pos[*j_b]],
+            let m = MuscleBundle::spawn(
+                commands,
+                [bone_ents[*j_a], bone_ents[*j_b]],
+                [bone_pos[*j_a], bone_pos[*j_b]],
             );
             muscles_ents.push(m);
         }
@@ -195,8 +198,8 @@ pub struct Organism {
     pub brain: Brain,
     pub genome: Genome,
     pub joints: Vec<Entity>,
-    pub muscles: Vec<Muscle>,
     pub bones: Vec<Entity>,
+    pub muscles: Vec<Entity>,
     pub freeze_progress: f32,
 }
 
@@ -209,27 +212,33 @@ impl Organism {
         for b in self.bones.iter() {
             commands.get_entity(*b).unwrap().despawn_recursive();
         }
+        // for m in self.muscles.iter() {
+        //     commands.get_entity(*m).unwrap().despawn_recursive();
+        // }
     }
 
     // Take input stimuli and tick the brain
-    pub fn process_stimuli(&mut self, mut stimuli: Vec<f32>) {
+    pub fn process_stimuli(&mut self, mut stimuli: Vec<f32>, muscles: &mut Query<&mut Muscle>) {
         // normalise the 0th input, time
         let a = self.genome.internal_clock.val;
         let x = stimuli[0] / a;
         stimuli[0] = (2.0 * x.rem_euclid(a) / a) - 1.0;
 
         // Make brain process stimuli
-        self.tick_brain(stimuli);
-    }
-
-    // Process stimuli and alter muscles
-    fn tick_brain(&mut self, stimuli: Vec<f32>) {
-        // Calculate brain out
         let brain_out = self.brain.feed_forward(stimuli);
-
-        // Alter muscle length
-        for i in 0..brain_out.len() {
-            self.muscles[i].len_modifier = brain_out[i];
+        for i in 0..self.muscles.len() {
+            muscles.get_mut(self.muscles[i]).unwrap().len_modifier = brain_out[i];
         }
     }
+
+    // // Process stimuli and alter muscles
+    // fn tick_brain(&mut self, stimuli: Vec<f32>) {
+    //     // Calculate brain out
+    //     let brain_out = self.brain.feed_forward(stimuli);
+
+    //     // Alter muscle length
+    //     for i in 0..brain_out.len() {
+    //         self.muscles[i].len_modifier = brain_out[i];
+    //     }
+    // }
 }

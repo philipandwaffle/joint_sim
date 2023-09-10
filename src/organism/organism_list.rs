@@ -1,15 +1,19 @@
 use bevy::{
     math::vec2,
-    prelude::{Commands, Quat, Query, Res, ResMut, Resource, Transform, With},
+    prelude::{Color, Commands, Quat, Query, Res, ResMut, Resource, Transform, With, Without},
     time::Time,
 };
+use bevy_prototype_lyon::prelude::Fill;
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 use serde::{Deserialize, Serialize};
 
 use crate::config::structs::GenerationConfig;
 
 use super::{
+    bone::Bone,
+    helper_fn::{quat_z_rot, vec2_z_rot},
     joint::Joint,
+    muscle::Muscle,
     organism::{Organism, OrganismBuilder},
 };
 
@@ -112,31 +116,48 @@ pub fn unfreeze_queued(
 
 // Update muscle lengths
 pub fn update_muscles(
-    ol: Res<OrganismList>,
-    mut muscles: Query<(&mut ExternalImpulse, &Transform), With<Joint>>,
+    mut bones: Query<(&mut ExternalImpulse, &Transform), With<Bone>>,
+    mut muscles: Query<(&Muscle, &mut Transform, &mut Fill), Without<Bone>>,
 ) {
-    // Loop through each organisms
-    for i in 0..ol.organisms.len() {
-        let o = &ol.organisms[i];
+    for (m, mut t, mut f) in muscles.iter_mut() {
+        match bones.get_many_mut(m.bones) {
+            Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
+                // Apply impulse to joints
+                let a_pos = a_t.translation.truncate();
+                let b_pos = b_t.translation.truncate();
+                let ab = b_pos - a_pos;
+                let len = ab.length();
+                let target_len = m.get_target_len();
+                let diff = len - target_len;
 
-        // Loop through each muscle
-        for muscle in o.muscles.iter() {
-            // Get joints making up muscle
-            match muscles.get_many_mut(muscle.bones) {
-                Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
-                    // Apply impulse to joints
-                    let dir = b_t.translation.truncate() - a_t.translation.truncate();
-                    let diff = dir.length() - muscle.get_target_len();
-                    let modifier = 2.0;
-                    if diff != 0.0 {
-                        a_ei.impulse = dir * diff * modifier;
-                        b_ei.impulse = dir * -diff * modifier;
-                    }
+                let mut foo = 0.0;
+                if diff > 0.0 {
+                    foo = 1.0;
+                    f.color = Color::RED;
+                } else if diff < 0.0 {
+                    foo = -1.0;
+                    f.color = Color::BLUE;
                 }
-                Err(_) => {
-                    //TODO this is dumb make system only run when joints are spawned
-                    return;
+                let modifier = 200.0;
+
+                if diff != 0.0 {
+                    a_ei.impulse = ab.normalize() * foo * modifier;
+                    b_ei.impulse = -ab.normalize() * foo * modifier;
                 }
+                // if diff != 0.0 {
+                //     a_ei.impulse = ab * diff * modifier;
+                //     b_ei.impulse = ab * -diff * modifier;
+                // }
+
+                let r = quat_z_rot(a_t.rotation);
+                t.rotation = Quat::from_rotation_z(vec2_z_rot(b_pos, a_pos) - r);
+                // let y_scale = len / m.base_len;
+                let y_scale = 1.0 * (1.0 + m.len_modifier);
+                t.scale.y = y_scale;
+            }
+            Err(_) => {
+                //TODO this is dumb make system only run when bones are spawned
+                return;
             }
         }
     }
@@ -146,7 +167,8 @@ pub fn update_muscles(
 pub fn update_brains(
     mut ol: ResMut<OrganismList>,
     config: Res<GenerationConfig>,
-    joints: Query<&Transform, With<Joint>>,
+    mut muscles: Query<&mut Muscle>,
+    bones: Query<&Transform, With<Bone>>,
 ) {
     // Short circuit if organisms haven't spawned;
     if !ol.is_spawned {
@@ -162,24 +184,10 @@ pub fn update_brains(
     for o in ol.organisms.iter_mut() {
         let mut stimuli = external_stimuli.clone();
 
-        // Gather local and push to stimuli vec
-        match joints.get(o.joints[0]) {
-            Ok(j) => {
-                // Get joint rotation
-                stimuli.push(get_z_rot(j.rotation));
-            }
-            Err(_) => {
-                //TODO this is dumb make system only run when joints are spawned
-                return;
-            }
-        }
-
-        // Gather local and push to stimuli vec
-        for m in o.muscles.iter() {
-            match joints.get(m.bones[0]) {
-                Ok(j) => {
-                    // Get joint rotation
-                    stimuli.push(get_z_rot(j.rotation));
+        for b in o.bones.iter() {
+            match bones.get(b.clone()) {
+                Ok(t) => {
+                    stimuli.push(quat_z_rot(t.rotation));
                 }
                 Err(_) => {
                     //TODO this is dumb make system only run when joints are spawned
@@ -188,14 +196,6 @@ pub fn update_brains(
             }
         }
         // Process stimuli
-        o.process_stimuli(stimuli.clone());
+        o.process_stimuli(stimuli.clone(), &mut muscles);
     }
-}
-
-// Get z rotation from a quaternion
-fn get_z_rot(q: Quat) -> f32 {
-    return f32::atan2(
-        2.0 * (q.w * q.z + q.x * q.y),
-        1.0 - 2.0 * (q.y * q.y + q.z * q.z),
-    );
 }

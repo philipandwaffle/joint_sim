@@ -10,8 +10,8 @@ use bevy_prototype_lyon::{
     shapes,
 };
 use bevy_rapier2d::prelude::{
-    AdditionalMassProperties, Collider, ExternalImpulse, ImpulseJoint, RevoluteJointBuilder,
-    RigidBody, Sensor,
+    AdditionalMassProperties, Collider, ColliderMassProperties, ExternalImpulse, ImpulseJoint,
+    RevoluteJointBuilder, RigidBody, Sensor,
 };
 
 #[derive(Bundle)]
@@ -21,9 +21,14 @@ pub struct BoneBundle {
     rigid_body: RigidBody,
     external_impulse: ExternalImpulse,
     mass: AdditionalMassProperties,
+    collider_mass: ColliderMassProperties,
 }
 impl BoneBundle {
-    pub fn spawn(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
+    pub fn spawn(
+        commands: &mut Commands,
+        joints: [Entity; 2],
+        joint_pos: [Vec2; 2],
+    ) -> (Entity, Vec2) {
         let [a_pos, b_pos] = joint_pos;
 
         // Create joint
@@ -32,9 +37,10 @@ impl BoneBundle {
         let len = ab.length();
         let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
         let z_rot = x * f32::acos(ab.y / len);
+        let mid = a_pos + dir;
 
         let bone_ent = commands
-            .spawn(BoneBundle::new(a_pos + dir))
+            .spawn(BoneBundle::new(mid))
             .with_children(|p| {
                 p.spawn(BoneDisplayBundle::new(len, z_rot));
             })
@@ -47,7 +53,7 @@ impl BoneBundle {
 
         commands.get_entity(joints[0]).unwrap().add_child(axel_a);
         commands.get_entity(joints[1]).unwrap().add_child(axel_b);
-        return bone_ent;
+        return (bone_ent, mid);
     }
 
     pub fn new(translation: Vec2) -> Self {
@@ -59,6 +65,7 @@ impl BoneBundle {
             rigid_body: RigidBody::Dynamic,
             external_impulse: ExternalImpulse::default(),
             mass: AdditionalMassProperties::Mass(0.5),
+            collider_mass: ColliderMassProperties::Density(0.2),
         };
     }
 }

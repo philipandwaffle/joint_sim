@@ -197,7 +197,7 @@ fn bone_test_organism() -> OrganismBuilder {
 }
 
 fn get_runner_builder() -> OrganismBuilder {
-    let brain_structure = vec![3, 3];
+    let brain_structure = vec![6, 6];
     let joint_pos = vec![
         vec2(-20.0, 80.0),
         vec2(20.0, 80.0),
@@ -229,10 +229,10 @@ fn get_runner_builder() -> OrganismBuilder {
         [3, 4],
     ];
     let muscles = vec![
-        [5, 2],
-        // [5, 3],
-        // [6, 3],
-        [6, 4],
+        // [7, 5],
+        // [8, 6],
+        [5, 0],
+        [6, 0],
     ];
 
     return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);

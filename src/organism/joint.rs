@@ -4,8 +4,8 @@ use bevy_prototype_lyon::{
     shapes,
 };
 use bevy_rapier2d::prelude::{
-    AdditionalMassProperties, Ccd, Collider, Damping, ExternalImpulse, Friction, GravityScale,
-    LockedAxes, RigidBody,
+    AdditionalMassProperties, Ccd, Collider, ColliderMassProperties, Damping, ExternalImpulse,
+    Friction, GravityScale, LockedAxes, RigidBody,
 };
 
 // Bundle for spawning an organisms joint
@@ -14,6 +14,7 @@ pub struct JointBundle {
     joint: Joint,
     rigid_body: RigidBody,
     mass: AdditionalMassProperties,
+    collider_mass: ColliderMassProperties,
     external_impulse: ExternalImpulse,
     damping: Damping,
     friction: Friction,
@@ -77,6 +78,7 @@ impl Default for JointBundle {
             joint: Joint,
             rigid_body: RigidBody::Dynamic,
             mass: AdditionalMassProperties::Mass(mass),
+            collider_mass: ColliderMassProperties::Density(0.2),
             external_impulse: ExternalImpulse::default(),
             damping: Damping {
                 linear_damping: starting_damping,
