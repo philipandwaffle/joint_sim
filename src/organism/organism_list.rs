@@ -122,7 +122,7 @@ pub fn update_muscles(
         // Loop through each muscle
         for muscle in o.muscles.iter() {
             // Get joints making up muscle
-            match muscles.get_many_mut(muscle.joints) {
+            match muscles.get_many_mut(muscle.bones) {
                 Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
                     // Apply impulse to joints
                     let dir = b_t.translation.truncate() - a_t.translation.truncate();
@@ -176,7 +176,7 @@ pub fn update_brains(
 
         // Gather local and push to stimuli vec
         for m in o.muscles.iter() {
-            match joints.get(m.joints[0]) {
+            match joints.get(m.bones[0]) {
                 Ok(j) => {
                     // Get joint rotation
                     stimuli.push(get_z_rot(j.rotation));

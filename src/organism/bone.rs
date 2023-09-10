@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::{
     math::vec2,
     prelude::{
-        default, BuildChildren, Bundle, Color, Commands, ComputedVisibility, Entity,
+        default, BuildChildren, Bundle, Color, Commands, Component, ComputedVisibility, Entity,
         GlobalTransform, Quat, SpatialBundle, Transform, Vec2, Vec3,
     },
     transform::TransformBundle,
@@ -13,18 +13,39 @@ use bevy_prototype_lyon::{
     shapes,
 };
 use bevy_rapier2d::prelude::{
-    Collider, ImpulseJoint, LockedAxes, RevoluteJointBuilder, RigidBody, Sensor,
+    AdditionalMassProperties, Collider, ExternalImpulse, ImpulseJoint, LockedAxes,
+    RevoluteJointBuilder, RigidBody, Sensor,
 };
 
 use super::joint::JointBundle;
 
 #[derive(Bundle)]
-pub struct BoneBundle {}
+pub struct BoneBundle {
+    bone: Bone,
+    spatial_bundle: SpatialBundle,
+    rigid_body: RigidBody,
+    external_impulse: ExternalImpulse,
+    mass: AdditionalMassProperties,
+}
+impl BoneBundle {
+    pub fn new(translation: Vec2) -> Self {
+        return Self {
+            bone: Bone,
+            spatial_bundle: SpatialBundle::from_transform(Transform::from_translation(
+                translation.extend(-0.1),
+            )),
+            rigid_body: RigidBody::Dynamic,
+            external_impulse: ExternalImpulse::default(),
+            mass: AdditionalMassProperties::Mass(0.5),
+        };
+    }
+}
 
+#[derive(Component)]
 pub struct Bone;
 impl Bone {
     // Development fn for testing new bone
-    pub fn new(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
+    pub fn spawn(commands: &mut Commands, joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Entity {
         let [a_pos, b_pos] = joint_pos;
 
         // Create joint
@@ -42,6 +63,7 @@ impl Bone {
 
         let bone_ent = commands
             .spawn((
+                Bone,
                 RigidBody::Dynamic,
                 SpatialBundle::from_transform(Transform::from_translation(
                     (a_pos + dir).extend(-0.1),

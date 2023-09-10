@@ -184,7 +184,7 @@ impl OrganismBuilder {
 }
 
 // Container for the components making up an organism
-#[derive(Resource, Clone, Serialize, Deserialize)]
+#[derive(Resource, Clone)]
 pub struct Organism {
     pub brain: Brain,
     pub genome: Genome,

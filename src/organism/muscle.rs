@@ -1,21 +1,40 @@
-use bevy::prelude::{Entity, Vec2};
-use serde::{Deserialize, Serialize};
+use bevy::prelude::{Entity, Vec2, Commands, Component, Query, Transform, With};
+use bevy_prototype_lyon::{prelude::ShapeBundle, shapes};
 
+use super::{ bone::Bone};
+
+pub struct MuscleBundle {
+    shape_bundle: ShapeBundle,
+}
+impl MuscleBundle {
+    pub fn new(commands: &mut Commands, bones: Query<&Transform, With<Bone>> , muscles: [Entity; 2]) -> Entity {
+        
+        commands.get_entity(muscles[0]).unwrap().;
+        let bone_rect = shapes::Rectangle {
+            extents: vec2(bone_width, len),
+            origin: shapes::RectangleOrigin::Center,
+        };
+    }
+}
 // Muscle containing 2 joints and length data
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Component)]
 pub struct Muscle {
-    pub joints: [Entity; 2],
+    pub bones: [Entity; 2],
     pub base_len: f32,
     pub len_modifier: f32,
 }
 impl Muscle {
     // Create a new muscle
-    pub fn new(joints: [Entity; 2], joint_pos: [Vec2; 2]) -> Self {
+    pub fn new(bones: [Entity; 2], joint_pos: [Vec2; 2]) -> Self {
         return Self {
-            joints: joints,
+            bones,
             base_len: (joint_pos[1] - joint_pos[0]).length(),
             len_modifier: 1.0,
         };
+    }
+
+    pub fn spawn(){
+
     }
 
     // Get the target length of the muscle
