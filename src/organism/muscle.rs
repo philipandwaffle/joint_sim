@@ -1,18 +1,13 @@
 use bevy::{
-    core_pipeline::experimental::taa::TemporalAntiAliasSettings,
     math::vec2,
     prelude::{
-        default, BuildChildren, Bundle, Color, Commands, Component, Entity, Quat, Query, Transform,
-        Vec2, With,
+        default, BuildChildren, Bundle, Color, Commands, Component, Entity, Quat, Transform, Vec2,
     },
 };
 use bevy_prototype_lyon::{
-    prelude::{tess::geom::Translation, Fill, GeometryBuilder, ShapeBundle},
+    prelude::{Fill, GeometryBuilder, ShapeBundle},
     shapes,
 };
-
-use super::bone::Bone;
-
 #[derive(Bundle)]
 pub struct MuscleBundle {
     shape_bundle: ShapeBundle,

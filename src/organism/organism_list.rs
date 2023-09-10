@@ -5,7 +5,6 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::Fill;
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
-use serde::{Deserialize, Serialize};
 
 use crate::config::structs::GenerationConfig;
 
@@ -128,7 +127,7 @@ pub fn update_muscles(
                 let ab = b_pos - a_pos;
                 let len = ab.length();
                 let target_len = m.get_target_len();
-                let diff = len - target_len;
+                let diff = target_len - len;
 
                 let mut foo = 0.0;
                 if diff > 0.0 {
@@ -138,16 +137,12 @@ pub fn update_muscles(
                     foo = -1.0;
                     f.color = Color::BLUE;
                 }
-                let modifier = 200.0;
+                let modifier = 2000.0;
 
                 if diff != 0.0 {
-                    a_ei.impulse = ab.normalize() * foo * modifier;
-                    b_ei.impulse = -ab.normalize() * foo * modifier;
+                    a_ei.impulse = -ab.normalize() * foo * modifier;
+                    b_ei.impulse = ab.normalize() * foo * modifier;
                 }
-                // if diff != 0.0 {
-                //     a_ei.impulse = ab * diff * modifier;
-                //     b_ei.impulse = ab * -diff * modifier;
-                // }
 
                 let r = quat_z_rot(a_t.rotation);
                 t.rotation = Quat::from_rotation_z(vec2_z_rot(b_pos, a_pos) - r);

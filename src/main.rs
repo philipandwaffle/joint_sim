@@ -26,7 +26,7 @@ mod organism;
 
 fn main() {
     let profiling_mode = true;
-    let debug_mode = false;
+    let debug_mode = true;
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {
