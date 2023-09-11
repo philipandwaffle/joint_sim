@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::thread;
 use std::time::SystemTime;
 
 use bevy::math::{vec2, vec3};
@@ -27,13 +28,26 @@ mod generation;
 mod organism;
 
 fn main() {
-    let v = vec2(0.0, 1.0);
-    println!("{:?}", rotate_vec(v, PI * 0.5));
+    let mut handles = vec![];
+    for i in 0..10 {
+        handles.push(thread::spawn(move || {
+            if i == 0 {
+                for i in 0..10000 {
+                    i * i;
+                }
+            }
+            println!("{:?}", i);
+        }));
+    }
+
+    for h in handles {
+        h.join();
+    }
 
     // return;
 
     let profiling_mode = true;
-    let debug_mode = true;
+    let debug_mode = false;
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {

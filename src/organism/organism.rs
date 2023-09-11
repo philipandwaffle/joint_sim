@@ -218,7 +218,11 @@ impl Organism {
     }
 
     // Take input stimuli and tick the brain
-    pub fn process_stimuli(&mut self, mut stimuli: Vec<f32>, muscles: &mut Query<&mut Muscle>) {
+    pub fn process_stimuli(
+        &self,
+        stimuli: &mut Vec<f32>,
+        // muscles: &mut Query<&mut Muscle>,
+    ) -> Vec<f32> {
         // normalise the 0th input, time
         let a = self.genome.internal_clock.val;
         let x = stimuli[0] / a;
@@ -226,9 +230,10 @@ impl Organism {
 
         // Make brain process stimuli
         let brain_out = self.brain.feed_forward(stimuli);
-        for i in 0..self.muscles.len() {
-            muscles.get_mut(self.muscles[i]).unwrap().len_modifier = brain_out[i];
-        }
+        // for i in 0..self.muscles.len() {
+        //     muscles.get_mut(self.muscles[i]).unwrap().len_modifier = brain_out[i];
+        // }
+        return brain_out;
     }
 
     // // Process stimuli and alter muscles

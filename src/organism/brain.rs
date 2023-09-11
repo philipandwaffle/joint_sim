@@ -161,11 +161,11 @@ impl Brain {
         self.memory = memory;
     }
 
-    pub fn feed_forward(&mut self, mut external_stimuli: Vec<f32>) -> Vec<f32> {
+    pub fn feed_forward(&self, external_stimuli: &mut Vec<f32>) -> Vec<f32> {
         // Create input from memory
         let mut input = self.memory.clone();
         // Append external stimuli to memory
-        input.append(&mut external_stimuli);
+        input.append(external_stimuli);
 
         let in_len = input.len();
         let len = self.weights[0].0.shape().0;
@@ -179,7 +179,7 @@ impl Brain {
         let output = y.iter().map(|x| *x).collect::<Vec<f32>>();
 
         // Set memory to previous output
-        self.set_memory(output.clone());
+        // self.set_memory(output.clone());
 
         return output;
     }

@@ -133,7 +133,7 @@ fn get_next_generation_builders(
 fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     let mut builders = vec![];
     for _ in 0..config.num_organisms {
-        builders.push(muscle_test_organism());
+        builders.push(get_runner_builder());
     }
     let ol = OrganismList {
         builders: builders,

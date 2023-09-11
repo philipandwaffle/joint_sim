@@ -1,14 +1,16 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, sync::Arc, thread};
 
 use bevy::{
     math::vec2,
     prelude::{Color, Commands, Quat, Query, Res, ResMut, Resource, Transform, With, Without},
     time::Time,
+    utils::Instant,
 };
+use bevy_inspector_egui::egui::mutex::Mutex;
 use bevy_prototype_lyon::prelude::Fill;
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 
-use crate::config::structs::GenerationConfig;
+use crate::{config::structs::GenerationConfig, organism::bone};
 
 use super::{
     bone::Bone,
@@ -120,6 +122,7 @@ pub fn update_muscles(
     mut bones: Query<(&mut ExternalImpulse, &Transform), With<Bone>>,
     mut muscles: Query<(&Muscle, &mut Transform, &mut Fill), Without<Bone>>,
 ) {
+    let now = Instant::now();
     for (m, mut t, mut f) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
             Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
@@ -140,12 +143,12 @@ pub fn update_muscles(
                     foo = -1.0;
                     f.color = Color::BLUE;
                 }
-                let modifier = 2000.0;
+                let modifier = 10.0;
                 // let modifier = 0.0;
 
                 if diff != 0.0 {
-                    a_ei.impulse = -ab.normalize() * foo * modifier;
-                    b_ei.impulse = ab.normalize() * foo * modifier;
+                    a_ei.impulse = ab * foo * modifier;
+                    b_ei.impulse = -ab * foo * modifier;
                 }
 
                 let r = quat_z_rot(a_t.rotation);
@@ -160,6 +163,7 @@ pub fn update_muscles(
             }
         }
     }
+    println!("update_muscles took {:?}", now.elapsed());
 }
 
 fn readout(a: &Transform, b: &Transform) {
@@ -179,19 +183,111 @@ fn readout(a: &Transform, b: &Transform) {
 }
 
 // Make brains process stimuli
-pub fn update_brains(
+pub fn update_brains2(
     mut ol: ResMut<OrganismList>,
-    config: Res<GenerationConfig>,
+    gc: Res<GenerationConfig>,
     mut muscles: Query<&mut Muscle>,
     bones: Query<&Transform, With<Bone>>,
 ) {
+    // bones.iter()
+    let now = Instant::now();
+
     // Short circuit if organisms haven't spawned;
     if !ol.is_spawned {
         return;
     }
 
     // Gather global
-    let elapsed_seconds = config.timer.elapsed_secs();
+    let elapsed_seconds = gc.timer.elapsed_secs();
+    let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
+    external_stimuli.push(elapsed_seconds);
+
+    let num_organisms = gc.num_organisms;
+    let num_threads = 12;
+    let batch_size = num_organisms / num_threads;
+    let mut rem = num_organisms % num_threads;
+
+    let mut org_bone_data = Vec::with_capacity(num_organisms);
+    for o in ol.organisms.iter() {
+        let mut bone_data = Vec::with_capacity(o.bones.len());
+        for b in o.bones.iter() {
+            match bones.get(*b) {
+                Ok(t) => bone_data.push(quat_z_rot(t.rotation)),
+                Err(_) => return,
+            }
+        }
+        org_bone_data.push(bone_data);
+    }
+
+    let mut handles = Vec::with_capacity(num_threads);
+
+    let mut cur_start = 0;
+    for i in 0..num_threads {
+        let mut org_bone_data = org_bone_data.clone();
+        let orgs = ol.organisms.clone();
+        let es_clone = external_stimuli.clone();
+
+        let mut cur_batch_size = batch_size;
+        if rem != 0 {
+            cur_batch_size += 1;
+            rem -= 1;
+        }
+        let start = cur_start;
+        cur_start += cur_batch_size;
+        let end = cur_start;
+
+        let handle = thread::spawn(move || {
+            println!("starting thread: {:?}", i);
+            let mut brain_outs = Vec::with_capacity(end - start);
+
+            for i in start..end {
+                let mut stimuli = es_clone.clone();
+                stimuli.append(&mut org_bone_data[i]);
+
+                let o = &orgs[i];
+                brain_outs.push(o.process_stimuli(&mut stimuli));
+            }
+            println!("finished thread: {:?}", i);
+            (start, end, brain_outs)
+        });
+        handles.push(handle);
+    }
+
+    for h in handles {
+        match h.join() {
+            Ok((start, end, brain_outs)) => {
+                println!("joining: {:?}, {:?}", start, end);
+                for i in start..end {
+                    let o = &mut ol.organisms[i];
+
+                    for j in 0..o.muscles.len() {
+                        muscles.get_mut(o.muscles[j]).unwrap().len_modifier =
+                            brain_outs[i - start][j];
+                    }
+                    o.brain.memory = brain_outs[i - start].clone();
+                }
+            }
+            Err(err) => todo!(),
+        }
+    }
+
+    println!("update_brains took {:?}", now.elapsed());
+}
+pub fn update_brains(
+    mut ol: ResMut<OrganismList>,
+    gc: Res<GenerationConfig>,
+    mut muscles: Query<&mut Muscle>,
+    bones: Query<&Transform, With<Bone>>,
+) {
+    let now = Instant::now();
+
+    // Short circuit if organisms haven't spawned;
+    if !ol.is_spawned {
+        return;
+    }
+
+    // Gather global
+    let elapsed_seconds = gc.timer.elapsed_secs();
     let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
     external_stimuli.push(elapsed_seconds);
 
@@ -211,6 +307,11 @@ pub fn update_brains(
             }
         }
         // Process stimuli
-        o.process_stimuli(stimuli.clone(), &mut muscles);
+        let brain_out = o.process_stimuli(&mut stimuli);
+        for i in 0..brain_out.len() {
+            muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i].clone();
+        }
     }
+
+    println!("update_brains took {:?}", now.elapsed());
 }
