@@ -6,7 +6,7 @@ use bevy_prototype_lyon::{
     prelude::{Fill, GeometryBuilder, ShapeBundle},
     shapes,
 };
-use bevy_rapier2d::prelude::{Collider, RigidBody};
+use bevy_rapier2d::prelude::{Collider, Friction, RigidBody};
 
 use crate::config::structs::GenerationConfig;
 
@@ -45,12 +45,13 @@ pub fn spawn_environment(mut commands: Commands, config: Res<GenerationConfig>) 
                 path: GeometryBuilder::build_as(&platform),
                 transform: Transform::from_translation(vec3(
                     (width / 2.0) - 200.0,
-                    (i as f32) * vertical_sep,
+                    ((i as f32) * vertical_sep),
                     0.0,
                 )),
                 ..default()
             },
             Fill::color(Color::BLACK),
+            Friction::coefficient(0.7),
             RigidBody::Fixed,
             Collider::cuboid(width * 0.5, height * 0.5),
         ));

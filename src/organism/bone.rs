@@ -67,7 +67,7 @@ impl BoneBundle {
             }),
             rigid_body: RigidBody::Dynamic,
             external_impulse: ExternalImpulse::default(),
-            mass: AdditionalMassProperties::Mass(0.5),
+            mass: AdditionalMassProperties::Mass(1.0),
         };
     }
 }

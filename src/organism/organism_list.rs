@@ -55,7 +55,7 @@ impl OrganismList {
 
     // Spawn every organism using the builders
     pub fn spawn(&mut self, commands: &mut Commands, vertical_sep: f32) {
-        let mut cur_translation = vec2(0.0, vertical_sep * 0.5);
+        let mut cur_translation = vec2(0.0, vertical_sep * 0.25);
 
         // Pre-allocate organisms vec
         self.organisms = Vec::with_capacity(self.builders.len());
@@ -63,8 +63,8 @@ impl OrganismList {
         // Spawn and push organism to vec
         for i in 0..self.builders.len() {
             self.organisms
-                // .push(self.builders[i].spawn(commands, cur_translation, i as u32));
-                .push(self.builders[i].spawn(commands, vec2(0.0, 0.0), i as u32));
+                .push(self.builders[i].spawn(commands, cur_translation, i as u32));
+            // .push(self.builders[i].spawn(commands, vec2(0.0, 0.0), i as u32));
             cur_translation.y += vertical_sep;
         }
 
@@ -142,12 +142,12 @@ pub fn update_muscles(
                     foo = -1.0;
                     f.color = Color::BLUE;
                 }
-                let modifier = 10.0;
+                let modifier = 20.0;
                 // let modifier = 0.0;
 
                 if diff != 0.0 {
-                    a_ei.impulse = ab * foo * modifier;
-                    b_ei.impulse = -ab * foo * modifier;
+                    a_ei.impulse = ab.normalize() * foo * modifier;
+                    b_ei.impulse = -ab.normalize() * foo * modifier;
                 }
 
                 let r = quat_z_rot(a_t.rotation);

@@ -29,7 +29,7 @@ mod generation;
 mod organism;
 
 fn main() {
-    let profiling_mode = true;
+    let profiling_mode = false;
     let debug_mode = false;
 
     let mut app = App::new();
@@ -60,7 +60,8 @@ fn main() {
     )
     .add_plugins((
         ShapePlugin,
-        RapierPhysicsPlugin::<ColliderLayerHook>::default(),
+        RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+        // RapierPhysicsPlugin::<ColliderLayerHook>::pixels_per_meter(100.0),
         ControlPlugin,
         GenerationPlugin,
         OrganismPlugin,

@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use self::environment::spawn_environment;
 use crate::{
-    config::structs::GenerationConfig,
+    config::structs::{GenerationConfig, SaveConfig},
     controls::control_state::ControlState,
     organism::{
         brain, joint::Joint, muscle, organism::OrganismBuilder, organism_list::OrganismList,
@@ -44,6 +44,7 @@ impl Plugin for GenerationPlugin {
 pub fn handle_generation(
     mut commands: Commands,
     mut gc: ResMut<GenerationConfig>,
+    sc: Res<SaveConfig>,
     mut ol: ResMut<OrganismList>,
     time: Res<Time>,
     joint_transforms: Query<&Transform, With<Joint>>,
@@ -71,13 +72,15 @@ pub fn handle_generation(
         gc.timer.unpause();
         gc.unfreeze_flag = true;
 
+        if gc.cur_generation % sc.save_rate == 0 {
+            cs.save = true;
+        }
         let new_builders = get_next_generation_builders(&mut ol, &mut gc, &joint_transforms);
 
         // Spawn new generation
         ol.despawn(&mut commands);
         ol.builders = new_builders;
-        ol.spawn(&mut commands, gc.vertical_sep);
-        cs.save = true;
+        ol.spawn(&mut commands, gc.vertical_sep);        
     }
 }
 
@@ -133,7 +136,7 @@ fn get_next_generation_builders(
 fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     let mut builders = vec![];
     for _ in 0..config.num_organisms {
-        builders.push(get_runner_builder());
+        builders.push(get_runner_v2());
     }
     let ol = OrganismList {
         builders: builders,
@@ -144,33 +147,20 @@ fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
     commands.insert_resource(ol);
 }
 
-fn get_simple_builder() -> OrganismBuilder {
-    let brain_structure = vec![6, 6];
+fn get_runner_v2() -> OrganismBuilder {
+    let brain_structure = vec![10, 10, 10];
     let joint_pos = vec![
-        vec2(-20.0, 60.0),
-        vec2(20.0, 60.0),
-        vec2(-40.0, 40.0),
-        vec2(0.0, 40.0),
-        vec2(40.0, 40.0),
-        vec2(-60.0, 5.0),
-        vec2(-20.0, 5.0),
-        vec2(20.0, 5.0),
-        vec2(60.0, 5.0),
+        vec2(0.0, 65.0),
+        vec2(-45.0, 40.0),
+        vec2(45.0, 40.0),
+        vec2(-45.0, 0.0),
+        vec2(-15.0, 10.0),
+        vec2(15.0, 10.0),
+        vec2(45.0, 0.0),
     ];
-    let bones = vec![
-        [0, 1],
-        [2, 0],
-        [0, 3],
-        [1, 3],
-        [4, 1],
-        [3, 2],
-        [2, 4],
-        [5, 0],
-        [6, 3],
-        [7, 3],
-        [8, 1],
-    ];
-    let muscles = vec![[5, 2], [6, 3], [7, 3], [8, 4]];
+
+    let bones = vec![[1, 0], [0, 2], [2, 1], [3, 1], [4, 0], [5, 0], [6, 2]];
+    let muscles = vec![[3, 2], [4, 0], [5, 1], [6, 2]];
 
     return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
 }

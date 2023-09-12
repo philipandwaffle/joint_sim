@@ -38,6 +38,7 @@ impl GenerationConfig {
 #[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
 pub struct SaveConfig {
     pub save_folder: String,
+    pub save_rate: u32,
 }
 
 // defunct for now
