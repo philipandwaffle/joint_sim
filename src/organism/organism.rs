@@ -50,7 +50,7 @@ impl OrganismBuilder {
     }
 
     // Spawn the organism with an translation
-    pub fn spawn(&self, commands: &mut Commands, translation: Vec2) -> Organism {
+    pub fn spawn(&self, commands: &mut Commands, translation: Vec2, layer: u32) -> Organism {
         let num_muscles = self.muscles.len();
 
         // Pre-allocate vectors
@@ -62,7 +62,7 @@ impl OrganismBuilder {
         // Create a joint for each position supplied
         for jp in self.joint_pos.iter() {
             let ent = commands
-                .spawn(JointBundle::from_translation(translation + *jp))
+                .spawn(JointBundle::from_translation(translation + *jp, layer))
                 .id();
             joint_ents.push(ent);
         }
@@ -229,21 +229,7 @@ impl Organism {
         stimuli[0] = (2.0 * x.rem_euclid(a) / a) - 1.0;
 
         // Make brain process stimuli
-        let brain_out = self.brain.feed_forward(stimuli);
-        // for i in 0..self.muscles.len() {
-        //     muscles.get_mut(self.muscles[i]).unwrap().len_modifier = brain_out[i];
-        // }
+        let brain_out = self.brain.process_stimuli(stimuli);
         return brain_out;
     }
-
-    // // Process stimuli and alter muscles
-    // fn tick_brain(&mut self, stimuli: Vec<f32>) {
-    //     // Calculate brain out
-    //     let brain_out = self.brain.feed_forward(stimuli);
-
-    //     // Alter muscle length
-    //     for i in 0..brain_out.len() {
-    //         self.muscles[i].len_modifier = brain_out[i];
-    //     }
-    // }
 }

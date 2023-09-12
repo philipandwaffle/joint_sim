@@ -8,7 +8,7 @@ pub type Matrix = DMatrix<f32>;
 
 // Wrapper struct so that the nalgebra crate can be extended
 #[derive(Clone)]
-pub struct MxNMatrix(pub DMatrix<f32>);
+pub struct MxNMatrix(pub Matrix);
 impl Serialize for MxNMatrix {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -153,19 +153,19 @@ impl Brain {
         debug_matrix_shapes(&self.biases, &"biases");
     }
 
-    // Set the memory used for feed forward
-    fn set_memory(&mut self, memory: Vec<f32>) {
-        if self.memory.capacity() != memory.capacity() {
-            panic!("Creature trying to remember more that allocated");
-        }
-        self.memory = memory;
-    }
+    // // Set the memory used for feed forward
+    // fn set_memory(&mut self, memory: Vec<f32>) {
+    //     if self.memory.capacity() != memory.capacity() {
+    //         panic!("Creature trying to remember more that allocated");
+    //     }
+    //     self.memory = memory;
+    // }
 
-    pub fn feed_forward(&self, external_stimuli: &mut Vec<f32>) -> Vec<f32> {
+    pub fn process_stimuli(&self, external_stimuli: &Vec<f32>) -> Vec<f32> {
         // Create input from memory
         let mut input = self.memory.clone();
         // Append external stimuli to memory
-        input.append(external_stimuli);
+        input.extend(external_stimuli);
 
         let in_len = input.len();
         let len = self.weights[0].0.shape().0;
@@ -175,26 +175,16 @@ impl Brain {
 
         // Feed forward input
         let x = Matrix::from_vec(1, in_len, input);
-        let y = self.step_forward(x, 0);
+        let mut y = x;
+        for i in 0..self.weights.len() {
+            y = y * &self.weights[i].0 + &self.biases[i].0;
+            for cell in y.iter_mut() {
+                *cell = cell.tanh();
+            }
+        }
         let output = y.iter().map(|x| *x).collect::<Vec<f32>>();
 
-        // Set memory to previous output
-        // self.set_memory(output.clone());
-
         return output;
-    }
-
-    // Process a layer
-    fn step_forward(&self, x: Matrix, i: usize) -> Matrix {
-        let mut res = x * self.weights[i].0.clone() + self.biases[i].0.clone();
-        for cell in res.iter_mut() {
-            *cell = f32::tanh(cell.clone());
-        }
-        if i == self.weights.len() - 1 {
-            return res;
-        } else {
-            return self.step_forward(res, i + 1);
-        }
     }
 
     // Mutate brain based on learning rate and learning factor

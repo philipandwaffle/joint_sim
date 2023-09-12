@@ -1,16 +1,14 @@
-use std::{f32::consts::PI, sync::Arc, thread};
+use std::f32::consts::PI;
 
 use bevy::{
     math::vec2,
     prelude::{Color, Commands, Quat, Query, Res, ResMut, Resource, Transform, With, Without},
     time::Time,
-    utils::Instant,
 };
-use bevy_inspector_egui::egui::mutex::Mutex;
 use bevy_prototype_lyon::prelude::Fill;
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 
-use crate::{config::structs::GenerationConfig, organism::bone};
+use crate::config::structs::GenerationConfig;
 
 use super::{
     bone::Bone,
@@ -65,7 +63,8 @@ impl OrganismList {
         // Spawn and push organism to vec
         for i in 0..self.builders.len() {
             self.organisms
-                .push(self.builders[i].spawn(commands, cur_translation));
+                // .push(self.builders[i].spawn(commands, cur_translation, i as u32));
+                .push(self.builders[i].spawn(commands, vec2(0.0, 0.0), i as u32));
             cur_translation.y += vertical_sep;
         }
 
@@ -122,7 +121,7 @@ pub fn update_muscles(
     mut bones: Query<(&mut ExternalImpulse, &Transform), With<Bone>>,
     mut muscles: Query<(&Muscle, &mut Transform, &mut Fill), Without<Bone>>,
 ) {
-    let now = Instant::now();
+    // let now = Instant::now();
     for (m, mut t, mut f) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
             Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
@@ -163,7 +162,7 @@ pub fn update_muscles(
             }
         }
     }
-    println!("update_muscles took {:?}", now.elapsed());
+    // println!("update_muscles took {:?}", now.elapsed());
 }
 
 fn readout(a: &Transform, b: &Transform) {
@@ -182,104 +181,13 @@ fn readout(a: &Transform, b: &Transform) {
     );
 }
 
-// Make brains process stimuli
-pub fn update_brains2(
-    mut ol: ResMut<OrganismList>,
-    gc: Res<GenerationConfig>,
-    mut muscles: Query<&mut Muscle>,
-    bones: Query<&Transform, With<Bone>>,
-) {
-    // bones.iter()
-    let now = Instant::now();
-
-    // Short circuit if organisms haven't spawned;
-    if !ol.is_spawned {
-        return;
-    }
-
-    // Gather global
-    let elapsed_seconds = gc.timer.elapsed_secs();
-    let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
-    external_stimuli.push(elapsed_seconds);
-
-    let num_organisms = gc.num_organisms;
-    let num_threads = 12;
-    let batch_size = num_organisms / num_threads;
-    let mut rem = num_organisms % num_threads;
-
-    let mut org_bone_data = Vec::with_capacity(num_organisms);
-    for o in ol.organisms.iter() {
-        let mut bone_data = Vec::with_capacity(o.bones.len());
-        for b in o.bones.iter() {
-            match bones.get(*b) {
-                Ok(t) => bone_data.push(quat_z_rot(t.rotation)),
-                Err(_) => return,
-            }
-        }
-        org_bone_data.push(bone_data);
-    }
-
-    let mut handles = Vec::with_capacity(num_threads);
-
-    let mut cur_start = 0;
-    for i in 0..num_threads {
-        let mut org_bone_data = org_bone_data.clone();
-        let orgs = ol.organisms.clone();
-        let es_clone = external_stimuli.clone();
-
-        let mut cur_batch_size = batch_size;
-        if rem != 0 {
-            cur_batch_size += 1;
-            rem -= 1;
-        }
-        let start = cur_start;
-        cur_start += cur_batch_size;
-        let end = cur_start;
-
-        let handle = thread::spawn(move || {
-            println!("starting thread: {:?}", i);
-            let mut brain_outs = Vec::with_capacity(end - start);
-
-            for i in start..end {
-                let mut stimuli = es_clone.clone();
-                stimuli.append(&mut org_bone_data[i]);
-
-                let o = &orgs[i];
-                brain_outs.push(o.process_stimuli(&mut stimuli));
-            }
-            println!("finished thread: {:?}", i);
-            (start, end, brain_outs)
-        });
-        handles.push(handle);
-    }
-
-    for h in handles {
-        match h.join() {
-            Ok((start, end, brain_outs)) => {
-                println!("joining: {:?}, {:?}", start, end);
-                for i in start..end {
-                    let o = &mut ol.organisms[i];
-
-                    for j in 0..o.muscles.len() {
-                        muscles.get_mut(o.muscles[j]).unwrap().len_modifier =
-                            brain_outs[i - start][j];
-                    }
-                    o.brain.memory = brain_outs[i - start].clone();
-                }
-            }
-            Err(err) => todo!(),
-        }
-    }
-
-    println!("update_brains took {:?}", now.elapsed());
-}
 pub fn update_brains(
     mut ol: ResMut<OrganismList>,
     gc: Res<GenerationConfig>,
     mut muscles: Query<&mut Muscle>,
     bones: Query<&Transform, With<Bone>>,
 ) {
-    let now = Instant::now();
+    // let now = Instant::now();
 
     // Short circuit if organisms haven't spawned;
     if !ol.is_spawned {
@@ -290,28 +198,27 @@ pub fn update_brains(
     let elapsed_seconds = gc.timer.elapsed_secs();
     let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
     external_stimuli.push(elapsed_seconds);
-
-    // Process stimuli for each organism
+    // let mut total_brain_process = 0;
     for o in ol.organisms.iter_mut() {
         let mut stimuli = external_stimuli.clone();
-
         for b in o.bones.iter() {
-            match bones.get(b.clone()) {
-                Ok(t) => {
-                    stimuli.push(quat_z_rot(t.rotation));
-                }
-                Err(_) => {
-                    //TODO this is dumb make system only run when joints are spawned
-                    return;
-                }
+            match bones.get(*b) {
+                Ok(t) => stimuli.push(quat_z_rot(t.rotation)),
+                Err(_) => return,
             }
         }
+
         // Process stimuli
+        // let process_now = Instant::now();
         let brain_out = o.process_stimuli(&mut stimuli);
+        // total_brain_process += process_now.elapsed().as_micros();
+
         for i in 0..brain_out.len() {
-            muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i].clone();
+            muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i];
         }
+        o.brain.memory = brain_out;
     }
 
-    println!("update_brains took {:?}", now.elapsed());
+    // println!("processing stimuli took {:?}", total_brain_process);
+    // println!("update_brains took {:?}", now.elapsed());
 }

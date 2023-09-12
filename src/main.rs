@@ -12,6 +12,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use collider_layer::ColliderLayerHook;
 use controls::ControlPlugin;
 use generation::GenerationPlugin;
 use organism::joint::JointBundle;
@@ -28,24 +29,6 @@ mod generation;
 mod organism;
 
 fn main() {
-    let mut handles = vec![];
-    for i in 0..10 {
-        handles.push(thread::spawn(move || {
-            if i == 0 {
-                for i in 0..10000 {
-                    i * i;
-                }
-            }
-            println!("{:?}", i);
-        }));
-    }
-
-    for h in handles {
-        h.join();
-    }
-
-    // return;
-
     let profiling_mode = true;
     let debug_mode = false;
 
@@ -77,7 +60,7 @@ fn main() {
     )
     .add_plugins((
         ShapePlugin,
-        RapierPhysicsPlugin::<NoUserData>::default(),
+        RapierPhysicsPlugin::<ColliderLayerHook>::default(),
         ControlPlugin,
         GenerationPlugin,
         OrganismPlugin,
@@ -100,44 +83,4 @@ fn main() {
     // app.add_systems(Startup, spawn_test_bone);
 
     app.run();
-}
-fn spawn_test_bone(mut commands: Commands) {
-    let a_pos = vec2(-100.0, 50.0);
-    let b_pos = vec2(100.0, 50.0);
-    let rect = shapes::Rectangle {
-        extents: vec2(100.0, 10.0),
-        ..default()
-    };
-
-    let bone = commands
-        .spawn((
-            RigidBody::Dynamic,
-            ShapeBundle {
-                path: GeometryBuilder::build_as(&rect),
-                transform: Transform::from_translation(vec3(0.0, 100.0, 0.0)),
-                ..default()
-            },
-            // Collider::ball(2.0),
-            Fill::color(Color::RED),
-            GravityScale(5.0),
-        ))
-        .id();
-
-    let a_rev_joint = RevoluteJointBuilder::new()
-        .local_anchor1(Vec2::new(0.0, 0.0))
-        .local_anchor2(Vec2::new(-50.0, 0.0))
-        .build();
-    let b_rev_joint = RevoluteJointBuilder::new()
-        .local_anchor1(Vec2::new(0.0, 0.0))
-        .local_anchor2(Vec2::new(50.0, 0.0))
-        .build();
-
-    let a = commands.spawn(JointBundle::from_translation(a_pos)).id();
-    let b = commands.spawn(JointBundle::from_translation(b_pos)).id();
-
-    let a_to_bone = commands.spawn(ImpulseJoint::new(a, a_rev_joint)).id();
-    let b_to_bone = commands.spawn(ImpulseJoint::new(b, b_rev_joint)).id();
-
-    commands.get_entity(bone).unwrap().add_child(a_to_bone);
-    commands.get_entity(bone).unwrap().add_child(b_to_bone);
 }
