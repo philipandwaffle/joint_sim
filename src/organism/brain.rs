@@ -67,7 +67,6 @@ impl<'de> Visitor<'de> for MxMMatrixVisitor {
                 None => break,
             }
         }
-        println!("{:?}", data);
 
         return Ok(MxNMatrix(Matrix::from_vec(shape[0], shape[1], data)));
     }

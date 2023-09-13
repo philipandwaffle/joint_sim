@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
-use std::thread;
 use std::time::SystemTime;
+use std::{env, thread};
 
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
@@ -29,6 +29,8 @@ mod generation;
 mod organism;
 
 fn main() {
+    env::set_var("RUST_BACKTRACE", "full");
+
     let profiling_mode = false;
     let debug_mode = false;
 
@@ -77,7 +79,7 @@ fn main() {
     if debug_mode {
         app.add_plugins((
             RapierDebugRenderPlugin::default(),
-            // WorldInspectorPlugin::new(),
+            WorldInspectorPlugin::new(),
         ));
     }
 

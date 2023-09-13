@@ -30,7 +30,7 @@ pub fn save_generation(
 
         let path = format!(
             "{}\\{}_gen{}.json",
-            sc.save_folder,
+            sc.folder,
             chrono::offset::Local::now()
                 .format("%d-%m-%Y_%H-%M")
                 .to_string(),

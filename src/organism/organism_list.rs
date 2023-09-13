@@ -55,7 +55,7 @@ impl OrganismList {
 
     // Spawn every organism using the builders
     pub fn spawn(&mut self, commands: &mut Commands, vertical_sep: f32) {
-        let mut cur_translation = vec2(0.0, vertical_sep * 0.25);
+        let mut cur_translation = vec2(0.0, vertical_sep * 0.15);
 
         // Pre-allocate organisms vec
         self.organisms = Vec::with_capacity(self.builders.len());

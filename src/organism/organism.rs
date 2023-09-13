@@ -213,7 +213,7 @@ impl Organism {
             commands.get_entity(*b).unwrap().despawn_recursive();
         }
         // for m in self.muscles.iter() {
-        //     commands.get_entity(*m).unwrap().despawn_recursive();
+        //     commands.get_entity(*m).unwrap().despawn();
         // }
     }
 

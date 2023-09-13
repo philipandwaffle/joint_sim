@@ -7,7 +7,7 @@ use bevy::{
     time::{Time, Timer, TimerMode},
 };
 use rand::distributions::{Distribution, Uniform};
-use std::time::Duration;
+use std::{fs::File, io::BufReader, time::Duration};
 
 use self::environment::spawn_environment;
 use crate::{
@@ -23,21 +23,12 @@ mod environment;
 pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(GenerationConfig {
-            num_organisms: 500,
-            vertical_sep: 200.0,
-            generation_duration: 20.0,
-            cur_generation: 0,
-            timer: Timer::new(Duration::from_secs(20), TimerMode::Once),
-            unfreeze_flag: true,
-            debug_flag: false,
-        })
-        .insert_resource(OrganismList::new())
-        .add_systems(Startup, (spawn_environment, setup_organism_list))
-        .add_systems(
-            Update,
-            handle_generation.run_if(resource_exists::<OrganismList>()),
-        );
+        app.insert_resource(OrganismList::new())
+            .add_systems(Startup, (spawn_environment, setup_organism_list))
+            .add_systems(
+                Update,
+                handle_generation.run_if(resource_exists::<OrganismList>()),
+            );
     }
 }
 
@@ -72,7 +63,7 @@ pub fn handle_generation(
         gc.timer.unpause();
         gc.unfreeze_flag = true;
 
-        if gc.cur_generation % sc.save_rate == 0 {
+        if gc.cur_generation % sc.rate == 0 {
             cs.save = true;
         }
         let new_builders = get_next_generation_builders(&mut ol, &mut gc, &joint_transforms);
@@ -80,7 +71,7 @@ pub fn handle_generation(
         // Spawn new generation
         ol.despawn(&mut commands);
         ol.builders = new_builders;
-        ol.spawn(&mut commands, gc.vertical_sep);        
+        ol.spawn(&mut commands, gc.vertical_sep);
     }
 }
 
@@ -133,11 +124,33 @@ fn get_next_generation_builders(
     return new_builders;
 }
 
-fn setup_organism_list(mut commands: Commands, config: Res<GenerationConfig>) {
-    let mut builders = vec![];
-    for _ in 0..config.num_organisms {
-        builders.push(get_runner_v2());
+fn setup_organism_list(mut commands: Commands, gc: Res<GenerationConfig>, sc: Res<SaveConfig>) {
+    let num_organisms = gc.num_organisms;
+    let mut builders;
+
+    if sc.load_save {
+        let file = match File::open(&sc.load_file) {
+            Ok(f) => f,
+            Err(err) => {
+                println!("Error loading {:?}, {:?}", sc.load_file, err);
+                return;
+            }
+        };
+        let reader = BufReader::new(file);
+        builders = match serde_json::from_reader(reader) {
+            Ok(json) => json,
+            Err(err) => {
+                println!("Error converting json {:?}", err);
+                return;
+            }
+        };
+    } else {
+        builders = Vec::with_capacity(num_organisms);
+        for _ in 0..num_organisms {
+            builders.push(get_runner_v2());
+        }
     }
+
     let ol = OrganismList {
         builders: builders,
         organisms: vec![],
