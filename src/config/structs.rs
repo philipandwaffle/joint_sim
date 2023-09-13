@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{App, Resource},
+    prelude::{App, Resource, Vec2, Vec3},
     time::{Timer, TimerMode},
 };
 use core::panic;
@@ -14,6 +14,8 @@ use crate::organism::genome::Genome;
 pub struct CameraConfig {
     pub move_modifier: f32,
     pub zoom_modifier: f32,
+    pub starting_translation: Vec2,
+    pub starting_zoom: f32,
 }
 #[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
 pub struct GenerationConfig {

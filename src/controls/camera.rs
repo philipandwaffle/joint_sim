@@ -1,4 +1,4 @@
-use crate::controls::control_state::ControlState;
+use crate::{config::structs::CameraConfig, controls::control_state::ControlState};
 
 use bevy::{math::vec3, prelude::*};
 
@@ -21,10 +21,14 @@ pub fn translate_cam(
     }
 }
 
-pub fn spawn_cam(mut commands: Commands) {
+pub fn spawn_cam(mut commands: Commands, cc: Res<CameraConfig>) {
     commands.spawn((
         Camera2dBundle {
-            transform: Transform::from_translation(vec3(0.0, 0.0, 1.0)),
+            transform: Transform::from_translation(cc.starting_translation.extend(1.0)),
+            projection: OrthographicProjection {
+                scale: cc.starting_zoom,
+                ..default()
+            },
             ..default()
         },
         ScrollingCam,
