@@ -76,8 +76,8 @@ impl BoneBundle {
 pub struct BoneDisplayBundle {
     shape_bundle: ShapeBundle,
     fill: Fill,
-    collider: Collider,
-    sensor: Sensor,
+    // collider: Collider,
+    // sensor: Sensor,
     collider_mass: ColliderMassProperties,
 }
 impl BoneDisplayBundle {
@@ -95,8 +95,8 @@ impl BoneDisplayBundle {
             },
             fill: Fill::color(Color::hsl(360.0, 0.37, 0.84)),
             collider_mass: ColliderMassProperties::Density(0.2),
-            collider: Collider::cuboid(width * 0.5, (len - 10.0) * 0.5),
-            sensor: Sensor,
+            // collider: Collider::cuboid(width * 0.5, (len - 10.0) * 0.5),
+            // sensor: Sensor,
         };
     }
 }

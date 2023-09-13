@@ -206,15 +206,15 @@ pub struct Organism {
 impl Organism {
     // Despawn all entities associated with the organism
     pub fn despawn(&self, commands: &mut Commands) {
-        for j in self.joints.iter() {
-            commands.get_entity(*j).unwrap().despawn_recursive();
+        for m in self.muscles.iter() {
+            commands.get_entity(*m).unwrap().despawn_recursive();
         }
         for b in self.bones.iter() {
             commands.get_entity(*b).unwrap().despawn_recursive();
         }
-        // for m in self.muscles.iter() {
-        //     commands.get_entity(*m).unwrap().despawn();
-        // }
+        for j in self.joints.iter() {
+            commands.get_entity(*j).unwrap().despawn_recursive();
+        }
     }
 
     // Take input stimuli and tick the brain

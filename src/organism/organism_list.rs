@@ -33,8 +33,11 @@ impl OrganismList {
             is_spawned: false,
         };
     }
-    pub fn push(&mut self, o: Organism) {
-        self.organisms.push(o);
+
+    pub fn set_builders(&mut self, builders: Vec<OrganismBuilder>) {
+        self.is_spawned = false;
+        self.organisms = vec![];
+        self.builders = builders;
     }
 
     // Sets the freeze progress to 0

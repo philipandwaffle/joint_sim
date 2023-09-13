@@ -39,6 +39,7 @@ impl GenerationConfig {
 
 #[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
 pub struct SaveConfig {
+    pub enable: bool,
     pub folder: String,
     pub rate: u32,
     pub load_save: bool,

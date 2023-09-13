@@ -18,7 +18,7 @@ pub fn save_generation(
     gc: Res<GenerationConfig>,
     sc: Res<SaveConfig>,
 ) {
-    if cs.save {
+    if cs.save && sc.enable {
         cs.save = false;
         let json = match serde_json::to_string(&ol.builders) {
             Ok(res) => res,

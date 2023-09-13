@@ -4,9 +4,14 @@ use bevy::{
         resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut, Startup,
         Transform, Update, With,
     },
+    render::render_resource::AsBindGroupShaderType,
     time::{Time, Timer, TimerMode},
 };
-use rand::distributions::{Distribution, Uniform};
+use nalgebra::ComplexField;
+use rand::{
+    distributions::{Distribution, Uniform},
+    Rng,
+};
 use std::{fs::File, io::BufReader, time::Duration};
 
 use self::environment::spawn_environment;
@@ -70,7 +75,7 @@ pub fn handle_generation(
 
         // Spawn new generation
         ol.despawn(&mut commands);
-        ol.builders = new_builders;
+        ol.set_builders(new_builders);
         ol.spawn(&mut commands, gc.vertical_sep);
     }
 }
@@ -95,20 +100,23 @@ fn get_next_generation_builders(
     }
 
     // Pick the 'best' organisms
-    let fitness_unsorted = fitness.clone();
-    fitness.sort_by(|a, b| match a.partial_cmp(b) {
-        Some(res) => res,
-        None => std::cmp::Ordering::Less,
-    });
-    let median_fitness = fitness[fitness.len() / 2];
+    let mut rng = rand::thread_rng();
+    let best_fitness = match fitness.iter().max_by(|a, b| a.total_cmp(b)) {
+        Some(max) => max,
+        None => panic!("Problem calculating max fitness"),
+    };
     let mut new_builders = Vec::with_capacity(num_organism);
-    for i in 0..num_organism {
-        if fitness_unsorted[i] >= median_fitness {
-            new_builders.push(ol.builders[i].clone());
+
+    while new_builders.len() <= num_organism / 2 {
+        for i in 0..num_organism {
+            let fit = fitness[i] / best_fitness;
+
+            if fit.abs() >= rng.gen::<f32>() {
+                new_builders.push(ol.builders[i].clone());
+            }
         }
     }
 
-    let mut rng = rand::thread_rng();
     let sample = Uniform::from(0..new_builders.len());
     while new_builders.len() < num_organism {
         let index = sample.sample(&mut rng);
@@ -117,7 +125,6 @@ fn get_next_generation_builders(
     }
 
     // Mutate each organism
-    let mut rng = rand::thread_rng();
     new_builders.iter_mut().for_each(|x| x.mutate(&mut rng));
 
     gc.cur_generation += 1;

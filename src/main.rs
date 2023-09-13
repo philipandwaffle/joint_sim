@@ -32,7 +32,7 @@ fn main() {
     env::set_var("RUST_BACKTRACE", "full");
 
     let profiling_mode = false;
-    let debug_mode = false;
+    let debug_mode = true;
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {
