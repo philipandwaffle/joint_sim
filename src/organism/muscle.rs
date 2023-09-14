@@ -17,9 +17,9 @@ pub struct MuscleBundle {
 impl MuscleBundle {
     pub fn spawn(commands: &mut Commands, bones: [Entity; 2], bone_pos: [Vec2; 2]) -> Entity {
         let ab = bone_pos[1] - bone_pos[0];
-        let dir = ab * 0.5;
+        // let dir = ab * 0.5;
         let len = ab.length();
-        let x = if ab.x >= 0.0 { -1.0 } else { 1.0 };
+        let x = if ab.x >= 0.0 { 1.0 } else { -1.0 };
         let z_rot = x * f32::acos(ab.y / len);
 
         let muscle_ent = commands

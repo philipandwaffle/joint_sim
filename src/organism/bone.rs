@@ -40,12 +40,11 @@ impl BoneBundle {
         let z_rot = x * f32::acos(ab.y / len);
         let mid = a_pos + dir;
 
-        let bone_ent = commands
-            .spawn(BoneBundle::new(mid, 0.0))
-            .with_children(|p| {
-                p.spawn(BoneDisplayBundle::new(width, len, z_rot));
-            })
+        let display = commands
+            .spawn(BoneDisplayBundle::new(width, len, z_rot))
             .id();
+        let bone_ent = commands.spawn(BoneBundle::new(mid, 0.0)).id();
+        commands.get_entity(bone_ent).unwrap().add_child(display);
 
         let bearing_a = RevoluteJointBuilder::new().local_anchor1(-dir).build();
         let bearing_b = RevoluteJointBuilder::new().local_anchor1(dir).build();
@@ -76,8 +75,8 @@ impl BoneBundle {
 pub struct BoneDisplayBundle {
     shape_bundle: ShapeBundle,
     fill: Fill,
-    // collider: Collider,
-    // sensor: Sensor,
+    collider: Collider,
+    sensor: Sensor,
     collider_mass: ColliderMassProperties,
 }
 impl BoneDisplayBundle {
@@ -95,8 +94,8 @@ impl BoneDisplayBundle {
             },
             fill: Fill::color(Color::hsl(360.0, 0.37, 0.84)),
             collider_mass: ColliderMassProperties::Density(0.2),
-            // collider: Collider::cuboid(width * 0.5, (len - 10.0) * 0.5),
-            // sensor: Sensor,
+            collider: Collider::cuboid(width * 0.5, (len - 10.0) * 0.5),
+            sensor: Sensor,
         };
     }
 }

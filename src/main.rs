@@ -1,8 +1,3 @@
-use std::f32::consts::PI;
-use std::time::SystemTime;
-use std::{env, thread};
-
-use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
@@ -11,16 +6,13 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use std::env;
 
-use collider_layer::ColliderLayerHook;
 use controls::ControlPlugin;
 use generation::GenerationPlugin;
-use organism::joint::JointBundle;
 use organism::OrganismPlugin;
-use rand::Rng;
 
 use crate::config::ConfigPlugin;
-use crate::organism::helper_fn::rotate_vec;
 
 mod collider_layer;
 mod config;
@@ -30,9 +22,10 @@ mod organism;
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
+    // LEAK_TRACER.init();
 
     let profiling_mode = false;
-    let debug_mode = true;
+    let debug_mode = false;
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {
@@ -59,6 +52,8 @@ fn main() {
             })
             // don't use linear sampling as image textures will be blurry
             .set(ImagePlugin::default_nearest()),
+        // .disable::<LogPlugin>()
+        // .disable::<DiagnosticsPlugin>(),
     )
     .add_plugins((
         ShapePlugin,
@@ -82,8 +77,10 @@ fn main() {
             WorldInspectorPlugin::new(),
         ));
     }
-
-    // app.add_systems(Startup, spawn_test_bone);
-
+    app.add_systems(Update, log_world);
     app.run();
+}
+
+fn log_world(ents: Query<Entity>) {
+    println!("{:?}", ents.iter().len());
 }

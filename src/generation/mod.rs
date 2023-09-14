@@ -4,23 +4,20 @@ use bevy::{
         resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut, Startup,
         Transform, Update, With,
     },
-    render::render_resource::AsBindGroupShaderType,
-    time::{Time, Timer, TimerMode},
+    time::Time,
 };
-use nalgebra::ComplexField;
+
 use rand::{
     distributions::{Distribution, Uniform},
     Rng,
 };
-use std::{fs::File, io::BufReader, time::Duration};
+use std::{fs::File, io::BufReader};
 
 use self::environment::spawn_environment;
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
     controls::control_state::ControlState,
-    organism::{
-        brain, joint::Joint, muscle, organism::OrganismBuilder, organism_list::OrganismList,
-    },
+    organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList},
 };
 
 mod environment;
@@ -47,17 +44,15 @@ pub fn handle_generation(
     mut cs: ResMut<ControlState>,
 ) {
     gc.timer.tick(time.delta());
+    let elapsed_secs = gc.timer.elapsed_secs();
+
     if ol.builders.is_empty() {
-        return;
-    } else if ol.organisms.is_empty() {
-        ol.spawn(&mut commands, gc.vertical_sep);
         return;
     }
 
-    let elapsed_secs = gc.timer.elapsed_secs();
     if gc.unfreeze_flag && elapsed_secs > 0.1 {
-        ol.unfreeze();
         gc.unfreeze_flag = false;
+        ol.unfreeze();
     }
     if gc.debug_flag && (elapsed_secs % 0.5) <= 0.05 {
         println!("{:?}", ol.organisms[0].brain.memory);
@@ -73,10 +68,14 @@ pub fn handle_generation(
         }
         let new_builders = get_next_generation_builders(&mut ol, &mut gc, &joint_transforms);
 
-        // Spawn new generation
+        // Despawn current generation
+        ol.is_spawned = false;
         ol.despawn(&mut commands);
+
+        // Spawn new generation
         ol.set_builders(new_builders);
         ol.spawn(&mut commands, gc.vertical_sep);
+        ol.is_spawned = true;
     }
 }
 
@@ -105,11 +104,16 @@ fn get_next_generation_builders(
         Some(max) => max,
         None => panic!("Problem calculating max fitness"),
     };
+    let fitness = fitness
+        .iter()
+        .map(|x| x.max(0.0) / best_fitness)
+        .collect::<Vec<f32>>();
+
     let mut new_builders = Vec::with_capacity(num_organism);
 
     while new_builders.len() <= num_organism / 2 {
         for i in 0..num_organism {
-            let fit = fitness[i] / best_fitness;
+            let fit = fitness[i];
 
             if fit.abs() >= rng.gen::<f32>() {
                 new_builders.push(ol.builders[i].clone());
@@ -158,13 +162,44 @@ fn setup_organism_list(mut commands: Commands, gc: Res<GenerationConfig>, sc: Re
         }
     }
 
-    let ol = OrganismList {
+    let mut ol = OrganismList {
         builders: builders,
         organisms: vec![],
         is_spawned: false,
     };
 
+    ol.spawn(&mut commands, gc.vertical_sep);
+    ol.is_spawned = true;
     commands.insert_resource(ol);
+}
+
+fn get_mem_leak_test() -> OrganismBuilder {
+    let brain_structure = vec![10, 10, 10];
+    let joint_pos = vec![
+        vec2(60.0, 0.0),
+        vec2(20.0, 0.0),
+        vec2(0.0, 0.0),
+        vec2(-20.0, 0.0),
+        vec2(-60.0, 0.0),
+        vec2(60.0, 40.0),
+        vec2(20.0, 40.0),
+        vec2(0.0, 40.0),
+        vec2(-20.0, 40.0),
+        vec2(-60.0, 40.0),
+        vec2(60.0, 80.0),
+        vec2(20.0, 80.0),
+        vec2(0.0, 80.0),
+        vec2(-20.0, 80.0),
+        vec2(-60.0, 80.0),
+    ];
+
+    // let bones = vec![[0,1],[1,2],[3,4],[4,5],[5,6]];
+    let bones = vec![[0, 1]];
+    // let bones = vec![];
+    // let muscles = vec![[3, 2], [4, 0], [5, 1], [6, 2]];
+    let muscles = vec![];
+
+    return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
 }
 
 fn get_runner_v2() -> OrganismBuilder {
@@ -180,7 +215,9 @@ fn get_runner_v2() -> OrganismBuilder {
     ];
 
     let bones = vec![[1, 0], [0, 2], [2, 1], [3, 1], [4, 0], [5, 0], [6, 2]];
+    // let bones = vec![];
     let muscles = vec![[3, 2], [4, 0], [5, 1], [6, 2]];
+    // let muscles = vec![];
 
     return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
 }

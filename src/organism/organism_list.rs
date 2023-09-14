@@ -35,8 +35,6 @@ impl OrganismList {
     }
 
     pub fn set_builders(&mut self, builders: Vec<OrganismBuilder>) {
-        self.is_spawned = false;
-        self.organisms = vec![];
         self.builders = builders;
     }
 
@@ -50,7 +48,6 @@ impl OrganismList {
 
     // Despawn every organism
     pub fn despawn(&mut self, commands: &mut Commands) {
-        self.is_spawned = false;
         for o in self.organisms.iter() {
             o.despawn(commands);
         }
@@ -61,18 +58,17 @@ impl OrganismList {
         let mut cur_translation = vec2(0.0, vertical_sep * 0.15);
 
         // Pre-allocate organisms vec
-        self.organisms = Vec::with_capacity(self.builders.len());
+        // self.organisms.clear();
+        let num_organisms = self.builders.len();
+        self.organisms = Vec::with_capacity(num_organisms);
 
         // Spawn and push organism to vec
-        for i in 0..self.builders.len() {
+        for i in 0..num_organisms {
             self.organisms
-                .push(self.builders[i].spawn(commands, cur_translation, i as u32));
+                .push(self.builders[i].spawn(commands, cur_translation));
             // .push(self.builders[i].spawn(commands, vec2(0.0, 0.0), i as u32));
             cur_translation.y += vertical_sep;
         }
-
-        // Set list as spawned
-        self.is_spawned = true;
     }
 }
 
@@ -121,9 +117,15 @@ pub fn unfreeze_queued(
 
 // Update muscle lengths
 pub fn update_muscles(
+    ol: Res<OrganismList>,
     mut bones: Query<(&mut ExternalImpulse, &Transform), With<Bone>>,
     mut muscles: Query<(&Muscle, &mut Transform, &mut Fill), Without<Bone>>,
 ) {
+    // Short circuit if organisms haven't spawned;
+    if !ol.is_spawned {
+        return;
+    }
+
     // let now = Instant::now();
     for (m, mut t, mut f) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
@@ -199,11 +201,11 @@ pub fn update_brains(
 
     // Gather global
     let elapsed_seconds = gc.timer.elapsed_secs();
-    let mut external_stimuli = Vec::with_capacity(ol.organisms[0].brain.get_num_inputs());
-    external_stimuli.push(elapsed_seconds);
-    // let mut total_brain_process = 0;
+
     for o in ol.organisms.iter_mut() {
-        let mut stimuli = external_stimuli.clone();
+        let mut stimuli = Vec::with_capacity(o.brain.get_num_inputs());
+        stimuli.push(elapsed_seconds);
+
         for b in o.bones.iter() {
             match bones.get(*b) {
                 Ok(t) => stimuli.push(quat_z_rot(t.rotation)),
@@ -219,7 +221,7 @@ pub fn update_brains(
         for i in 0..brain_out.len() {
             muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i];
         }
-        o.brain.memory = brain_out;
+        o.brain.set_memory(brain_out);
     }
 
     // println!("processing stimuli took {:?}", total_brain_process);

@@ -4,11 +4,9 @@ use bevy_prototype_lyon::{
     shapes,
 };
 use bevy_rapier2d::prelude::{
-    ActiveHooks, AdditionalMassProperties, Ccd, Collider, ColliderMassProperties, Damping,
-    ExternalImpulse, Friction, GravityScale, LockedAxes, RigidBody,
+    AdditionalMassProperties, Ccd, Collider, ColliderMassProperties, Damping, ExternalImpulse,
+    Friction, GravityScale, LockedAxes, RigidBody,
 };
-
-use crate::collider_layer::CollisionLayer;
 
 // Bundle for spawning an organisms joint
 #[derive(Bundle)]
@@ -24,8 +22,8 @@ pub struct JointBundle {
     fill: Fill,
     stroke: Stroke,
     collider: Collider,
-    collision_layer: CollisionLayer,
-    active_hooks: ActiveHooks,
+    // collision_layer: CollisionLayer,
+    // active_hooks: ActiveHooks,
     gravity: GravityScale,
     ccd: Ccd,
     locked_axis: LockedAxes,
@@ -57,10 +55,10 @@ impl JointBundle {
             ..default()
         };
     }
-    pub fn from_translation(translation: Vec2, layer: u32) -> Self {
+    pub fn from_translation(translation: Vec2) -> Self {
         let mut joint = JointBundle::default();
         joint.shape_bundle.transform = Transform::from_translation(translation.extend(0.0));
-        joint.collision_layer = CollisionLayer(layer);
+        // joint.collision_layer = CollisionLayer(layer);
         return joint;
     }
 }
@@ -98,8 +96,8 @@ impl Default for JointBundle {
             fill: Fill::color(Color::hsl(108.0, 0.83, 0.33)),
             stroke: Stroke::new(Color::hsl(108.0, 0.89, 0.14), 0.0),
             collider: Collider::ball(radius),
-            collision_layer: CollisionLayer(0),
-            active_hooks: ActiveHooks::FILTER_CONTACT_PAIRS,
+            // collision_layer: CollisionLayer(0),
+            // active_hooks: ActiveHooks::FILTER_CONTACT_PAIRS,
             gravity: GravityScale(5.0),
             ccd: Ccd::default(),
             locked_axis: LockedAxes::ROTATION_LOCKED,

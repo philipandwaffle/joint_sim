@@ -17,7 +17,8 @@ impl Plugin for OrganismPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
             Update,
-            (update_muscles, unfreeze_queued).run_if(resource_exists::<OrganismList>()),
+            (update_brains, update_muscles, unfreeze_queued)
+                .run_if(resource_exists::<OrganismList>()),
         );
     }
 }

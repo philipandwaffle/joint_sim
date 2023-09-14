@@ -1,16 +1,12 @@
 use bevy::{
     math::vec2,
-    prelude::{Commands, DespawnRecursiveExt, Entity, Query, Resource, Vec2},
+    prelude::{Commands, DespawnRecursiveExt, Entity, Resource, Vec2},
 };
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    bone::{Bone, BoneBundle},
-    brain::Brain,
-    genome::Genome,
-    joint::JointBundle,
-    muscle::{Muscle, MuscleBundle},
+    bone::BoneBundle, brain::Brain, genome::Genome, joint::JointBundle, muscle::MuscleBundle,
 };
 
 // Acts as a blueprint for organisms so mutations can occur before spawning
@@ -50,19 +46,17 @@ impl OrganismBuilder {
     }
 
     // Spawn the organism with an translation
-    pub fn spawn(&self, commands: &mut Commands, translation: Vec2, layer: u32) -> Organism {
-        let num_muscles = self.muscles.len();
-
+    pub fn spawn(&self, commands: &mut Commands, translation: Vec2) -> Organism {
         // Pre-allocate vectors
         let mut joint_ents = Vec::with_capacity(self.joint_pos.len());
         let mut bone_ents = Vec::with_capacity(self.bones.len());
         let mut bone_pos = Vec::with_capacity(self.bones.len());
-        let mut muscles_ents = Vec::with_capacity(num_muscles);
+        let mut muscles_ents = Vec::with_capacity(self.muscles.len());
 
         // Create a joint for each position supplied
         for jp in self.joint_pos.iter() {
             let ent = commands
-                .spawn(JointBundle::from_translation(translation + *jp, layer))
+                .spawn(JointBundle::from_translation(translation + *jp))
                 .id();
             joint_ents.push(ent);
         }
@@ -206,14 +200,14 @@ pub struct Organism {
 impl Organism {
     // Despawn all entities associated with the organism
     pub fn despawn(&self, commands: &mut Commands) {
-        for m in self.muscles.iter() {
-            commands.get_entity(*m).unwrap().despawn_recursive();
+        for j in self.joints.iter() {
+            commands.get_entity(*j).unwrap().despawn_recursive();
         }
         for b in self.bones.iter() {
             commands.get_entity(*b).unwrap().despawn_recursive();
         }
-        for j in self.joints.iter() {
-            commands.get_entity(*j).unwrap().despawn_recursive();
+        for m in self.muscles.iter() {
+            commands.get_entity(*m).unwrap().despawn_recursive();
         }
     }
 

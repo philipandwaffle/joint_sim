@@ -152,13 +152,13 @@ impl Brain {
         debug_matrix_shapes(&self.biases, &"biases");
     }
 
-    // // Set the memory used for feed forward
-    // fn set_memory(&mut self, memory: Vec<f32>) {
-    //     if self.memory.capacity() != memory.capacity() {
-    //         panic!("Creature trying to remember more that allocated");
-    //     }
-    //     self.memory = memory;
-    // }
+    // Set the memory used for feed forward
+    pub fn set_memory(&mut self, memory: Vec<f32>) {
+        if self.memory.capacity() != memory.capacity() {
+            panic!("Creature trying to remember more that allocated");
+        }
+        self.memory = memory;
+    }
 
     pub fn process_stimuli(&self, external_stimuli: &Vec<f32>) -> Vec<f32> {
         // Create input from memory
