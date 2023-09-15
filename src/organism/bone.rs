@@ -1,13 +1,10 @@
 use bevy::{
     math::vec2,
     prelude::{
-        default, BuildChildren, Bundle, Color, Commands, Component, Entity, Quat, SpatialBundle,
-        Transform, Vec2,
+        default, BuildChildren, Bundle, Color, Commands, Component, Entity, Handle, Quat,
+        SpatialBundle, Transform, Vec2,
     },
-};
-use bevy_prototype_lyon::{
-    prelude::{Fill, GeometryBuilder, ShapeBundle},
-    shapes,
+    sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::prelude::{
     AdditionalMassProperties, Collider, ColliderMassProperties, ExternalImpulse, ImpulseJoint,
@@ -25,6 +22,8 @@ pub struct BoneBundle {
 impl BoneBundle {
     pub fn spawn(
         commands: &mut Commands,
+        mesh: &Mesh2dHandle,
+        material: &Handle<ColorMaterial>,
         joints: [Entity; 2],
         joint_pos: [Vec2; 2],
     ) -> (Entity, Vec2) {
@@ -41,7 +40,12 @@ impl BoneBundle {
         let mid = a_pos + dir;
 
         let display = commands
-            .spawn(BoneDisplayBundle::new(width, len, z_rot))
+            .spawn(BoneDisplayBundle::new(
+                mesh,
+                material,
+                vec2(width, len - 10.0),
+                z_rot,
+            ))
             .id();
         let bone_ent = commands.spawn(BoneBundle::new(mid, 0.0)).id();
         commands.get_entity(bone_ent).unwrap().add_child(display);
@@ -73,28 +77,31 @@ impl BoneBundle {
 
 #[derive(Bundle)]
 pub struct BoneDisplayBundle {
-    shape_bundle: ShapeBundle,
-    fill: Fill,
+    material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     collider: Collider,
     sensor: Sensor,
     collider_mass: ColliderMassProperties,
 }
 impl BoneDisplayBundle {
-    pub fn new(width: f32, len: f32, z_rot: f32) -> Self {
-        let bone_rect = shapes::Rectangle {
-            extents: vec2(width, len),
-            origin: shapes::RectangleOrigin::Center,
-        };
-
+    pub fn new(
+        mesh: &Mesh2dHandle,
+        material: &Handle<ColorMaterial>,
+        size: Vec2,
+        z_rot: f32,
+    ) -> Self {
         return Self {
-            shape_bundle: ShapeBundle {
-                path: GeometryBuilder::build_as(&bone_rect),
-                transform: Transform::from_rotation(Quat::from_rotation_z(z_rot)),
+            material_mesh_bundle: MaterialMesh2dBundle {
+                mesh: mesh.clone(),
+                material: material.clone(),
+                transform: Transform {
+                    rotation: Quat::from_rotation_z(z_rot),
+                    scale: size.extend(0.0),
+                    ..default()
+                },
                 ..default()
             },
-            fill: Fill::color(Color::hsl(360.0, 0.37, 0.84)),
             collider_mass: ColliderMassProperties::Density(0.2),
-            collider: Collider::cuboid(width * 0.5, (len - 10.0) * 0.5),
+            collider: Collider::cuboid(0.5, 0.5),
             sensor: Sensor,
         };
     }

@@ -1,8 +1,8 @@
 use bevy::{
     math::vec2,
     prelude::{
-        resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut, Startup,
-        Transform, Update, With,
+        resource_exists, App, Commands, IntoSystemConfigs,  Plugin, PreStartup, Query,
+        Res, ResMut, Startup, Transform, Update, With,
     },
     time::Time,
 };
@@ -17,7 +17,12 @@ use self::environment::spawn_environment;
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
     controls::control_state::ControlState,
-    organism::{joint::Joint, organism::OrganismBuilder, organism_list::OrganismList},
+    organism::{
+        handles::{setup_handles, Handles},
+        joint::Joint,
+        organism::OrganismBuilder,
+        organism_list::OrganismList,
+    },
 };
 
 mod environment;
@@ -26,10 +31,11 @@ pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(OrganismList::new())
+            .add_systems(PreStartup, setup_handles)
             .add_systems(Startup, (spawn_environment, setup_organism_list))
             .add_systems(
                 Update,
-                handle_generation.run_if(resource_exists::<OrganismList>()),
+                (handle_generation).run_if(resource_exists::<OrganismList>()),
             );
     }
 }
@@ -38,10 +44,11 @@ pub fn handle_generation(
     mut commands: Commands,
     mut gc: ResMut<GenerationConfig>,
     sc: Res<SaveConfig>,
-    mut ol: ResMut<OrganismList>,
     time: Res<Time>,
-    joint_transforms: Query<&Transform, With<Joint>>,
+    handles: Res<Handles>,
+    mut ol: ResMut<OrganismList>,
     mut cs: ResMut<ControlState>,
+    joint_transforms: Query<&Transform, With<Joint>>,
 ) {
     gc.timer.tick(time.delta());
     let elapsed_secs = gc.timer.elapsed_secs();
@@ -69,13 +76,11 @@ pub fn handle_generation(
         let new_builders = get_next_generation_builders(&mut ol, &mut gc, &joint_transforms);
 
         // Despawn current generation
-        ol.is_spawned = false;
         ol.despawn(&mut commands);
 
         // Spawn new generation
         ol.set_builders(new_builders);
-        ol.spawn(&mut commands, gc.vertical_sep);
-        ol.is_spawned = true;
+        ol.spawn(&mut commands, &handles, gc.vertical_sep);
     }
 }
 
@@ -135,7 +140,12 @@ fn get_next_generation_builders(
     return new_builders;
 }
 
-fn setup_organism_list(mut commands: Commands, gc: Res<GenerationConfig>, sc: Res<SaveConfig>) {
+fn setup_organism_list(
+    mut commands: Commands,
+    handles: Res<Handles>,
+    gc: Res<GenerationConfig>,
+    sc: Res<SaveConfig>,
+) {
     let num_organisms = gc.num_organisms;
     let mut builders;
 
@@ -168,8 +178,7 @@ fn setup_organism_list(mut commands: Commands, gc: Res<GenerationConfig>, sc: Re
         is_spawned: false,
     };
 
-    ol.spawn(&mut commands, gc.vertical_sep);
-    ol.is_spawned = true;
+    ol.spawn(&mut commands, &handles, gc.vertical_sep);
     commands.insert_resource(ol);
 }
 

@@ -1,10 +1,11 @@
+use bevy::diagnostic::DiagnosticsPlugin;
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     window::WindowMode,
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::env;
 
@@ -51,12 +52,10 @@ fn main() {
                 ..default()
             })
             // don't use linear sampling as image textures will be blurry
-            .set(ImagePlugin::default_nearest()),
-        // .disable::<LogPlugin>()
-        // .disable::<DiagnosticsPlugin>(),
+            .set(ImagePlugin::default_nearest()), // .disable::<LogPlugin>()
+                                                  // .disable::<DiagnosticsPlugin>(),
     )
     .add_plugins((
-        ShapePlugin,
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         // RapierPhysicsPlugin::<ColliderLayerHook>::pixels_per_meter(100.0),
         ControlPlugin,
@@ -77,10 +76,16 @@ fn main() {
             WorldInspectorPlugin::new(),
         ));
     }
-    app.add_systems(Update, log_world);
+    // app.add_systems(Update, log_world);
     app.run();
 }
 
-fn log_world(ents: Query<Entity>) {
-    println!("{:?}", ents.iter().len());
+fn log_world(ents: Query<Entity>, rc: Res<RapierContext>) {
+    println!(
+        "rigid bodies: {:?}, colliders: {:?}, joints: {:?}, entities: {:?}",
+        rc.bodies.len(),
+        rc.colliders.len(),
+        rc.impulse_joints.len(),
+        ents.iter().len()
+    );
 }

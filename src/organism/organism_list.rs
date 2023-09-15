@@ -1,17 +1,16 @@
-use std::f32::consts::PI;
-
 use bevy::{
     math::vec2,
-    prelude::{Color, Commands, Quat, Query, Res, ResMut, Resource, Transform, With, Without},
+    prelude::{Commands, Handle, Quat, Query, Res, ResMut, Resource, Transform, With, Without},
+    sprite::ColorMaterial,
     time::Time,
 };
-use bevy_prototype_lyon::prelude::Fill;
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 
 use crate::config::structs::GenerationConfig;
 
 use super::{
     bone::Bone,
+    handles::Handles,
     helper_fn::{quat_z_rot, vec2_z_rot},
     joint::Joint,
     muscle::Muscle,
@@ -48,13 +47,14 @@ impl OrganismList {
 
     // Despawn every organism
     pub fn despawn(&mut self, commands: &mut Commands) {
+        self.is_spawned = false;
         for o in self.organisms.iter() {
             o.despawn(commands);
         }
     }
 
     // Spawn every organism using the builders
-    pub fn spawn(&mut self, commands: &mut Commands, vertical_sep: f32) {
+    pub fn spawn(&mut self, commands: &mut Commands, handles: &Handles, vertical_sep: f32) {
         let mut cur_translation = vec2(0.0, vertical_sep * 0.15);
 
         // Pre-allocate organisms vec
@@ -65,10 +65,11 @@ impl OrganismList {
         // Spawn and push organism to vec
         for i in 0..num_organisms {
             self.organisms
-                .push(self.builders[i].spawn(commands, cur_translation));
+                .push(self.builders[i].spawn(commands, &handles, cur_translation));
             // .push(self.builders[i].spawn(commands, vec2(0.0, 0.0), i as u32));
             cur_translation.y += vertical_sep;
         }
+        self.is_spawned = true;
     }
 }
 
@@ -118,8 +119,9 @@ pub fn unfreeze_queued(
 // Update muscle lengths
 pub fn update_muscles(
     ol: Res<OrganismList>,
+    handles: Res<Handles>,
     mut bones: Query<(&mut ExternalImpulse, &Transform), With<Bone>>,
-    mut muscles: Query<(&Muscle, &mut Transform, &mut Fill), Without<Bone>>,
+    mut muscles: Query<(&Muscle, &mut Transform, &mut Handle<ColorMaterial>), Without<Bone>>,
 ) {
     // Short circuit if organisms haven't spawned;
     if !ol.is_spawned {
@@ -127,7 +129,7 @@ pub fn update_muscles(
     }
 
     // let now = Instant::now();
-    for (m, mut t, mut f) in muscles.iter_mut() {
+    for (m, mut t, mut cm) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
             Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
                 // readout(a_t, b_t);
@@ -139,51 +141,33 @@ pub fn update_muscles(
                 let target_len = m.get_target_len();
                 let diff = target_len - len;
 
-                let mut foo = 0.0;
-                if diff > 0.0 {
-                    foo = 1.0;
-                    f.color = Color::RED;
+                let contract_expand = if diff > 0.0 {
+                    *cm = handles.muscle_expand_material.clone();
+                    1.0
                 } else if diff < 0.0 {
-                    foo = -1.0;
-                    f.color = Color::BLUE;
-                }
+                    *cm = handles.muscle_contract_material.clone();
+                    -1.0
+                } else {
+                    *cm = handles.muscle_neutral_material.clone();
+                    0.0
+                };
+
                 let modifier = 20.0;
-                // let modifier = 0.0;
 
                 if diff != 0.0 {
-                    a_ei.impulse = ab.normalize() * foo * modifier;
-                    b_ei.impulse = -ab.normalize() * foo * modifier;
+                    a_ei.impulse = ab.normalize() * contract_expand * modifier;
+                    b_ei.impulse = -ab.normalize() * contract_expand * modifier;
                 }
 
-                let r = quat_z_rot(a_t.rotation);
-                t.rotation = Quat::from_rotation_z(vec2_z_rot(b_pos, a_pos) - r);
-                let y_scale = len / m.base_len;
-                // let y_scale = 1.0 * (1.0 + m.len_modifier);
-                t.scale.y = y_scale;
+                t.translation = (a_pos + (ab * 0.5)).extend(-0.2);
+                t.rotation = Quat::from_rotation_z(vec2_z_rot(&b_pos, &a_pos));
+                t.scale.y = len;
             }
             Err(_) => {
                 //TODO this is dumb make system only run when bones are spawned
-                return;
             }
         }
     }
-    // println!("update_muscles took {:?}", now.elapsed());
-}
-
-fn readout(a: &Transform, b: &Transform) {
-    let a_rot = quat_z_rot(a.rotation) * 180.0 / PI;
-    let b_rot = quat_z_rot(b.rotation) * 180.0 / PI;
-
-    let norm_a_rot = f32::acos(a.rotation.dot(Quat::IDENTITY)) * 180.0 / PI;
-    let norm_b_rot = f32::acos(b.rotation.dot(Quat::IDENTITY)) * 180.0 / PI;
-
-    // let id_a_rot = quat_z_rot(Quat::IDENTITY - a.rotation) * 180.0 / PI;
-    // let id_b_rot = quat_z_rot(Quat::IDENTITY - b.rotation) * 180.0 / PI;
-
-    println!(
-        "a_rot: {}, b_rot:{}, a_norm: {}, b_norm: {}",
-        a_rot, b_rot, norm_a_rot, norm_b_rot
-    );
 }
 
 pub fn update_brains(
@@ -208,7 +192,7 @@ pub fn update_brains(
 
         for b in o.bones.iter() {
             match bones.get(*b) {
-                Ok(t) => stimuli.push(quat_z_rot(t.rotation)),
+                Ok(t) => stimuli.push(quat_z_rot(&t.rotation)),
                 Err(_) => return,
             }
         }

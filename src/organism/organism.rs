@@ -6,7 +6,8 @@ use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    bone::BoneBundle, brain::Brain, genome::Genome, joint::JointBundle, muscle::MuscleBundle,
+    bone::BoneBundle, brain::Brain, genome::Genome, handles::Handles, joint::JointBundle,
+    muscle::MuscleBundle,
 };
 
 // Acts as a blueprint for organisms so mutations can occur before spawning
@@ -46,7 +47,14 @@ impl OrganismBuilder {
     }
 
     // Spawn the organism with an translation
-    pub fn spawn(&self, commands: &mut Commands, translation: Vec2) -> Organism {
+    pub fn spawn(
+        &self,
+        commands: &mut Commands,
+        // meshes: &mut Assets<Mesh>,
+        // materials: &mut Assets<ColorMaterial>,
+        handles: &Handles,
+        translation: Vec2,
+    ) -> Organism {
         // Pre-allocate vectors
         let mut joint_ents = Vec::with_capacity(self.joint_pos.len());
         let mut bone_ents = Vec::with_capacity(self.bones.len());
@@ -56,7 +64,11 @@ impl OrganismBuilder {
         // Create a joint for each position supplied
         for jp in self.joint_pos.iter() {
             let ent = commands
-                .spawn(JointBundle::from_translation(translation + *jp))
+                .spawn(JointBundle::from_translation(
+                    translation + *jp,
+                    &handles.joint_mesh,
+                    &handles.joint_material,
+                ))
                 .id();
             joint_ents.push(ent);
         }
@@ -65,6 +77,8 @@ impl OrganismBuilder {
         for [j_a, j_b] in self.bones.iter() {
             let bone = BoneBundle::spawn(
                 commands,
+                &handles.bone_mesh,
+                &handles.bone_material,
                 [joint_ents[*j_a], joint_ents[*j_b]],
                 [
                     translation + self.joint_pos[*j_a],
@@ -79,6 +93,8 @@ impl OrganismBuilder {
         for [j_a, j_b] in self.muscles.iter() {
             let m = MuscleBundle::spawn(
                 commands,
+                &handles.muscle_mesh,
+                &handles.muscle_neutral_material,
                 [bone_ents[*j_a], bone_ents[*j_b]],
                 [bone_pos[*j_a], bone_pos[*j_b]],
             );
