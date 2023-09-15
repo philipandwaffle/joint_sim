@@ -3121,7 +3121,7 @@ dependencies = [
 
 [[package]]
 name = "joint_sim"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bevy 0.11.2",
  "bevy-inspector-egui 0.19.0",
