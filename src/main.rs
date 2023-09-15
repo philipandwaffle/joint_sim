@@ -38,9 +38,9 @@ fn main() {
         DefaultPlugins
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Particle Sim".into(),
+                    title: "Joint Sim".into(),
                     position: WindowPosition::At(IVec2::ZERO),
-                    resolution: (1900. / 6.0, 1000.).into(),
+                    resolution: (1920., 1080.).into(),
                     // present_mode: PresentMode::AutoVsync,
                     mode: WindowMode::Windowed,
                     // Tells wasm to resize the window according to the available canvas
