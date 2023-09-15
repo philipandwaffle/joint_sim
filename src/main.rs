@@ -30,7 +30,7 @@ fn main() {
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {
-        gravity: Vec2::NEG_Y * 100.0,
+        gravity: Vec2::NEG_Y * 200.0,
         ..default()
     })
     .insert_resource(Msaa::Sample4)

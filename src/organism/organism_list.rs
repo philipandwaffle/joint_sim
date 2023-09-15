@@ -141,18 +141,18 @@ pub fn update_muscles(
                 let target_len = m.get_target_len();
                 let diff = target_len - len;
 
-                let contract_expand = if diff > 0.0 {
-                    *cm = handles.muscle_expand_material.clone();
-                    1.0
-                } else if diff < 0.0 {
+                let contract_expand = if diff > 0.01 {
                     *cm = handles.muscle_contract_material.clone();
+                    1.0
+                } else if diff < -0.01 {
+                    *cm = handles.muscle_expand_material.clone();
                     -1.0
                 } else {
                     *cm = handles.muscle_neutral_material.clone();
                     0.0
                 };
 
-                let modifier = 20.0;
+                let modifier = 40.0;
 
                 if diff != 0.0 {
                     a_ei.impulse = ab.normalize() * contract_expand * modifier;
