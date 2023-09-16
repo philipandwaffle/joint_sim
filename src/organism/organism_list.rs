@@ -129,9 +129,12 @@ pub fn update_muscles(
     }
 
     // let now = Instant::now();
+    let mut bone_rots = vec![];
     for (m, mut t, mut cm) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
             Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
+                bone_rots.push(quat_z_rot(&a_t.rotation));
+                bone_rots.push(quat_z_rot(&b_t.rotation));
                 // readout(a_t, b_t);
                 // Apply impulse to joints
                 let a_pos = a_t.translation.truncate();
@@ -168,6 +171,7 @@ pub fn update_muscles(
             }
         }
     }
+    println!("{:?}", bone_rots);
 }
 
 pub fn update_brains(

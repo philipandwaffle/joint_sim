@@ -2,6 +2,7 @@ use bevy::{
     math::vec2,
     prelude::{Commands, DespawnRecursiveExt, Entity, Resource, Vec2},
 };
+use bevy_rapier2d::prelude::PrismaticJointBuilder;
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 
@@ -127,6 +128,7 @@ impl OrganismBuilder {
                 self.move_joint(rng, i, mf);
             }
         }
+
         return;
         // Add/remove bone
         if rng.gen::<f32>() <= self.genome.bone_mr.val {
@@ -153,13 +155,13 @@ impl OrganismBuilder {
     }
 
     pub fn add_bone(&mut self, rng: &mut ThreadRng, mf: f32) {
-        let index = rng.gen::<usize>();
+        let num_joints = self.joint_pos.len();
+        let from = rng.gen_range(0..num_joints);
 
-        let joint_pos =
-            vec2(rng.gen_range(-mf..mf), rng.gen_range(-mf..mf)) + self.joint_pos[index];
+        let joint_pos = vec2(rng.gen_range(-mf..mf), rng.gen_range(-mf..mf)) + self.joint_pos[from];
         self.joint_pos.push(joint_pos);
 
-        let bone = [self.joint_pos.len(), index];
+        let bone = [from, num_joints - 1];
         self.bones.push(bone);
     }
 
@@ -170,6 +172,15 @@ impl OrganismBuilder {
         }
 
         let index = rng.gen_range(0..num_bones);
+        if self
+            .muscles
+            .iter()
+            .find(|x| return x[0] == index || x[1] == index)
+            .is_some()
+        {
+            return;
+        }
+        println!("removed bone at index {:?}", index);
         self.bones.remove(index);
     }
 

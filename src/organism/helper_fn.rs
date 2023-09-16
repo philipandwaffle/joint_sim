@@ -18,6 +18,14 @@ pub fn quat_z_rot(q: &Quat) -> f32 {
     );
 }
 
+pub fn quat_to_vec2(q: &Quat) -> Vec2 {
+    let rot = f32::atan2(
+        2.0 * (q.w * q.z + q.x * q.y),
+        1.0 - 2.0 * (q.y * q.y + q.z * q.z),
+    );
+    todo!();
+}
+
 pub fn rotate_vec(v: Vec2, z_rot: f32) -> Vec2 {
     let cos_theta = f32::cos(z_rot);
     let sin_theta = f32::sin(z_rot);

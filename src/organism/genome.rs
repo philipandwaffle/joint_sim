@@ -51,7 +51,7 @@ impl Default for Genome {
             lr: Allele::new(0.1, 0.2, 0.2),
             lf: Allele::new(0.1, 0.2, 0.2),
             joint_mr: Allele::new(0.1, 0.2, 0.2),
-            joint_mf: Allele::new(1.0, 0.2, 1.0),
+            joint_mf: Allele::new(4.0, 0.2, 1.0),
             bone_mr: Allele::new(0.01, 0.2, 0.01),
             bone_mf: Allele::new(10.0, 0.2, 0.01),
             muscle_mr: Allele::new(0.01, 0.2, 1.0),
@@ -83,7 +83,7 @@ impl Allele {
             self.mutate_rate += rng.gen_range(r.clone());
             self.mutate_factor += rng.gen_range(r);
 
-            self.mutate_rate = self.mutate_rate.clamp(0.01, 1.0);
+            self.mutate_rate = self.mutate_rate.clamp(0.001, 1.0);
             self.mutate_factor = self.mutate_factor.max(0.01);
         }
     }
