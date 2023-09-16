@@ -198,9 +198,7 @@ pub fn update_brains(
         }
 
         // Process stimuli
-        // let process_now = Instant::now();
         let brain_out = o.process_stimuli(&mut stimuli);
-        // total_brain_process += process_now.elapsed().as_micros();
 
         for i in 0..brain_out.len() {
             muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i];
