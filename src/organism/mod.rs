@@ -1,4 +1,4 @@
-use bevy::prelude::{resource_exists, IntoSystemConfigs, Plugin, Update};
+use bevy::prelude::{resource_exists, IntoSystemConfigs, Plugin, Res, Update};
 
 use self::organism_list::{unfreeze_queued, update_brains, update_muscles, OrganismList};
 

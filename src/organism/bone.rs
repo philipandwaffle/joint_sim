@@ -65,7 +65,7 @@ impl BoneBundle {
             bone: Bone,
             spatial_bundle: SpatialBundle::from_transform(Transform {
                 translation: translation.extend(-0.1),
-                rotation: Quat::from_rotation_z(z_rot),
+                // rotation: Quat::from_rotation_z(z_rot),
                 ..default()
             }),
             rigid_body: RigidBody::Dynamic,

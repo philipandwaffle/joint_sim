@@ -1,5 +1,6 @@
 use bevy::diagnostic::DiagnosticsPlugin;
 use bevy::log::LogPlugin;
+use bevy::math::vec2;
 use bevy::prelude::*;
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
@@ -7,7 +8,9 @@ use bevy::{
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
+use organism::helper_fn::quat_z_rot;
 use std::env;
+use std::f32::consts::PI;
 
 use controls::ControlPlugin;
 use generation::GenerationPlugin;
@@ -23,7 +26,6 @@ mod organism;
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
-    // LEAK_TRACER.init();
 
     let profiling_mode = false;
     let debug_mode = false;
@@ -40,7 +42,8 @@ fn main() {
                 primary_window: Some(Window {
                     title: "Joint Sim".into(),
                     position: WindowPosition::At(IVec2::ZERO),
-                    resolution: (1920., 1080.).into(),
+                    // resolution: (1920., 1080.).into(),
+                    resolution: (1920. / 6.0, 1080.).into(),
                     // present_mode: PresentMode::AutoVsync,
                     mode: WindowMode::Windowed,
                     // Tells wasm to resize the window according to the available canvas
@@ -78,14 +81,4 @@ fn main() {
     }
     // app.add_systems(Update, log_world);
     app.run();
-}
-
-fn log_world(ents: Query<Entity>, rc: Res<RapierContext>) {
-    println!(
-        "rigid bodies: {:?}, colliders: {:?}, joints: {:?}, entities: {:?}",
-        rc.bodies.len(),
-        rc.colliders.len(),
-        rc.impulse_joints.len(),
-        ents.iter().len()
-    );
 }
