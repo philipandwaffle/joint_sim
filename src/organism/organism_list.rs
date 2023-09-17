@@ -11,7 +11,7 @@ use crate::config::structs::GenerationConfig;
 use super::{
     bone::Bone,
     handles::Handles,
-    helper_fn::{quat_z_rot, vec2_z_rot},
+    helper_fn::{quat_to_vec2, quat_z_rot, vec2_z_rot},
     joint::Joint,
     muscle::Muscle,
     organism::{Organism, OrganismBuilder},
@@ -129,12 +129,9 @@ pub fn update_muscles(
     }
 
     // let now = Instant::now();
-    let mut bone_rots = vec![];
     for (m, mut t, mut cm) in muscles.iter_mut() {
         match bones.get_many_mut(m.bones) {
             Ok([(mut a_ei, a_t), (mut b_ei, b_t)]) => {
-                bone_rots.push(quat_z_rot(&a_t.rotation));
-                bone_rots.push(quat_z_rot(&b_t.rotation));
                 // readout(a_t, b_t);
                 // Apply impulse to joints
                 let a_pos = a_t.translation.truncate();
@@ -171,7 +168,6 @@ pub fn update_muscles(
             }
         }
     }
-    println!("{:?}", bone_rots);
 }
 
 pub fn update_brains(
@@ -194,12 +190,21 @@ pub fn update_brains(
         let mut stimuli = Vec::with_capacity(o.brain.get_num_inputs());
         stimuli.push(elapsed_seconds);
 
-        for b in o.bones.iter() {
-            match bones.get(*b) {
-                Ok(t) => stimuli.push(quat_z_rot(&t.rotation)),
-                Err(_) => return,
-            }
+        let mut muscled_bone_rots = Vec::with_capacity(o.muscles.len() * 4);
+        for m_ent in o.muscles.iter() {
+            let m = muscles.get(*m_ent).unwrap();
+            let bone_trans = bones.get_many(m.bones).unwrap();
+
+            let vec_a = quat_to_vec2(&bone_trans[0].rotation);
+            let vec_b = quat_to_vec2(&bone_trans[1].rotation);
+
+            muscled_bone_rots.push(vec_a.x);
+            muscled_bone_rots.push(vec_a.y);
+            muscled_bone_rots.push(vec_b.x);
+            muscled_bone_rots.push(vec_b.y);
         }
+
+        stimuli.extend(muscled_bone_rots);
 
         // Process stimuli
         // let process_now = Instant::now();

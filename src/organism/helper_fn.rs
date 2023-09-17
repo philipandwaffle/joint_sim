@@ -23,7 +23,7 @@ pub fn quat_to_vec2(q: &Quat) -> Vec2 {
         2.0 * (q.w * q.z + q.x * q.y),
         1.0 - 2.0 * (q.y * q.y + q.z * q.z),
     );
-    todo!();
+    return vec2(rot.cos(), rot.sin());
 }
 
 pub fn rotate_vec(v: Vec2, z_rot: f32) -> Vec2 {

@@ -31,11 +31,11 @@ impl OrganismBuilder {
     ) -> Self {
         // Get num muscles
         let num_muscles = muscles.len();
-        let num_bones = bones.len();
+        // let num_outputs = num_muscles * 4;
 
         // Calculate brain structure
-        let mut brain_structure = vec![num_bones + num_muscles + external_stimuli_count];
-        brain_structure.extend(brain_hidden_structure.iter());
+        let mut brain_structure = vec![external_stimuli_count + num_muscles * 5];
+        brain_structure.extend(brain_hidden_structure);
         brain_structure.push(num_muscles);
 
         return Self {

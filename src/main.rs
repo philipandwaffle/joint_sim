@@ -26,26 +26,9 @@ mod organism;
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
-    // LEAK_TRACER.init();
-    let x = PI / 4.0;
-    for z_rot in vec![
-        -4.0 * x,
-        -3.0 * x,
-        -2.0 * x,
-        -x,
-        0.0,
-        x,
-        2.0 * x,
-        3.0 * x,
-        4.0 * x,
-    ] {
-        let r = quat_z_rot(&Quat::from_rotation_z(z_rot));
-        let v = vec2(r.cos(), r.sin());
-        println!("{:?}, {:?}", r, v);
-    }
 
     let profiling_mode = false;
-    let debug_mode = true;
+    let debug_mode = false;
 
     let mut app = App::new();
     app.insert_resource(RapierConfiguration {
