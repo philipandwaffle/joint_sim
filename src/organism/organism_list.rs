@@ -192,8 +192,14 @@ pub fn update_brains(
 
         let mut muscled_bone_rots = Vec::with_capacity(o.muscles.len() * 4);
         for m_ent in o.muscles.iter() {
-            let m = muscles.get(*m_ent).unwrap();
-            let bone_trans = bones.get_many(m.bones).unwrap();
+            let m = match muscles.get(*m_ent) {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+            let bone_trans = match bones.get_many(m.bones) {
+                Ok(b_t) => b_t,
+                Err(_) => continue,
+            };
 
             let vec_a = quat_to_vec2(&bone_trans[0].rotation);
             let vec_b = quat_to_vec2(&bone_trans[1].rotation);

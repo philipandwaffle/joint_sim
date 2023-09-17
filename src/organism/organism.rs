@@ -129,7 +129,6 @@ impl OrganismBuilder {
             }
         }
 
-        return;
         // Add/remove bone
         if rng.gen::<f32>() <= self.genome.bone_mr.val {
             match rng.gen::<f32>() <= 0.5 {
@@ -137,6 +136,7 @@ impl OrganismBuilder {
                 false => self.remove_bone(rng),
             }
         }
+        return;
 
         // Add/remove muscle
         if rng.gen::<f32>() <= self.genome.muscle_mr.val {
