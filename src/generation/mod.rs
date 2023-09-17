@@ -1,8 +1,8 @@
 use bevy::{
     math::vec2,
     prelude::{
-        resource_exists, App, Commands, IntoSystemConfigs,  Plugin, PreStartup, Query,
-        Res, ResMut, Startup, Transform, Update, With,
+        resource_exists, App, Commands, IntoSystemConfigs, Plugin, PreStartup, Query, Res, ResMut,
+        Startup, Transform, Update, With,
     },
     time::Time,
 };
@@ -168,7 +168,7 @@ fn setup_organism_list(
     } else {
         builders = Vec::with_capacity(num_organisms);
         for _ in 0..num_organisms {
-            builders.push(get_runner_v2());
+            builders.push(get_runner_v3());
         }
     }
 
@@ -207,6 +207,36 @@ fn get_mem_leak_test() -> OrganismBuilder {
     // let bones = vec![];
     // let muscles = vec![[3, 2], [4, 0], [5, 1], [6, 2]];
     let muscles = vec![];
+
+    return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
+}
+
+fn get_runner_v3() -> OrganismBuilder {
+    let brain_structure = vec![16, 16, 16];
+    let joint_pos = vec![
+        vec2(-30.0, 0.0),
+        vec2(30.0, 0.0),
+        vec2(-40.0, 40.0),
+        vec2(0.0, 40.0),
+        vec2(40.0, 40.0),
+        vec2(-20.0, 60.0),
+        vec2(20.0, 60.0),
+    ];
+
+    let bones = vec![
+        [0, 2],
+        [2, 3],
+        [3, 0],
+        [1, 3],
+        [3, 4],
+        [4, 1],
+        [3, 5],
+        [5, 6],
+        [6, 3],
+    ];
+    // let bones = vec![];
+    let muscles = vec![[1, 6], [4, 8], [2, 3]];
+    // let muscles = vec![];
 
     return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
 }

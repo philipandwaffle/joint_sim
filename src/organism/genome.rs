@@ -46,14 +46,14 @@ impl Genome {
 impl Default for Genome {
     fn default() -> Self {
         Self {
-            genome_mr: Allele::new(0.1, 0.1, 0.1),
-            genome_mf: Allele::new(0.1, 0.1, 0.1),
+            genome_mr: Allele::new(0.01, 0.01, 0.01),
+            genome_mf: Allele::new(0.01, 0.01, 0.01),
             lr: Allele::new(0.1, 0.2, 0.2),
             lf: Allele::new(0.1, 0.2, 0.2),
-            joint_mr: Allele::new(0.1, 0.2, 0.2),
-            joint_mf: Allele::new(4.0, 0.2, 1.0),
-            bone_mr: Allele::new(0.01, 0.2, 0.01),
-            bone_mf: Allele::new(10.0, 0.2, 0.01),
+            joint_mr: Allele::new(0.5, 0.02, 0.02),
+            joint_mf: Allele::new(5.0, 0.02, 0.02),
+            bone_mr: Allele::new(0.01, 0.2, 0.002),
+            bone_mf: Allele::new(10.0, 0.2, 0.002),
             muscle_mr: Allele::new(0.01, 0.2, 1.0),
             internal_clock: Allele::new(3.0, 0.2, 0.2),
         }
@@ -84,7 +84,7 @@ impl Allele {
             self.mutate_factor += rng.gen_range(r);
 
             self.mutate_rate = self.mutate_rate.clamp(0.001, 1.0);
-            self.mutate_factor = self.mutate_factor.max(0.01);
+            self.mutate_factor = self.mutate_factor.max(0.001);
         }
     }
 
