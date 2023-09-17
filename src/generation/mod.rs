@@ -168,7 +168,7 @@ fn setup_organism_list(
     } else {
         builders = Vec::with_capacity(num_organisms);
         for _ in 0..num_organisms {
-            builders.push(get_runner_v3());
+            builders.push(get_runner_v5());
         }
     }
 
@@ -207,6 +207,63 @@ fn get_mem_leak_test() -> OrganismBuilder {
     // let bones = vec![];
     // let muscles = vec![[3, 2], [4, 0], [5, 1], [6, 2]];
     let muscles = vec![];
+
+    return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
+}
+
+fn get_runner_v5() -> OrganismBuilder {
+    let brain_structure = vec![16, 16, 16];
+    let joint_pos = vec![
+        vec2(-30.0, 0.0),
+        vec2(-40.0, 30.0),
+        vec2(-30.0, 60.0),
+        vec2(-20.0, 30.0),
+        vec2(30.0, 0.0),
+        vec2(40.0, 30.0),
+        vec2(30.0, 60.0),
+        vec2(20.0, 30.0),
+        vec2(0.0, 20.0),
+        vec2(0.0, 40.0),
+    ];
+
+    let bones = vec![
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 0],
+        [1, 3],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [7, 4],
+        [5, 7],
+        [3, 9],
+        [9, 7],
+        [7, 8],
+        [8, 3],
+        [8, 9],
+    ];
+    // let bones = vec![];
+    let muscles = vec![[2, 10], [3, 13], [7, 11], [8, 12]];
+    // let muscles = vec![];
+
+    return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
+}
+
+fn get_runner_v4() -> OrganismBuilder {
+    let brain_structure = vec![16, 16, 16];
+    let joint_pos = vec![
+        vec2(-30.0, 0.0),
+        vec2(30.0, 0.0),
+        vec2(0.0, 30.0),
+        vec2(-30.0, 60.0),
+        vec2(30.0, 60.0),
+    ];
+
+    let bones = vec![[0, 1], [1, 2], [2, 0], [2, 4], [4, 3], [3, 2]];
+    // let bones = vec![];
+    let muscles = vec![[1, 3], [2, 5]];
+    // let muscles = vec![];
 
     return OrganismBuilder::new(1, brain_structure, joint_pos, bones, muscles);
 }

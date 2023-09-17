@@ -50,7 +50,7 @@ impl JointBundle {
             material_mesh_bundle: MaterialMesh2dBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
-                transform: Transform::from_translation(translation.extend(0.0)),
+                transform: Transform::from_translation(translation.extend(-0.1)),
                 ..default()
             },
             gravity: GravityScale(5.0),

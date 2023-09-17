@@ -173,7 +173,7 @@ impl Brain {
         let in_len = input.len();
         let len = self.weights[0].0.shape().0;
         if in_len != len {
-            panic!("brain can only receive {} inputs, received {}", len, in_len);
+            panic!("brain received {}/{} inputs", in_len, len);
         }
 
         // Feed forward input
