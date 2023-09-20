@@ -159,7 +159,7 @@ pub fn update_muscles(
                     b_ei.impulse = -ab.normalize() * contract_expand * modifier;
                 }
 
-                t.translation = (a_pos + (ab * 0.5)).extend(-0.2);
+                t.translation = (a_pos + (ab * 0.5)).extend(-0.3);
                 t.rotation = Quat::from_rotation_z(vec2_z_rot(&b_pos, &a_pos));
                 t.scale.y = len;
             }
@@ -194,11 +194,11 @@ pub fn update_brains(
         for m_ent in o.muscles.iter() {
             let m = match muscles.get(*m_ent) {
                 Ok(m) => m,
-                Err(_) => continue,
+                Err(_) => return,
             };
             let bone_trans = match bones.get_many(m.bones) {
                 Ok(b_t) => b_t,
-                Err(_) => continue,
+                Err(_) => return,
             };
 
             let vec_a = quat_to_vec2(&bone_trans[0].rotation);

@@ -51,11 +51,11 @@ impl Default for Genome {
             lr: Allele::new(0.1, 0.2, 0.2),
             lf: Allele::new(0.1, 0.2, 0.2),
             joint_mr: Allele::new(0.5, 0.02, 0.02),
-            joint_mf: Allele::new(5.0, 0.02, 0.02),
+            joint_mf: Allele::new(1.0, 0.02, 0.02),
             bone_mr: Allele::new(0.01, 0.2, 0.002),
             bone_mf: Allele::new(10.0, 0.2, 0.002),
             muscle_mr: Allele::new(0.01, 0.2, 1.0),
-            internal_clock: Allele::new(3.0, 0.2, 0.2),
+            internal_clock: Allele::new(20.0, 0.002, 0.002),
         }
     }
 }
