@@ -6,6 +6,7 @@ use bevy::{
     time::Time,
 };
 
+use nalgebra::ComplexField;
 use rand::{
     distributions::{Distribution, Uniform},
     Rng,
@@ -19,7 +20,7 @@ use crate::{
     organism::{
         handles::{setup_handles, Handles},
         joint::Joint,
-        organism::OrganismBuilder,
+        organism::{Organism, OrganismBuilder},
         organism_list::OrganismList,
     },
 };
@@ -90,34 +91,16 @@ fn get_next_generation_builders(
     joint_transforms: &Query<&Transform, With<Joint>>,
 ) -> Vec<OrganismBuilder> {
     // Calculate fitness
-    let num_organism = gc.num_organisms;
-    let mut fitness = Vec::with_capacity(num_organism);
-    for o in ol.organisms.iter() {
-        let score = o
-            .joints
-            .iter()
-            .map(|x| joint_transforms.get(*x).unwrap().translation.x)
-            .sum::<f32>()
-            / o.joints.len() as f32;
-
-        fitness.push(score);
-    }
+    let num_organisms = gc.num_organisms;
 
     // Pick the 'best' organisms
+    let fitness = calc_fitness(&ol.organisms, num_organisms, joint_transforms);
+
     let mut rng = rand::thread_rng();
-    let best_fitness = match fitness.iter().max_by(|a, b| a.total_cmp(b)) {
-        Some(max) => max,
-        None => panic!("Problem calculating max fitness"),
-    };
-    let fitness = fitness
-        .iter()
-        .map(|x| x.max(0.0) / best_fitness)
-        .collect::<Vec<f32>>();
+    let mut new_builders = Vec::with_capacity(num_organisms);
 
-    let mut new_builders = Vec::with_capacity(num_organism);
-
-    while new_builders.len() <= num_organism / 2 {
-        for i in 0..num_organism {
+    while new_builders.len() <= num_organisms / 2 {
+        for i in 0..num_organisms {
             let fit = fitness[i];
 
             if fit.abs() >= rng.gen::<f32>() {
@@ -127,7 +110,7 @@ fn get_next_generation_builders(
     }
 
     let sample = Uniform::from(0..new_builders.len());
-    while new_builders.len() < num_organism {
+    while new_builders.len() < num_organisms {
         let index = sample.sample(&mut rng);
         let new_builder = new_builders[index].clone();
         new_builders.push(new_builder);
@@ -138,6 +121,52 @@ fn get_next_generation_builders(
 
     gc.cur_generation += 1;
     return new_builders;
+}
+
+fn calc_fitness(
+    organisms: &Vec<Organism>,
+    num_organisms: usize,
+    joint_transforms: &Query<&Transform, With<Joint>>,
+) -> Vec<f32> {
+    let mut fitness = Vec::with_capacity(num_organisms);
+
+    let pos_score = organisms
+        .iter()
+        .map(|o| {
+            o.joints
+                .iter()
+                .map(|x| joint_transforms.get(*x).unwrap().translation.x)
+                .sum::<f32>()
+                / o.joints.len() as f32
+        })
+        .collect::<Vec<f32>>();
+    let max_pos_score = pos_score
+        .iter()
+        .max_by(|a, b| a.abs().total_cmp(&b.abs()))
+        .unwrap();
+    let normalised_pos_score = pos_score
+        .iter()
+        .map(|x| x / max_pos_score)
+        .collect::<Vec<f32>>();
+
+    let eff_score = organisms
+        .iter()
+        .map(|o| o.energy_used)
+        .collect::<Vec<f32>>();
+    let max_eff_score = eff_score
+        .iter()
+        .max_by(|a, b| a.abs().total_cmp(&b.abs()))
+        .unwrap();
+    let normalised_eff_score = pos_score
+        .iter()
+        .map(|x| x / max_eff_score)
+        .collect::<Vec<f32>>();
+
+    for i in 0..num_organisms {
+        fitness.push(normalised_pos_score[i] * 0.5 + normalised_eff_score[i] * 0.5)
+    }
+
+    return fitness;
 }
 
 fn setup_organism_list(
