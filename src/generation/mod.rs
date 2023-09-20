@@ -135,7 +135,7 @@ fn calc_fitness(
         .map(|o| {
             o.joints
                 .iter()
-                .map(|x| joint_transforms.get(*x).unwrap().translation.x)
+                .map(|x| joint_transforms.get(*x).unwrap().translation.x.max(0.0))
                 .sum::<f32>()
                 / o.joints.len() as f32
         })
