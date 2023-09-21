@@ -1,12 +1,15 @@
-use bevy::{input::mouse::MouseMotion, prelude::*};
+use bevy::{input::mouse::MouseMotion, prelude::*, window::PrimaryWindow};
 
 use crate::config::structs::CameraConfig;
+
+use super::camera::ScrollingCam;
 
 #[derive(Resource)]
 pub struct ControlState {
     pub translate_delta: Vec2,
     pub zoom_delta: f32,
     pub left_mouse_down: bool,
+    pub world_mouse_pos: Vec2,
     pub save: bool,
 }
 impl Default for ControlState {
@@ -15,6 +18,7 @@ impl Default for ControlState {
             translate_delta: Vec2::ZERO,
             zoom_delta: 0.0,
             left_mouse_down: false,
+            world_mouse_pos: Vec2::ZERO,
             save: false,
         }
     }
@@ -58,6 +62,8 @@ pub fn update_control_state(
     mut cs: ResMut<ControlState>,
     bindings: Res<Bindings>,
     camera_config: Res<CameraConfig>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &mut GlobalTransform), With<ScrollingCam>>,
 ) {
     let mut td = Vec2::ZERO;
     if keyboard.pressed(bindings.up) {
@@ -81,7 +87,17 @@ pub fn update_control_state(
         zd -= 1.0
     }
 
-    cs.left_mouse_down = mouse.pressed(MouseButton::Right);
+    cs.left_mouse_down = mouse.pressed(MouseButton::Left);
+    let (c, t) = camera.single();
+    if let Some(world_mouse_pos) = windows
+        .get_single()
+        .unwrap()
+        .cursor_position()
+        .and_then(|cursor| c.viewport_to_world(t, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        cs.world_mouse_pos = world_mouse_pos;
+    }
 
     if !cs.save && keyboard.just_pressed(bindings.save) {
         cs.save = true;

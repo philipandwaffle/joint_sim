@@ -2,6 +2,7 @@ use bevy::{
     prelude::{default, Bundle, Component, Handle, Transform, Vec2},
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
+use bevy_rapier2d::prelude::{Collider, Sensor};
 
 #[derive(Component)]
 pub struct Icon;
@@ -10,6 +11,8 @@ pub struct Icon;
 pub struct JointIcon {
     icon: Icon,
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
+    collider: Collider,
+    sensor: Sensor,
 }
 impl JointIcon {
     pub fn new(translation: Vec2, mesh: &Mesh2dHandle, material: &Handle<ColorMaterial>) -> Self {
@@ -21,6 +24,8 @@ impl JointIcon {
                 transform: Transform::from_translation(translation.extend(0.3)),
                 ..default()
             },
+            collider: Collider::ball(5.0),
+            sensor: Sensor,
         };
     }
 }

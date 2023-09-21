@@ -9,6 +9,7 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 use organism::helper_fn::quat_z_rot;
+use organism_constructor::OrganismConstructionPlugin;
 use std::env;
 use std::f32::consts::PI;
 
@@ -65,6 +66,7 @@ fn main() {
         ControlPlugin,
         GenerationPlugin,
         OrganismPlugin,
+        OrganismConstructionPlugin,
         ConfigPlugin,
     ));
 
