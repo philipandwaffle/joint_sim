@@ -40,7 +40,6 @@ pub fn set_draggable(
         ),
         false => {
             if let Ok(e) = icons.get_single() {
-                // println!("remove dragging");
                 commands.entity(e).remove::<Dragging>();
             }
         }
