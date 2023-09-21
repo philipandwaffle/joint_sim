@@ -216,7 +216,9 @@ pub fn update_brains(
         let brain_out = o.process_stimuli(&mut stimuli);
 
         for i in 0..brain_out.len() {
-            muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i];
+            let cur_len_modifier = &mut muscles.get_mut(o.muscles[i]).unwrap().len_modifier;
+            o.energy_used += (*cur_len_modifier - brain_out[i]).abs().sqrt();
+            *cur_len_modifier = brain_out[i];
         }
         o.brain.set_memory(brain_out);
     }

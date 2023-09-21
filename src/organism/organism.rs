@@ -108,6 +108,7 @@ impl OrganismBuilder {
             joints: joint_ents,
             bones: bone_ents,
             muscles: muscles_ents,
+            energy_used: 0.0,
             freeze_progress: 0.0,
         };
     }
@@ -221,6 +222,7 @@ pub struct Organism {
     pub joints: Vec<Entity>,
     pub bones: Vec<Entity>,
     pub muscles: Vec<Entity>,
+    pub energy_used: f32,
     pub freeze_progress: f32,
 }
 
