@@ -11,7 +11,7 @@ use crate::config::structs::GenerationConfig;
 use super::{
     bone::Bone,
     handles::Handles,
-    helper_fn::{quat_z_rot, vec2_z_rot},
+    helper_fn::{quat_to_vec2, quat_z_rot, vec2_z_rot},
     joint::Joint,
     muscle::Muscle,
     organism::{Organism, OrganismBuilder},
@@ -159,7 +159,7 @@ pub fn update_muscles(
                     b_ei.impulse = -ab.normalize() * contract_expand * modifier;
                 }
 
-                t.translation = (a_pos + (ab * 0.5)).extend(-0.2);
+                t.translation = (a_pos + (ab * 0.5)).extend(-0.3);
                 t.rotation = Quat::from_rotation_z(vec2_z_rot(&b_pos, &a_pos));
                 t.scale.y = len;
             }
@@ -190,20 +190,35 @@ pub fn update_brains(
         let mut stimuli = Vec::with_capacity(o.brain.get_num_inputs());
         stimuli.push(elapsed_seconds);
 
-        for b in o.bones.iter() {
-            match bones.get(*b) {
-                Ok(t) => stimuli.push(quat_z_rot(&t.rotation)),
+        let mut muscled_bone_rots = Vec::with_capacity(o.muscles.len() * 4);
+        for m_ent in o.muscles.iter() {
+            let m = match muscles.get(*m_ent) {
+                Ok(m) => m,
                 Err(_) => return,
-            }
+            };
+            let bone_trans = match bones.get_many(m.bones) {
+                Ok(b_t) => b_t,
+                Err(_) => return,
+            };
+
+            let vec_a = quat_to_vec2(&bone_trans[0].rotation);
+            let vec_b = quat_to_vec2(&bone_trans[1].rotation);
+
+            muscled_bone_rots.push(vec_a.x);
+            muscled_bone_rots.push(vec_a.y);
+            muscled_bone_rots.push(vec_b.x);
+            muscled_bone_rots.push(vec_b.y);
         }
 
+        stimuli.extend(muscled_bone_rots);
+
         // Process stimuli
-        // let process_now = Instant::now();
         let brain_out = o.process_stimuli(&mut stimuli);
-        // total_brain_process += process_now.elapsed().as_micros();
 
         for i in 0..brain_out.len() {
-            muscles.get_mut(o.muscles[i]).unwrap().len_modifier = brain_out[i];
+            let cur_len_modifier = &mut muscles.get_mut(o.muscles[i]).unwrap().len_modifier;
+            o.energy_used += (*cur_len_modifier - brain_out[i]).abs().sqrt();
+            *cur_len_modifier = brain_out[i];
         }
         o.brain.set_memory(brain_out);
     }

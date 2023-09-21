@@ -53,7 +53,7 @@ impl MuscleBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
                 transform: Transform {
-                    translation: translation.extend(0.0),
+                    translation: translation.extend(-0.3),
                     // translation: vec3(0.0, -len * 0.5, -0.2),
                     rotation: Quat::from_rotation_z(z_rot),
                     scale: vec3(muscle_width, len, 0.0),

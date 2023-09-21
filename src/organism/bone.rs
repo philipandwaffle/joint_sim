@@ -64,8 +64,8 @@ impl BoneBundle {
         return Self {
             bone: Bone,
             spatial_bundle: SpatialBundle::from_transform(Transform {
-                translation: translation.extend(-0.1),
-                rotation: Quat::from_rotation_z(z_rot),
+                translation: translation.extend(-0.2),
+                // rotation: Quat::from_rotation_z(z_rot),
                 ..default()
             }),
             rigid_body: RigidBody::Dynamic,
@@ -79,7 +79,7 @@ impl BoneBundle {
 pub struct BoneDisplayBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     collider: Collider,
-    sensor: Sensor,
+    // sensor: Sensor,
     collider_mass: ColliderMassProperties,
 }
 impl BoneDisplayBundle {
@@ -102,7 +102,7 @@ impl BoneDisplayBundle {
             },
             collider_mass: ColliderMassProperties::Density(0.2),
             collider: Collider::cuboid(0.5, 0.5),
-            sensor: Sensor,
+            // sensor: Sensor,
         };
     }
 }

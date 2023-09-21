@@ -153,11 +153,15 @@ impl Brain {
     }
 
     // Set the memory used for feed forward
-    pub fn set_memory(&mut self, memory: Vec<f32>) {
-        if self.memory.capacity() != memory.capacity() {
-            panic!("Creature trying to remember more that allocated");
+    pub fn set_memory(&mut self, remember: Vec<f32>) {
+        if self.memory.len() != remember.len() {
+            panic!(
+                "Creature trying to remember {:?}/{:?} items",
+                remember.len(),
+                self.memory.len(),
+            );
         }
-        self.memory = memory;
+        self.memory = remember;
     }
 
     pub fn process_stimuli(&self, external_stimuli: &Vec<f32>) -> Vec<f32> {
@@ -169,7 +173,7 @@ impl Brain {
         let in_len = input.len();
         let len = self.weights[0].0.shape().0;
         if in_len != len {
-            panic!("brain can only receive {} inputs, received {}", len, in_len);
+            panic!("brain received {}/{} inputs", in_len, len);
         }
 
         // Feed forward input
