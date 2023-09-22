@@ -25,6 +25,7 @@ mod controls;
 mod generation;
 mod organism;
 mod organism_constructor;
+mod scene_manager;
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "full");
