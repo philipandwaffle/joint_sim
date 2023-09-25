@@ -1,11 +1,15 @@
-use bevy::prelude::*;
+use bevy::{input::mouse::MouseMotion, prelude::*, window::PrimaryWindow};
 
 use crate::config::structs::CameraConfig;
+
+use super::camera::ScrollingCam;
 
 #[derive(Resource)]
 pub struct ControlState {
     pub translate_delta: Vec2,
     pub zoom_delta: f32,
+    pub left_mouse_down: bool,
+    pub world_mouse_pos: Vec2,
     pub save: bool,
 }
 impl Default for ControlState {
@@ -13,6 +17,8 @@ impl Default for ControlState {
         Self {
             translate_delta: Vec2::ZERO,
             zoom_delta: 0.0,
+            left_mouse_down: false,
+            world_mouse_pos: Vec2::ZERO,
             save: false,
         }
     }
@@ -51,34 +57,49 @@ impl Default for Bindings {
 }
 
 pub fn update_control_state(
-    input: Res<Input<KeyCode>>,
+    keyboard: Res<Input<KeyCode>>,
+    mouse: Res<Input<MouseButton>>,
     mut cs: ResMut<ControlState>,
     bindings: Res<Bindings>,
     camera_config: Res<CameraConfig>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &mut GlobalTransform), With<ScrollingCam>>,
 ) {
     let mut td = Vec2::ZERO;
-    if input.pressed(bindings.up) {
+    if keyboard.pressed(bindings.up) {
         td.y += 1.0
     }
-    if input.pressed(bindings.left) {
+    if keyboard.pressed(bindings.left) {
         td.x -= 1.0
     }
-    if input.pressed(bindings.down) {
+    if keyboard.pressed(bindings.down) {
         td.y -= 1.0
     }
-    if input.pressed(bindings.right) {
+    if keyboard.pressed(bindings.right) {
         td.x += 1.0
     }
 
     let mut zd = 0.0;
-    if input.pressed(bindings.zoom_in) {
+    if keyboard.pressed(bindings.zoom_in) {
         zd += 1.0
     }
-    if input.pressed(bindings.zoom_out) {
+    if keyboard.pressed(bindings.zoom_out) {
         zd -= 1.0
     }
 
-    if !cs.save && input.just_pressed(bindings.save) {
+    cs.left_mouse_down = mouse.pressed(MouseButton::Left);
+    let (c, t) = camera.single();
+    if let Some(world_mouse_pos) = windows
+        .get_single()
+        .unwrap()
+        .cursor_position()
+        .and_then(|cursor| c.viewport_to_world(t, cursor))
+        .map(|ray| ray.origin.truncate())
+    {
+        cs.world_mouse_pos = world_mouse_pos;
+    }
+
+    if !cs.save && keyboard.just_pressed(bindings.save) {
         cs.save = true;
     }
 

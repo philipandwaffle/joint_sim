@@ -5,7 +5,6 @@ use self::organism_list::{unfreeze_queued, update_brains, update_muscles, Organi
 pub mod bone;
 pub mod brain;
 pub mod genome;
-pub mod handles;
 pub mod helper_fn;
 pub mod joint;
 pub mod muscle;
