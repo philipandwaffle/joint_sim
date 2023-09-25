@@ -8,6 +8,7 @@ use bevy::{
 };
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
+use handles::setup_handles;
 use organism::helper_fn::quat_z_rot;
 use organism_constructor::OrganismConstructionPlugin;
 use std::env;
@@ -23,6 +24,7 @@ mod collider_layer;
 mod config;
 mod controls;
 mod generation;
+mod handles;
 mod organism;
 mod organism_constructor;
 mod scene_manager;
@@ -61,6 +63,7 @@ fn main() {
             .set(ImagePlugin::default_nearest()), // .disable::<LogPlugin>()
                                                   // .disable::<DiagnosticsPlugin>(),
     )
+    .add_systems(PreStartup, setup_handles)
     .add_plugins((
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         // RapierPhysicsPlugin::<ColliderLayerHook>::pixels_per_meter(100.0),

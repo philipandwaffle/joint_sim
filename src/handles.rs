@@ -1,11 +1,13 @@
 use bevy::{
     math::vec2,
-    prelude::{shape, Assets, Color, Commands, Handle, Mesh, ResMut, Resource},
+    prelude::{shape, Assets, Color, Commands, Handle, Mesh, ResMut, Resource, Vec2},
     sprite::{ColorMaterial, Mesh2dHandle},
 };
 
 #[derive(Resource)]
 pub struct Handles {
+    pub block_mesh: Mesh2dHandle,
+    pub block_material: Handle<ColorMaterial>,
     pub joint_mesh: Mesh2dHandle,
     pub joint_material: Handle<ColorMaterial>,
     pub bone_mesh: Mesh2dHandle,
@@ -21,7 +23,11 @@ pub fn setup_handles(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    // let mesh_handle = meshes.add(shape::Quad::new(extents).into()).into();
+    // let material_handle = materials.add(ColorMaterial::from(Color::BLACK));
     commands.insert_resource(Handles {
+        block_mesh: meshes.add(shape::Quad::new(Vec2::ZERO).into()).into(),
+        block_material: materials.add(ColorMaterial::from(Color::BLACK)),
         joint_mesh: meshes.add(shape::Circle::new(5.0).into()).into(),
         joint_material: materials.add(ColorMaterial::from(Color::hsl(115.0, 0.60, 0.35))),
         bone_mesh: meshes.add(shape::Quad::new(vec2(1.0, 1.0)).into()).into(),

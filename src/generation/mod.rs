@@ -13,31 +13,28 @@ use rand::{
 };
 use std::{fs::File, io::BufReader};
 
-use self::{environment::spawn_environment, organism_builders::get_runner_v6};
+use self::organism_builders::get_runner_v6;
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
     controls::control_state::ControlState,
+    handles::Handles,
     organism::{
-        handles::{setup_handles, Handles},
         joint::Joint,
         organism::{Organism, OrganismBuilder},
         organism_list::OrganismList,
     },
 };
 
-mod environment;
+pub mod environment;
 mod organism_builders;
 
 pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(OrganismList::new())
-            .add_systems(PreStartup, setup_handles)
-            .add_systems(Startup, (spawn_environment, setup_organism_list))
-            .add_systems(
-                Update,
-                (handle_generation).run_if(resource_exists::<OrganismList>()),
-            );
+        app.insert_resource(OrganismList::new()).add_systems(
+            Update,
+            (handle_generation).run_if(resource_exists::<OrganismList>()),
+        );
     }
 }
 

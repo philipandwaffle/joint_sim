@@ -3,7 +3,7 @@ use bevy::{
     prelude::{Commands, Plugin, Res, Startup, Update},
 };
 
-use crate::organism::handles::Handles;
+use crate::handles::Handles;
 
 use self::{
     drag::{move_dragging, set_draggable},

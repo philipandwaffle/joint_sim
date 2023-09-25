@@ -6,9 +6,10 @@ use bevy_rapier2d::prelude::PrismaticJointBuilder;
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 
+use crate::handles::Handles;
+
 use super::{
-    bone::BoneBundle, brain::Brain, genome::Genome, handles::Handles, joint::JointBundle,
-    muscle::MuscleBundle,
+    bone::BoneBundle, brain::Brain, genome::Genome, joint::JointBundle, muscle::MuscleBundle,
 };
 
 // Acts as a blueprint for organisms so mutations can occur before spawning

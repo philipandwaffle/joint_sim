@@ -6,11 +6,10 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Damping, ExternalImpulse};
 
-use crate::config::structs::GenerationConfig;
+use crate::{config::structs::GenerationConfig, handles::Handles};
 
 use super::{
     bone::Bone,
-    handles::Handles,
     helper_fn::{quat_to_vec2, quat_z_rot, vec2_z_rot},
     joint::Joint,
     muscle::Muscle,
