@@ -13,7 +13,7 @@ use rand::{
 };
 use std::{fs::File, io::BufReader};
 
-use self::organism_builders::get_runner_v6;
+use self::{environment::Environment, organism_builders::get_runner_v6};
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
     controls::control_state::ControlState,
@@ -22,6 +22,7 @@ use crate::{
         joint::Joint,
         organism::{Organism, OrganismBuilder},
         organism_list::OrganismList,
+        OrganismPlugin,
     },
 };
 
@@ -31,10 +32,13 @@ mod organism_builders;
 pub struct GenerationPlugin;
 impl Plugin for GenerationPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(OrganismList::new()).add_systems(
-            Update,
-            (handle_generation).run_if(resource_exists::<OrganismList>()),
-        );
+        app.insert_resource(OrganismList::new())
+            .insert_resource(Environment::new())
+            .add_plugins(OrganismPlugin)
+            .add_systems(
+                Update,
+                (handle_generation).run_if(resource_exists::<OrganismList>()),
+            );
     }
 }
 
@@ -166,12 +170,7 @@ fn calc_fitness(
     return fitness;
 }
 
-fn setup_organism_list(
-    mut commands: Commands,
-    handles: Res<Handles>,
-    gc: Res<GenerationConfig>,
-    sc: Res<SaveConfig>,
-) {
+pub fn setup_builders(ol: &mut OrganismList, gc: &GenerationConfig, sc: &SaveConfig) {
     let num_organisms = gc.num_organisms;
     let mut builders;
 
@@ -198,12 +197,5 @@ fn setup_organism_list(
         }
     }
 
-    let mut ol = OrganismList {
-        builders: builders,
-        organisms: vec![],
-        is_spawned: false,
-    };
-
-    ol.spawn(&mut commands, &handles, gc.vertical_sep);
-    commands.insert_resource(ol);
+    ol.builders = builders;
 }

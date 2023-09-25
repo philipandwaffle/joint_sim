@@ -17,6 +17,10 @@ pub struct Environment {
     env_ents: Vec<Entity>,
 }
 impl Environment {
+    pub fn new() -> Self {
+        return Self { env_ents: vec![] };
+    }
+
     pub fn spawn(
         &mut self,
         commands: &mut Commands,
@@ -78,7 +82,7 @@ impl Block {
                 material: material.clone(),
                 transform: Transform {
                     translation: translation.extend(0.0),
-                    scale: extents.extend(1.0),
+                    scale: extents.extend(0.0),
                     ..default()
                 },
                 ..default()

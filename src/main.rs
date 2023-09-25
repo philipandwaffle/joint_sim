@@ -11,6 +11,7 @@ use bevy_rapier2d::prelude::*;
 use handles::setup_handles;
 use organism::helper_fn::quat_z_rot;
 use organism_constructor::OrganismConstructionPlugin;
+use scene_manager::SceneManagerPlugin;
 use std::env;
 use std::f32::consts::PI;
 
@@ -67,11 +68,11 @@ fn main() {
     .add_plugins((
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
         // RapierPhysicsPlugin::<ColliderLayerHook>::pixels_per_meter(100.0),
-        ControlPlugin,
-        GenerationPlugin,
-        OrganismPlugin,
-        OrganismConstructionPlugin,
         ConfigPlugin,
+        ControlPlugin,
+        SceneManagerPlugin,
+        GenerationPlugin,
+        OrganismConstructionPlugin,
     ));
 
     if profiling_mode {
