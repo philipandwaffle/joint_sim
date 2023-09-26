@@ -1,9 +1,20 @@
 use bevy::{
-    prelude::{default, BuildChildren, Color, Commands, NodeBundle},
+    prelude::{default, BuildChildren, Bundle, Color, Commands, NodeBundle},
     ui::{PositionType, Style, Val},
 };
 
 use super::construction_grid::ConstructionGridBundle;
+#[derive(Bundle)]
+pub struct PartMenuBundle {
+    node_bundle: NodeBundle,
+}
+impl PartMenuBundle {
+    pub fn new() -> Self {
+        return Self {
+            node_bundle: todo!(),
+        };
+    }
+}
 
 pub fn ui_test(mut commands: Commands) {
     ConstructionGridBundle::new(&mut commands);
