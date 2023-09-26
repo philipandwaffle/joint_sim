@@ -10,8 +10,10 @@ use self::{
     icons::JointIcon,
 };
 
+mod construction_grid;
 mod drag;
 mod icons;
+pub mod part_menu;
 
 pub struct OrganismConstructionPlugin;
 impl Plugin for OrganismConstructionPlugin {

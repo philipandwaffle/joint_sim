@@ -1,6 +1,6 @@
 use bevy::{
     prelude::{default, BuildChildren, Color, Commands, NodeBundle},
-    ui::{AlignItems, JustifyContent, PositionType, Style, Val},
+    ui::{PositionType, Style, Val},
 };
 
 use super::construction_grid::ConstructionGridBundle;
@@ -8,7 +8,6 @@ use super::construction_grid::ConstructionGridBundle;
 pub fn ui_test(mut commands: Commands) {
     ConstructionGridBundle::new(&mut commands);
 
-    return;
     commands
         .spawn(NodeBundle {
             style: Style {
