@@ -42,7 +42,6 @@ impl Scene {
             Scene::StartMenu => {}
             Scene::OrganismConstructor => {}
             Scene::OrganismSimulation => {
-                println!("spawning sim");
                 setup_builders(ol, gc, sc);
                 ol.spawn(commands, handles, gc.vertical_sep);
                 env.spawn(commands, &handles.block_mesh, &handles.block_material, gc);
@@ -69,7 +68,6 @@ fn change_scene(
     sc: Res<SaveConfig>,
     handles: Res<Handles>,
 ) {
-    println!("Changing scene");
     cs.cur_scene.pre_change(&mut commands, &mut ol, &env);
     cs.cur_scene = cs.next_scene;
     cs.next_scene

@@ -1,6 +1,6 @@
 use bevy::{
-    prelude::{default, BuildChildren, Bundle, Color, Commands, NodeBundle},
-    ui::{PositionType, Style, Val},
+    prelude::{default, BuildChildren, Bundle, Color, Commands, Entity, NodeBundle},
+    ui::{BackgroundColor, Display, GridTrack, PositionType, Style, Val},
 };
 
 use super::construction_grid::ConstructionGridBundle;
@@ -9,10 +9,30 @@ pub struct PartMenuBundle {
     node_bundle: NodeBundle,
 }
 impl PartMenuBundle {
-    pub fn new() -> Self {
-        return Self {
-            node_bundle: todo!(),
-        };
+    pub fn new(commands: &mut Commands) -> Entity {
+        let grid_ent = commands
+            .spawn(Self {
+                node_bundle: NodeBundle {
+                    style: Style {
+                        display: Display::Grid,
+                        left: Val::Percent(0.0),
+                        top: Val::Percent(0.0),
+                        height: Val::Percent(10.0),
+                        width: Val::Percent(100.0),
+                        grid_template_rows: vec![GridTrack::auto(); 1],
+                        grid_template_columns: vec![GridTrack::auto(); 3],
+                        ..default()
+                    },
+                    background_color: BackgroundColor(Color::hsla(0.0, 0.25, 0.25, 0.3)),
+                    ..default()
+                },
+            })
+            .with_children(|p| {
+                
+            })
+            .id();
+
+        return grid_ent;
     }
 }
 
