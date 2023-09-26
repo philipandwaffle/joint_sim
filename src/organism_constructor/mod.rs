@@ -26,6 +26,7 @@ impl Plugin for OrganismConstructionPlugin {
 fn setup_test(mut commands: Commands, handles: Res<Handles>) {
     commands.spawn(JointIcon::new(
         vec2(1000.0, 100.0),
+        5.0,
         &handles.joint_mesh,
         &handles.joint_material,
     ));
