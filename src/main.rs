@@ -22,6 +22,7 @@ use organism::OrganismPlugin;
 use crate::config::ConfigPlugin;
 
 mod collider_layer;
+mod color_palette;
 mod config;
 mod controls;
 mod generation;
