@@ -1,5 +1,7 @@
 use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Resource};
 
+use crate::handles::Handles;
+
 use super::part_menu::{self, PartMenuBundle};
 
 #[derive(Resource)]
@@ -11,8 +13,8 @@ impl Constructor {
         return Self { part_menu: None };
     }
 
-    pub fn spawn(&mut self, commands: &mut Commands) {
-        self.part_menu = Some(PartMenuBundle::new(commands));
+    pub fn spawn(&mut self, commands: &mut Commands, handles: &Handles) {
+        self.part_menu = Some(PartMenuBundle::new(commands, handles));
     }
 
     pub fn despawn(&mut self, commands: &mut Commands) {

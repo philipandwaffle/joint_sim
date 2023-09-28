@@ -51,7 +51,7 @@ impl Scene {
             Scene::NoScene => {}
             Scene::StartMenu => {}
             Scene::OrganismConstructor => {
-                con.spawn(commands);
+                con.spawn(commands, handles);
             }
             Scene::OrganismSimulation => {
                 setup_builders(ol, gc, sc);
