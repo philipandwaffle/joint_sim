@@ -6,16 +6,18 @@ use bevy::{
 use crate::handles::Handles;
 
 use self::{
+    construction_mode::ConstructionMode,
     constructor::Constructor,
     drag::{move_dragging, set_draggable},
     icons::JointIcon,
 };
 
 mod construction_grid;
+mod construction_mode;
 pub mod constructor;
 mod drag;
 mod icons;
-pub mod part_menu;
+pub mod mode_menu;
 
 pub struct OrganismConstructionPlugin;
 impl Plugin for OrganismConstructionPlugin {

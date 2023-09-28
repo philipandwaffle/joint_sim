@@ -6,13 +6,16 @@ use bevy::{
 
 use crate::{color_palette, handles::Handles};
 
-use super::icons::JointIcon;
+use super::{
+    construction_mode::{Mode, ModeButton},
+    icons::JointIcon,
+};
 
 #[derive(Bundle)]
-pub struct PartMenuBundle {
+pub struct ModeMenuBundle {
     node_bundle: NodeBundle,
 }
-impl PartMenuBundle {
+impl ModeMenuBundle {
     pub fn new(commands: &mut Commands, handles: &Handles) -> Entity {
         let grid_ent = commands
             .spawn(Self {
@@ -47,14 +50,11 @@ impl PartMenuBundle {
                     })
                     .with_children(|cell| {
                         if i == 0 {
-                            cell.spawn(JointIcon::new(
-                                vec2(0.0, 0.0),
-                                10.0,
-                                &handles.joint_mesh,
-                                &handles.joint_material,
-                            ));
+                            ModeButton::new(Mode::Joint, cell);
                         } else if i == 1 {
+                            ModeButton::new(Mode::Bone, cell);
                         } else if i == 2 {
+                            ModeButton::new(Mode::Muscle, cell);
                         }
                     });
                 }

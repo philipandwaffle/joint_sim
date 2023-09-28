@@ -2,7 +2,7 @@ use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Resource};
 
 use crate::handles::Handles;
 
-use super::part_menu::{self, PartMenuBundle};
+use super::mode_menu::{self, ModeMenuBundle};
 
 #[derive(Resource)]
 pub struct Constructor {
@@ -14,7 +14,7 @@ impl Constructor {
     }
 
     pub fn spawn(&mut self, commands: &mut Commands, handles: &Handles) {
-        self.part_menu = Some(PartMenuBundle::new(commands, handles));
+        self.part_menu = Some(ModeMenuBundle::new(commands, handles));
     }
 
     pub fn despawn(&mut self, commands: &mut Commands) {
