@@ -2,7 +2,7 @@ use bevy::prelude::{App, Plugin, Startup, Update};
 
 use self::{
     camera::{spawn_cam, translate_cam},
-    control_state::{update_control_state, Bindings, ControlState},
+    control_state::{update_control_state, ControlConfig, ControlState},
     save::save_generation,
 };
 
@@ -14,7 +14,7 @@ pub struct ControlPlugin;
 impl Plugin for ControlPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ControlState::default())
-            .insert_resource(Bindings::default())
+            .insert_resource(ControlConfig::default())
             .add_systems(Startup, (spawn_cam))
             .add_systems(
                 Update,

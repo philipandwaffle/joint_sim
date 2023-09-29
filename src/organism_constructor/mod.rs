@@ -7,7 +7,7 @@ use crate::handles::Handles;
 
 use self::{
     construction_mode::{ConstructionMode, ConstructionModePlugin},
-    constructor::Constructor,
+    constructor::{handle_construction, Constructor},
     drag::{move_dragging, set_draggable},
     icons::JointIcon,
 };
@@ -25,7 +25,7 @@ impl Plugin for OrganismConstructionPlugin {
         app.insert_resource(Constructor::new());
         app.add_plugins(ConstructionModePlugin);
         app.add_systems(Startup, setup_test);
-        app.add_systems(Update, (move_dragging, set_draggable));
+        app.add_systems(Update, (handle_construction, move_dragging, set_draggable));
     }
 }
 

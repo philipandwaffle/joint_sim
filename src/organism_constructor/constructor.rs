@@ -1,8 +1,11 @@
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Resource};
+use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Res, ResMut, Resource};
 
-use crate::handles::Handles;
+use crate::{controls::control_state::ControlState, handles::Handles};
 
-use super::mode_menu::{self, ModeMenuBundle};
+use super::{
+    construction_mode::ConstructionMode,
+    mode_menu::{self, ModeMenuBundle},
+};
 
 #[derive(Resource)]
 pub struct Constructor {
@@ -20,5 +23,12 @@ impl Constructor {
     pub fn despawn(&mut self, commands: &mut Commands) {
         commands.entity(self.part_menu.unwrap()).despawn_recursive();
         self.part_menu = None;
+    }
+}
+
+pub fn handle_construction(cm: Res<ConstructionMode>, mut cs: ResMut<ControlState>) {
+    if cs.double_click {
+        cs.double_click = false;
+        println!("hello");
     }
 }
