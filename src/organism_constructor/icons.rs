@@ -5,11 +5,11 @@ use bevy::{
 use bevy_rapier2d::prelude::{Collider, Sensor};
 
 #[derive(Component)]
-pub struct Icon;
+pub struct DraggableIcon;
 
 #[derive(Bundle)]
 pub struct JointIcon {
-    icon: Icon,
+    icon: DraggableIcon,
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     collider: Collider,
     sensor: Sensor,
@@ -22,7 +22,7 @@ impl JointIcon {
         material: &Handle<ColorMaterial>,
     ) -> Self {
         return Self {
-            icon: Icon,
+            icon: DraggableIcon,
             material_mesh_bundle: MaterialMesh2dBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),

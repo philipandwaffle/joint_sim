@@ -24,16 +24,6 @@ impl Plugin for OrganismConstructionPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(Constructor::new());
         app.add_plugins(ConstructionModePlugin);
-        app.add_systems(Startup, setup_test);
         app.add_systems(Update, (handle_construction, move_dragging, set_draggable));
     }
-}
-
-fn setup_test(mut commands: Commands, handles: Res<Handles>) {
-    commands.spawn(JointIcon::new(
-        vec2(1000.0, 100.0),
-        5.0,
-        &handles.joint_mesh,
-        &handles.joint_material,
-    ));
 }

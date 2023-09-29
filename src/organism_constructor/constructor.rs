@@ -1,9 +1,13 @@
 use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Res, ResMut, Resource};
 
-use crate::{controls::control_state::ControlState, handles::Handles};
+use crate::{
+    controls::control_state::ControlState,
+    handles::{self, Handles},
+};
 
 use super::{
-    construction_mode::ConstructionMode,
+    construction_mode::{ConstructionMode, Mode},
+    icons::JointIcon,
     mode_menu::{self, ModeMenuBundle},
 };
 
@@ -26,9 +30,27 @@ impl Constructor {
     }
 }
 
-pub fn handle_construction(cm: Res<ConstructionMode>, mut cs: ResMut<ControlState>) {
-    if cs.double_click {
-        cs.double_click = false;
-        println!("hello");
+pub fn handle_construction(
+    mut commands: Commands,
+    cm: Res<ConstructionMode>,
+    mut cs: ResMut<ControlState>,
+    handles: Res<Handles>,
+) {
+    match cm.current_mode {
+        Mode::None => {}
+        Mode::Joint => {
+            if cs.double_click {
+                cs.double_click = false;
+
+                commands.spawn(JointIcon::new(
+                    cs.world_mouse_pos,
+                    10.0,
+                    &handles.joint_mesh,
+                    &handles.joint_material,
+                ));
+            }
+        }
+        Mode::Bone => {}
+        Mode::Muscle => {}
     }
 }

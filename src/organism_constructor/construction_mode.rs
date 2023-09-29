@@ -94,7 +94,7 @@ pub enum Mode {
 
 #[derive(Resource)]
 pub struct ConstructionMode {
-    current_mode: Mode,
+    pub current_mode: Mode,
 }
 impl ConstructionMode {
     pub fn new() -> Self {
