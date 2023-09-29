@@ -26,7 +26,7 @@ pub fn setup_handles(
     commands.insert_resource(Handles {
         block_mesh: meshes.add(shape::Quad::new(Vec2::ONE).into()).into(),
         block_material: materials.add(ColorMaterial::from(Color::BLACK)),
-        joint_mesh: meshes.add(shape::Circle::new(5.0).into()).into(),
+        joint_mesh: meshes.add(shape::Circle::new(1.0).into()).into(),
         joint_material: materials.add(ColorMaterial::from(Color::hsl(115.0, 0.60, 0.35))),
         bone_mesh: meshes.add(shape::Quad::new(vec2(1.0, 1.0)).into()).into(),
         bone_material: materials.add(ColorMaterial::from(Color::hsl(0.0, 0.50, 0.90))),

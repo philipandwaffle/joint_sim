@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{default, Bundle, Component, Handle, Transform, Vec2},
+    prelude::{default, Bundle, Component, Handle, Transform, Vec2, Vec3},
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::prelude::{
@@ -46,11 +46,15 @@ impl JointBundle {
                 angular_damping: 0.0,
             },
             friction: Friction::coefficient(0.7),
-            collider: Collider::ball(radius),
+            collider: Collider::ball(1.0),
             material_mesh_bundle: MaterialMesh2dBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
-                transform: Transform::from_translation(translation.extend(-0.1)),
+                transform: Transform {
+                    translation: translation.extend(-0.1),
+                    scale: Vec3::ONE * radius,
+                    ..default()
+                },
                 ..default()
             },
             gravity: GravityScale(5.0),
