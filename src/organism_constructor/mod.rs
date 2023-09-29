@@ -6,7 +6,7 @@ use bevy::{
 use crate::handles::Handles;
 
 use self::{
-    construction_mode::ConstructionMode,
+    construction_mode::{ConstructionMode, ConstructionModePlugin},
     constructor::Constructor,
     drag::{move_dragging, set_draggable},
     icons::JointIcon,
@@ -23,6 +23,7 @@ pub struct OrganismConstructionPlugin;
 impl Plugin for OrganismConstructionPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(Constructor::new());
+        app.add_plugins(ConstructionModePlugin);
         app.add_systems(Startup, setup_test);
         app.add_systems(Update, (move_dragging, set_draggable));
     }

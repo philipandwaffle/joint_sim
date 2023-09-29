@@ -50,11 +50,29 @@ impl ModeMenuBundle {
                     })
                     .with_children(|cell| {
                         if i == 0 {
-                            ModeButton::new(Mode::Joint, cell);
+                            ModeButton::new(
+                                Mode::Joint,
+                                "Joint",
+                                "Double click to create a joint",
+                                "Joint",
+                                cell,
+                            );
                         } else if i == 1 {
-                            ModeButton::new(Mode::Bone, cell);
+                            ModeButton::new(
+                                Mode::Bone,
+                                "Bone",
+                                "Click and drag between two joints to create a bone",
+                                "Bone",
+                                cell,
+                            );
                         } else if i == 2 {
-                            ModeButton::new(Mode::Muscle, cell);
+                            ModeButton::new(
+                                Mode::Muscle,
+                                "Muscle",
+                                "Click and drag between two bones to create a muscle",
+                                "Muscle",
+                                cell,
+                            );
                         }
                     });
                 }
