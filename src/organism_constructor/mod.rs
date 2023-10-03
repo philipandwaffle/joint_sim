@@ -9,7 +9,7 @@ use self::{
     construction_mode::{ConstructionMode, ConstructionModePlugin},
     constructor::{handle_construction, Constructor},
     drag::{move_dragging, set_draggable},
-    icons::JointIcon,
+    icons::{anchor_icons, JointIcon},
 };
 
 mod construction_grid;
@@ -24,6 +24,14 @@ impl Plugin for OrganismConstructionPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.insert_resource(Constructor::new());
         app.add_plugins(ConstructionModePlugin);
-        app.add_systems(Update, (handle_construction, move_dragging, set_draggable));
+        app.add_systems(
+            Update,
+            (
+                handle_construction,
+                anchor_icons,
+                move_dragging,
+                set_draggable,
+            ),
+        );
     }
 }

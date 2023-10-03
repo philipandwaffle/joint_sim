@@ -1,4 +1,9 @@
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Res, ResMut, Resource};
+use std::arch::x86_64::_andn_u32;
+
+use bevy::prelude::{
+    default, BuildChildren, Commands, DespawnRecursiveExt, Entity, Res, ResMut, Resource,
+};
+use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
 use crate::{
     controls::control_state::ControlState,
@@ -7,7 +12,7 @@ use crate::{
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
-    icons::JointIcon,
+    icons::{Anchor, AnchorPoint, AnchoredIcon, JointIcon},
     mode_menu::{self, ModeMenuBundle},
 };
 
@@ -35,22 +40,50 @@ pub fn handle_construction(
     cm: Res<ConstructionMode>,
     mut cs: ResMut<ControlState>,
     handles: Res<Handles>,
+    rapier_context: Res<RapierContext>,
 ) {
     match cm.current_mode {
         Mode::None => {}
         Mode::Joint => {
-            if cs.double_click {
-                cs.double_click = false;
-
-                commands.spawn(JointIcon::new(
-                    cs.world_mouse_pos,
-                    10.0,
-                    &handles.joint_mesh,
-                    &handles.joint_material,
-                ));
+            if !cs.double_click {
+                return;
             }
+            cs.double_click = false;
+
+            commands.spawn(JointIcon::new(
+                cs.world_mouse_pos,
+                10.0,
+                &handles.joint_mesh,
+                &handles.joint_material,
+            ));
         }
-        Mode::Bone => {}
+        Mode::Bone => {
+            if !cs.double_click {
+                return;
+            }
+            cs.double_click = false;
+
+            let mut anchor_ent = Entity::PLACEHOLDER;
+            rapier_context.intersections_with_point(
+                cs.world_mouse_pos,
+                QueryFilter {
+                    flags: QueryFilterFlags::EXCLUDE_SOLIDS,
+                    ..default()
+                },
+                |e| {
+                    commands.entity(e).with_children(|joint| {
+                        anchor_ent = joint.spawn(AnchorPoint).id();
+                    });
+                    false
+                },
+            );
+            commands.spawn(AnchoredIcon::new(
+                6.0,
+                &handles.bone_mesh,
+                &handles.bone_material,
+                [Anchor::Ent(anchor_ent), Anchor::Mouse],
+            ));
+        }
         Mode::Muscle => {}
     }
 }
