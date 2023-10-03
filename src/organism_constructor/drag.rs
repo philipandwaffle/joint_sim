@@ -35,7 +35,7 @@ pub fn set_draggable(
             },
             |e| {
                 commands.entity(e).insert(Dragging);
-                true
+                false
             },
         ),
         false => {
