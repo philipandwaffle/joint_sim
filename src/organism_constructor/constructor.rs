@@ -1,7 +1,8 @@
 use std::arch::x86_64::_andn_u32;
 
 use bevy::prelude::{
-    default, BuildChildren, Commands, DespawnRecursiveExt, Entity, Res, ResMut, Resource,
+    default, BuildChildren, Commands, DespawnRecursiveExt, Entity, GlobalTransform, Res, ResMut,
+    Resource, Transform,
 };
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
@@ -70,13 +71,21 @@ pub fn handle_construction(
                     flags: QueryFilterFlags::EXCLUDE_SOLIDS,
                     ..default()
                 },
-                |e| {
-                    commands.entity(e).with_children(|joint| {
-                        anchor_ent = joint.spawn(AnchorPoint).id();
-                    });
-                    false
+                |e| match commands.get_entity(e) {
+                    Some(mut joint_ent) => {
+                        joint_ent.with_children(|joint| {
+                            anchor_ent = joint.spawn((AnchorPoint, Transform::default())).id();
+                        });
+                        false
+                    }
+                    None => true,
                 },
             );
+
+            if anchor_ent == Entity::PLACEHOLDER {
+                println!("Anchor entity has been created without spawn");
+            }
+
             commands.spawn(AnchoredIcon::new(
                 6.0,
                 &handles.bone_mesh,

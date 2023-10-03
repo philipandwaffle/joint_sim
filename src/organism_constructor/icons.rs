@@ -18,9 +18,41 @@ pub struct AnchorPoint;
 pub struct AnchorSet {
     anchors: [Anchor; 2],
 }
+impl AnchorSet {
+    pub fn get_anchor_pos(
+        &self,
+        anchor_trans: &Query<&Transform, With<AnchorPoint>>,
+        mp: &Vec2,
+    ) -> Option<[Vec2; 2]> {
+        let a_pos = self.anchors[0].get_anchor_pos(anchor_trans, mp);
+        let b_pos = self.anchors[1].get_anchor_pos(anchor_trans, mp);
+        if a_pos.is_none() || b_pos.is_none() {
+            return None;
+        }
+        return Some([a_pos.unwrap(), b_pos.unwrap()]);
+    }
+}
 pub enum Anchor {
     Mouse,
     Ent(Entity),
+}
+impl Anchor {
+    pub fn get_anchor_pos(
+        &self,
+        anchor_trans: &Query<&Transform, With<AnchorPoint>>,
+        mp: &Vec2,
+    ) -> Option<Vec2> {
+        return match self {
+            Anchor::Mouse => Some(mp.clone()),
+            Anchor::Ent(e) => match anchor_trans.get(*e) {
+                Ok(t) => Some(t.translation.truncate()),
+                Err(e) => {
+                    println!("Anchor entity doesn't exist {:?}", e);
+                    return None;
+                }
+            },
+        };
+    }
 }
 
 #[derive(Bundle)]
@@ -85,13 +117,9 @@ pub fn anchor_icons(
     cs: Res<ControlState>,
 ) {
     for (mut t, a) in anchored_icons.iter_mut() {
-        let a_pos = match a.anchors[0] {
-            Anchor::Mouse => cs.world_mouse_pos,
-            Anchor::Ent(e) => anchor_trans.get(e).unwrap().translation.truncate(),
-        };
-        let b_pos = match a.anchors[1] {
-            Anchor::Mouse => cs.world_mouse_pos,
-            Anchor::Ent(e) => anchor_trans.get(e).unwrap().translation.truncate(),
+        let [a_pos, b_pos] = match a.get_anchor_pos(&anchor_trans, &cs.world_mouse_pos) {
+            Some(anchor_pos) => anchor_pos,
+            None => return,
         };
 
         let ab = b_pos - a_pos;
