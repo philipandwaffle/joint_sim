@@ -1,22 +1,18 @@
 use bevy::{
-    math::vec2,
-    prelude::{default, BuildChildren, Bundle, Color, Commands, Entity, NodeBundle},
-    ui::{BackgroundColor, Display, GridTrack, Style, UiRect, Val},
+    prelude::{default, BuildChildren, Bundle, Commands, Entity, NodeBundle},
+    ui::{BackgroundColor, Display, GridTrack, Style, Val},
 };
 
-use crate::{color_palette, handles::Handles};
+use crate::color_palette;
 
-use super::{
-    construction_mode::{Mode, ModeButton},
-    icons::JointIconBundle,
-};
+use super::construction_mode::{Mode, ModeButton};
 
 #[derive(Bundle)]
 pub struct ModeMenuBundle {
     node_bundle: NodeBundle,
 }
 impl ModeMenuBundle {
-    pub fn new(commands: &mut Commands, handles: &Handles) -> Entity {
+    pub fn new(commands: &mut Commands) -> Entity {
         let grid_ent = commands
             .spawn(Self {
                 node_bundle: NodeBundle {

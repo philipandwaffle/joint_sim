@@ -1,6 +1,4 @@
-use bevy::prelude::{
-    resource_exists, App, Commands, IntoSystemConfigs, Plugin, Res, ResMut, Resource, Update,
-};
+use bevy::prelude::{App, Commands, IntoSystemConfigs, Plugin, Res, ResMut, Resource, Update};
 
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
@@ -51,7 +49,7 @@ impl Scene {
             Scene::NoScene => {}
             Scene::StartMenu => {}
             Scene::OrganismConstructor => {
-                con.spawn(commands, handles);
+                con.spawn(commands);
             }
             Scene::OrganismSimulation => {
                 setup_builders(ol, gc, sc);

@@ -1,12 +1,11 @@
 use bevy::{
     prelude::{
-        resource_exists, App, Commands, IntoSystemConfigs, Plugin, PreStartup, Query, Res, ResMut,
-        Startup, Transform, Update, With,
+        resource_exists, App, Commands, IntoSystemConfigs, Plugin, Query, Res, ResMut, Transform,
+        Update, With,
     },
     time::Time,
 };
 
-use nalgebra::ComplexField;
 use rand::{
     distributions::{Distribution, Uniform},
     Rng,

@@ -2,7 +2,6 @@ use bevy::{
     math::vec2,
     prelude::{Commands, DespawnRecursiveExt, Entity, Resource, Vec2},
 };
-use bevy_rapier2d::prelude::PrismaticJointBuilder;
 use rand::{rngs::ThreadRng, Rng};
 use serde::{Deserialize, Serialize};
 

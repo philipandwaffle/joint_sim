@@ -1,14 +1,14 @@
 use bevy::{
     math::vec2,
     prelude::{
-        default, BuildChildren, Bundle, Color, Commands, Component, Entity, Handle, Quat,
-        SpatialBundle, Transform, Vec2,
+        default, BuildChildren, Bundle, Commands, Component, Entity, Handle, Quat, SpatialBundle,
+        Transform, Vec2,
     },
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::prelude::{
     AdditionalMassProperties, Collider, ColliderMassProperties, ExternalImpulse, ImpulseJoint,
-    RevoluteJointBuilder, RigidBody, Sensor,
+    RevoluteJointBuilder, RigidBody,
 };
 
 #[derive(Bundle)]

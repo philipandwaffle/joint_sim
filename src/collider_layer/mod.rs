@@ -2,7 +2,7 @@ use bevy::{
     ecs::system::SystemParam,
     prelude::{Commands, Component, Plugin, Query},
 };
-use bevy_rapier2d::prelude::{BevyPhysicsHooks, NoUserData, SolverFlags};
+use bevy_rapier2d::prelude::{BevyPhysicsHooks, SolverFlags};
 
 // just some skele code to maybe setup layers at some point
 // check here to see an example

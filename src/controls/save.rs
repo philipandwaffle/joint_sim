@@ -1,9 +1,6 @@
-use std::{fs::File, io::Write, time::SystemTime};
+use std::{fs::File, io::Write};
 
-use bevy::{
-    prelude::{Res, ResMut},
-    time::Time,
-};
+use bevy::prelude::{Res, ResMut};
 
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},

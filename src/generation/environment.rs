@@ -1,11 +1,6 @@
-use std::arch::x86_64::_mm_extract_epi16;
-
 use bevy::{
     math::vec2,
-    prelude::{
-        default, shape, Assets, Bundle, Color, Commands, Component, Entity, Handle, Mesh, Res,
-        ResMut, Resource, Transform, Vec2,
-    },
+    prelude::{default, Bundle, Commands, Entity, Handle, Resource, Transform, Vec2},
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::prelude::{Collider, Friction, RigidBody};

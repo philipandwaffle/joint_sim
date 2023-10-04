@@ -1,17 +1,11 @@
-use bevy::{
-    prelude::{
-        default, Camera, Commands, Component, Entity, GlobalTransform, Query, Res, Transform, With,
-        Without,
-    },
-    window::{PrimaryWindow, Window},
-};
+use bevy::prelude::{default, Commands, Component, Entity, Query, Res, Transform, With};
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
-use crate::controls::{camera::ScrollingCam, control_state::ControlState};
+use crate::controls::control_state::ControlState;
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
-    icons::{DraggableIcon, JointIcon},
+    icons::DraggableIcon,
 };
 
 #[derive(Component)]

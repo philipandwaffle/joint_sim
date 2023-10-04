@@ -1,8 +1,8 @@
 use bevy::{
     prelude::{
         default, resource_changed, BuildChildren, Button, ButtonBundle, Changed, ChildBuilder,
-        Children, Color, Component, IntoSystemConfigs, Plugin, Query, Res, ResMut, Resource,
-        TextBundle, Update, With,
+        Children, Component, IntoSystemConfigs, Plugin, Query, Res, ResMut, Resource, TextBundle,
+        Update, With,
     },
     text::{Text, TextStyle},
     ui::{AlignItems, BackgroundColor, BorderColor, Interaction, JustifyContent, Style, Val},

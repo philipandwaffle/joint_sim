@@ -1,27 +1,17 @@
-use std::arch::x86_64::_andn_u32;
-
-use bevy::{
-    asset::Error,
-    prelude::{
-        default, BuildChildren, Children, Commands, DespawnRecursiveExt, Entity, GlobalTransform,
-        Local, Query, Res, ResMut, Resource, Transform, With,
-    },
-    transform::TransformBundle,
+use bevy::prelude::{
+    default, Children, Commands, DespawnRecursiveExt, Entity, Local, Query, Res, ResMut, Resource,
+    With,
 };
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
-use crate::{
-    controls::control_state::ControlState,
-    handles::{self, Handles},
-};
+use crate::{controls::control_state::ControlState, handles::Handles};
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
     icons::{
-        Anchor, AnchorPoint, AnchorSet, AnchoredIconBundle, BoneIcon, BoneIconBundle, JointIcon,
-        JointIconBundle, MuscleIconBundle,
+        Anchor, AnchorSet, BoneIcon, BoneIconBundle, JointIcon, JointIconBundle, MuscleIconBundle,
     },
-    mode_menu::{self, ModeMenuBundle},
+    mode_menu::ModeMenuBundle,
 };
 
 #[derive(Resource)]
@@ -33,8 +23,8 @@ impl Constructor {
         return Self { part_menu: None };
     }
 
-    pub fn spawn(&mut self, commands: &mut Commands, handles: &Handles) {
-        self.part_menu = Some(ModeMenuBundle::new(commands, handles));
+    pub fn spawn(&mut self, commands: &mut Commands) {
+        self.part_menu = Some(ModeMenuBundle::new(commands));
     }
 
     pub fn despawn(&mut self, commands: &mut Commands) {

@@ -10,7 +10,7 @@ use crate::{config::structs::GenerationConfig, handles::Handles};
 
 use super::{
     bone::Bone,
-    helper_fn::{quat_to_vec2, quat_z_rot, vec2_z_rot},
+    helper_fn::{quat_to_vec2, vec2_z_rot},
     joint::Joint,
     muscle::Muscle,
     organism::{Organism, OrganismBuilder},

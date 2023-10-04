@@ -1,15 +1,10 @@
-use bevy::{
-    math::vec2,
-    prelude::{Commands, IntoSystemConfigs, Plugin, Res, Startup, Update},
-};
-
-use crate::handles::Handles;
+use bevy::prelude::{IntoSystemConfigs, Plugin, Res, Update};
 
 use self::{
     construction_mode::{ConstructionMode, ConstructionModePlugin, Mode},
     constructor::{handle_anchored_icon_construction, handle_joint_construction, Constructor},
     drag::{move_dragging, set_draggable},
-    icons::{anchor_icons, JointIconBundle},
+    icons::anchor_icons,
 };
 
 mod construction_grid;

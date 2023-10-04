@@ -15,7 +15,7 @@ impl Plugin for ControlPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ControlState::default())
             .insert_resource(ControlConfig::default())
-            .add_systems(Startup, (spawn_cam))
+            .add_systems(Startup, spawn_cam)
             .add_systems(
                 Update,
                 (update_control_state, translate_cam, save_generation),

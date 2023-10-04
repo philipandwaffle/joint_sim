@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{App, Resource, Vec2, Vec3},
+    prelude::{Resource, Vec2},
     time::{Timer, TimerMode},
 };
 use core::panic;
@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::time::Duration;
 
-use crate::{controls::control_state::ControlConfig, organism::genome::Genome};
+use crate::organism::genome::Genome;
 
 #[derive(Resource, Debug, Default, Serialize, Deserialize, Clone)]
 pub struct CameraConfig {

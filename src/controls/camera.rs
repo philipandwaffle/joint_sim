@@ -1,6 +1,6 @@
 use crate::{config::structs::CameraConfig, controls::control_state::ControlState};
 
-use bevy::{math::vec3, prelude::*};
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct ScrollingCam;

@@ -1,4 +1,4 @@
-use bevy::{input::mouse::MouseMotion, prelude::*, utils::Instant, window::PrimaryWindow};
+use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
 
 use crate::config::structs::CameraConfig;
 
