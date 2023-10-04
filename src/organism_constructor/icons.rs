@@ -1,4 +1,5 @@
 use bevy::{
+    ecs::system::Command,
     math::vec3,
     prelude::{
         default, BuildChildren, Bundle, Commands, Component, Entity, GlobalTransform, Handle,
@@ -110,11 +111,11 @@ impl JointIconBundle {
 }
 
 #[derive(Bundle)]
-pub struct AnchoredIcon {
+pub struct AnchoredIconBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     anchored: AnchorSet,
 }
-impl AnchoredIcon {
+impl AnchoredIconBundle {
     pub fn new(
         width: f32,
         mesh: &Mesh2dHandle,
@@ -130,6 +131,37 @@ impl AnchoredIcon {
             },
             anchored: AnchorSet { anchors },
         };
+    }
+}
+
+#[derive(Component)]
+pub struct BoneIcon;
+#[derive(Bundle)]
+pub struct BoneIconBundle {
+    bone_icon: BoneIcon,
+    anchored_icon_bundle: AnchoredIconBundle,
+    collider: Collider,
+    sensor: Sensor,
+}
+impl BoneIconBundle {
+    pub fn new(
+        commands: &mut Commands,
+        width: f32,
+        mesh: &Mesh2dHandle,
+        material: &Handle<ColorMaterial>,
+        anchors: [Anchor; 2],
+    ) -> Entity {
+        return commands
+            .spawn(Self {
+                bone_icon: BoneIcon,
+                anchored_icon_bundle: AnchoredIconBundle::new(width, mesh, material, anchors),
+                collider: Collider::cuboid(0.5, 0.4),
+                sensor: Sensor,
+            })
+            .with_children(|bone| {
+                bone.spawn(AnchorPoint);
+            })
+            .id();
     }
 }
 
