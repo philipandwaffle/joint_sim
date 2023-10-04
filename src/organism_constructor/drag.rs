@@ -1,6 +1,7 @@
 use bevy::{
     prelude::{
         default, Camera, Commands, Component, Entity, GlobalTransform, Query, Res, Transform, With,
+        Without,
     },
     window::{PrimaryWindow, Window},
 };
@@ -10,7 +11,7 @@ use crate::controls::{camera::ScrollingCam, control_state::ControlState};
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
-    icons::DraggableIcon,
+    icons::{DraggableIcon, JointIcon},
 };
 
 #[derive(Component)]
@@ -26,8 +27,8 @@ pub fn move_dragging(mut dragging: Query<&mut Transform, With<Dragging>>, cs: Re
 pub fn set_draggable(
     mut commands: Commands,
     cs: Res<ControlState>,
+    draggable_icons: Query<Entity, With<DraggableIcon>>,
     rapier_context: Res<RapierContext>,
-    icons: Query<Entity, With<DraggableIcon>>,
     cm: Res<ConstructionMode>,
 ) {
     if cm.current_mode != Mode::Joint {
@@ -40,13 +41,16 @@ pub fn set_draggable(
                 flags: QueryFilterFlags::EXCLUDE_SOLIDS,
                 ..default()
             },
-            |e| {
-                commands.entity(e).insert(Dragging);
-                false
+            |e| match draggable_icons.get(e) {
+                Ok(_) => {
+                    commands.entity(e).insert(Dragging);
+                    false
+                }
+                Err(_) => true,
             },
         ),
         false => {
-            for e in icons.iter() {
+            for e in draggable_icons.iter() {
                 commands.entity(e).remove::<Dragging>();
             }
         }

@@ -17,7 +17,10 @@ use crate::{
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
-    icons::{Anchor, AnchorPoint, AnchorSet, AnchoredIcon, JointIcon, JointIconBundle},
+    icons::{
+        Anchor, AnchorPoint, AnchorSet, AnchoredIconBundle, BoneIcon, BoneIconBundle, JointIcon,
+        JointIconBundle, MuscleIconBundle,
+    },
     mode_menu::{self, ModeMenuBundle},
 };
 
@@ -59,32 +62,33 @@ pub fn handle_joint_construction(
     );
 }
 
-pub struct BoneConstruction {
-    bone_on_mouse: bool,
+pub struct AnchoredIconConstruction {
     anchored_entity: Option<Entity>,
 }
-impl Default for BoneConstruction {
+impl Default for AnchoredIconConstruction {
     fn default() -> Self {
         Self {
-            bone_on_mouse: false,
             anchored_entity: None,
         }
     }
 }
 
-pub fn handle_bone_construction(
+pub fn handle_anchored_icon_construction(
     mut commands: Commands,
-    joints: Query<&Children, With<JointIcon>>,
-    mut bone_icons: Query<&mut AnchorSet>,
+    joint_icons: Query<&Children, With<JointIcon>>,
+    bone_icons: Query<&Children, With<BoneIcon>>,
+    mut anchored_icons: Query<&mut AnchorSet>,
     mut cs: ResMut<ControlState>,
+    cm: Res<ConstructionMode>,
     handles: Res<Handles>,
     rapier_context: Res<RapierContext>,
-    mut bc: Local<BoneConstruction>,
+    mut bc: Local<AnchoredIconConstruction>,
 ) {
     if !cs.left_mouse_up {
         return;
     }
     cs.left_mouse_up = false;
+    let is_bone = cm.current_mode == Mode::Bone;
 
     let mut potential_anchor_ent = None;
     rapier_context.intersections_with_point(
@@ -93,17 +97,23 @@ pub fn handle_bone_construction(
             flags: QueryFilterFlags::EXCLUDE_SOLIDS,
             ..default()
         },
-        |e| match joints.get(e) {
-            Ok(child) => {
-                match child.first() {
-                    Some(e) => potential_anchor_ent = Some(*e),
-                    None => println!("Joint icon has no anchor point"),
+        |e| {
+            let anchor = match is_bone {
+                true => joint_icons.get(e),
+                false => bone_icons.get(e),
+            };
+            match anchor {
+                Ok(child) => {
+                    match child.first() {
+                        Some(e) => potential_anchor_ent = Some(*e),
+                        None => println!("Joint icon has no anchor point"),
+                    }
+                    false
                 }
-                false
-            }
-            Err(e) => {
-                println!("No joint icon exists here, {:?}", e);
-                true
+                Err(e) => {
+                    println!("No joint icon exists here, {:?}", e);
+                    true
+                }
             }
         },
     );
@@ -114,23 +124,34 @@ pub fn handle_bone_construction(
     let anchor_ent = potential_anchor_ent.unwrap();
 
     match bc.anchored_entity {
-        Some(bone_icon_ent) => match bone_icons.get_mut(bone_icon_ent) {
+        Some(anchored_icon_ent) => match anchored_icons.get_mut(anchored_icon_ent) {
             Ok(mut anchor_set) => {
                 anchor_set.set_anchor(anchor_ent);
                 bc.anchored_entity = None;
             }
             Err(_) => todo!(),
         },
-        None => {
-            let bone_icon_ent = commands
-                .spawn(AnchoredIcon::new(
+        None => match is_bone {
+            true => {
+                let bone_icon_ent = BoneIconBundle::new(
+                    &mut commands,
                     6.0,
                     &handles.bone_mesh,
                     &handles.bone_material,
                     [Anchor::Ent(anchor_ent), Anchor::Mouse],
-                ))
-                .id();
-            bc.anchored_entity = Some(bone_icon_ent);
-        }
+                );
+                bc.anchored_entity = Some(bone_icon_ent);
+            }
+            false => {
+                let muscle_icon_ent = MuscleIconBundle::new(
+                    &mut commands,
+                    6.0,
+                    &handles.muscle_mesh,
+                    &handles.muscle_neutral_material,
+                    [Anchor::Ent(anchor_ent), Anchor::Mouse],
+                );
+                bc.anchored_entity = Some(muscle_icon_ent);
+            }
+        },
     }
 }

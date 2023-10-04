@@ -7,7 +7,7 @@ use crate::handles::Handles;
 
 use self::{
     construction_mode::{ConstructionMode, ConstructionModePlugin, Mode},
-    constructor::{handle_bone_construction, handle_joint_construction, Constructor},
+    constructor::{handle_anchored_icon_construction, handle_joint_construction, Constructor},
     drag::{move_dragging, set_draggable},
     icons::{anchor_icons, JointIconBundle},
 };
@@ -26,16 +26,16 @@ impl Plugin for OrganismConstructionPlugin {
         app.add_plugins(ConstructionModePlugin);
         app.add_systems(Update, (anchor_icons, move_dragging, set_draggable));
         app.add_systems(Update, handle_joint_construction.run_if(construct_joint));
-        app.add_systems(Update, handle_bone_construction.run_if(construct_bone));
+        app.add_systems(
+            Update,
+            handle_anchored_icon_construction.run_if(construct_anchored_icon),
+        );
     }
 }
 
 fn construct_joint(cm: Res<ConstructionMode>) -> bool {
     return cm.current_mode == Mode::Joint;
 }
-fn construct_bone(cm: Res<ConstructionMode>) -> bool {
-    return cm.current_mode == Mode::Bone;
-}
-fn construct_muscle(cm: Res<ConstructionMode>) -> bool {
-    return cm.current_mode == Mode::Muscle;
+fn construct_anchored_icon(cm: Res<ConstructionMode>) -> bool {
+    return cm.current_mode == Mode::Bone || cm.current_mode == Mode::Muscle;
 }

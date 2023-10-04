@@ -1,4 +1,5 @@
 use bevy::{
+    ecs::system::Command,
     math::vec3,
     prelude::{
         default, BuildChildren, Bundle, Commands, Component, Entity, GlobalTransform, Handle,
@@ -110,13 +111,14 @@ impl JointIconBundle {
 }
 
 #[derive(Bundle)]
-pub struct AnchoredIcon {
+pub struct AnchoredIconBundle {
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     anchored: AnchorSet,
 }
-impl AnchoredIcon {
+impl AnchoredIconBundle {
     pub fn new(
         width: f32,
+        z_pos: f32,
         mesh: &Mesh2dHandle,
         material: &Handle<ColorMaterial>,
         anchors: [Anchor; 2],
@@ -125,11 +127,67 @@ impl AnchoredIcon {
             material_mesh_bundle: MaterialMesh2dBundle {
                 mesh: mesh.clone(),
                 material: material.clone(),
-                transform: Transform::from_scale(vec3(width, 0.0, 1.0)),
+                transform: Transform {
+                    translation: vec3(0.0, 0.0, z_pos),
+                    scale: vec3(width, 0.0, 1.0),
+                    ..default()
+                },
+
                 ..default()
             },
             anchored: AnchorSet { anchors },
         };
+    }
+}
+
+#[derive(Component)]
+pub struct BoneIcon;
+#[derive(Bundle)]
+pub struct BoneIconBundle {
+    bone_icon: BoneIcon,
+    anchored_icon_bundle: AnchoredIconBundle,
+    collider: Collider,
+    sensor: Sensor,
+}
+impl BoneIconBundle {
+    pub fn new(
+        commands: &mut Commands,
+        width: f32,
+        mesh: &Mesh2dHandle,
+        material: &Handle<ColorMaterial>,
+        anchors: [Anchor; 2],
+    ) -> Entity {
+        return commands
+            .spawn(Self {
+                bone_icon: BoneIcon,
+                anchored_icon_bundle: AnchoredIconBundle::new(width, -0.1, mesh, material, anchors),
+                collider: Collider::cuboid(0.5, 0.4),
+                sensor: Sensor,
+            })
+            .with_children(|bone| {
+                bone.spawn(AnchorPoint);
+            })
+            .id();
+    }
+}
+
+#[derive(Bundle)]
+pub struct MuscleIconBundle {
+    anchored_icon_bundle: AnchoredIconBundle,
+}
+impl MuscleIconBundle {
+    pub fn new(
+        commands: &mut Commands,
+        width: f32,
+        mesh: &Mesh2dHandle,
+        material: &Handle<ColorMaterial>,
+        anchors: [Anchor; 2],
+    ) -> Entity {
+        return commands
+            .spawn(Self {
+                anchored_icon_bundle: AnchoredIconBundle::new(width, -0.2, mesh, material, anchors),
+            })
+            .id();
     }
 }
 
@@ -148,7 +206,8 @@ pub fn anchor_icons(
         let ab = b_pos - a_pos;
         let len = ab.length();
 
-        t.translation = (a_pos + (ab * 0.5)).extend(-0.3);
+        let z_pos = t.translation.z;
+        t.translation = (a_pos + (ab * 0.5)).extend(z_pos);
         t.rotation = Quat::from_rotation_z(vec2_z_rot(&b_pos, &a_pos));
         t.scale.y = len;
     }
