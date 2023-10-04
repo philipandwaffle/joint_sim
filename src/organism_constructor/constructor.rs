@@ -4,7 +4,7 @@ use bevy::{
     asset::Error,
     prelude::{
         default, BuildChildren, Children, Commands, DespawnRecursiveExt, Entity, GlobalTransform,
-        Query, Res, ResMut, Resource, Transform, With,
+        Local, Query, Res, ResMut, Resource, Transform, With,
     },
     transform::TransformBundle,
 };
@@ -17,7 +17,7 @@ use crate::{
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
-    icons::{Anchor, AnchorPoint, AnchoredIcon, JointIcon, JointIconBundle},
+    icons::{Anchor, AnchorPoint, AnchorSet, AnchoredIcon, JointIcon, JointIconBundle},
     mode_menu::{self, ModeMenuBundle},
 };
 
@@ -59,20 +59,34 @@ pub fn handle_joint_construction(
     );
 }
 
+pub struct BoneConstruction {
+    bone_on_mouse: bool,
+    anchored_entity: Option<Entity>,
+}
+impl Default for BoneConstruction {
+    fn default() -> Self {
+        Self {
+            bone_on_mouse: false,
+            anchored_entity: None,
+        }
+    }
+}
+
 pub fn handle_bone_construction(
     mut commands: Commands,
     joints: Query<&Children, With<JointIcon>>,
-    // anchors: Query<&GlobalTransform, With<AnchorPoint>>,
+    mut bone_icons: Query<&mut AnchorSet>,
     mut cs: ResMut<ControlState>,
     handles: Res<Handles>,
     rapier_context: Res<RapierContext>,
+    mut bc: Local<BoneConstruction>,
 ) {
     if !cs.left_mouse_up {
         return;
     }
     cs.left_mouse_up = false;
 
-    let mut anchor_ent = Entity::PLACEHOLDER;
+    let mut potential_anchor_ent = None;
     rapier_context.intersections_with_point(
         cs.world_mouse_pos,
         QueryFilter {
@@ -82,7 +96,7 @@ pub fn handle_bone_construction(
         |e| match joints.get(e) {
             Ok(child) => {
                 match child.first() {
-                    Some(e) => anchor_ent = *e,
+                    Some(e) => potential_anchor_ent = Some(*e),
                     None => println!("Joint icon has no anchor point"),
                 }
                 false
@@ -94,15 +108,29 @@ pub fn handle_bone_construction(
         },
     );
 
-    if anchor_ent == Entity::PLACEHOLDER {
-        println!("Anchor entity has been created without spawn");
+    if potential_anchor_ent.is_none() {
         return;
     }
+    let anchor_ent = potential_anchor_ent.unwrap();
 
-    commands.spawn(AnchoredIcon::new(
-        6.0,
-        &handles.bone_mesh,
-        &handles.bone_material,
-        [Anchor::Ent(anchor_ent), Anchor::Mouse],
-    ));
+    match bc.anchored_entity {
+        Some(bone_icon_ent) => match bone_icons.get_mut(bone_icon_ent) {
+            Ok(mut anchor_set) => {
+                anchor_set.set_anchor(anchor_ent);
+                bc.anchored_entity = None;
+            }
+            Err(_) => todo!(),
+        },
+        None => {
+            let bone_icon_ent = commands
+                .spawn(AnchoredIcon::new(
+                    6.0,
+                    &handles.bone_mesh,
+                    &handles.bone_material,
+                    [Anchor::Ent(anchor_ent), Anchor::Mouse],
+                ))
+                .id();
+            bc.anchored_entity = Some(bone_icon_ent);
+        }
+    }
 }

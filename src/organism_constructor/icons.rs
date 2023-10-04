@@ -32,6 +32,10 @@ impl AnchorSet {
         }
         return Some([a_pos.unwrap(), b_pos.unwrap()]);
     }
+
+    pub fn set_anchor(&mut self, e: Entity) {
+        self.anchors[1] = Anchor::Ent(e);
+    }
 }
 pub enum Anchor {
     Mouse,
