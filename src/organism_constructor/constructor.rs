@@ -19,7 +19,7 @@ use super::{
     construction_mode::{ConstructionMode, Mode},
     icons::{
         Anchor, AnchorPoint, AnchorSet, AnchoredIconBundle, BoneIcon, BoneIconBundle, JointIcon,
-        JointIconBundle,
+        JointIconBundle, MuscleIconBundle,
     },
     mode_menu::{self, ModeMenuBundle},
 };
@@ -88,6 +88,7 @@ pub fn handle_anchored_icon_construction(
         return;
     }
     cs.left_mouse_up = false;
+    let is_bone = cm.current_mode == Mode::Bone;
 
     let mut potential_anchor_ent = None;
     rapier_context.intersections_with_point(
@@ -96,17 +97,23 @@ pub fn handle_anchored_icon_construction(
             flags: QueryFilterFlags::EXCLUDE_SOLIDS,
             ..default()
         },
-        |e| match joint_icons.get(e) {
-            Ok(child) => {
-                match child.first() {
-                    Some(e) => potential_anchor_ent = Some(*e),
-                    None => println!("Joint icon has no anchor point"),
+        |e| {
+            let anchor = match is_bone {
+                true => joint_icons.get(e),
+                false => bone_icons.get(e),
+            };
+            match anchor {
+                Ok(child) => {
+                    match child.first() {
+                        Some(e) => potential_anchor_ent = Some(*e),
+                        None => println!("Joint icon has no anchor point"),
+                    }
+                    false
                 }
-                false
-            }
-            Err(e) => {
-                println!("No joint icon exists here, {:?}", e);
-                true
+                Err(e) => {
+                    println!("No joint icon exists here, {:?}", e);
+                    true
+                }
             }
         },
     );
@@ -124,10 +131,8 @@ pub fn handle_anchored_icon_construction(
             }
             Err(_) => todo!(),
         },
-        None => match cm.current_mode {
-            Mode::None => return,
-            Mode::Joint => return,
-            Mode::Bone => {
+        None => match is_bone {
+            true => {
                 let bone_icon_ent = BoneIconBundle::new(
                     &mut commands,
                     6.0,
@@ -137,7 +142,16 @@ pub fn handle_anchored_icon_construction(
                 );
                 bc.anchored_entity = Some(bone_icon_ent);
             }
-            Mode::Muscle => return,
+            false => {
+                let muscle_icon_ent = MuscleIconBundle::new(
+                    &mut commands,
+                    6.0,
+                    &handles.muscle_mesh,
+                    &handles.muscle_neutral_material,
+                    [Anchor::Ent(anchor_ent), Anchor::Mouse],
+                );
+                bc.anchored_entity = Some(muscle_icon_ent);
+            }
         },
     }
 }

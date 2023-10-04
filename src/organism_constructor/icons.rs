@@ -165,6 +165,26 @@ impl BoneIconBundle {
     }
 }
 
+#[derive(Bundle)]
+pub struct MuscleIconBundle {
+    anchored_icon_bundle: AnchoredIconBundle,
+}
+impl MuscleIconBundle {
+    pub fn new(
+        commands: &mut Commands,
+        width: f32,
+        mesh: &Mesh2dHandle,
+        material: &Handle<ColorMaterial>,
+        anchors: [Anchor; 2],
+    ) -> Entity {
+        return commands
+            .spawn(Self {
+                anchored_icon_bundle: AnchoredIconBundle::new(width, mesh, material, anchors),
+            })
+            .id();
+    }
+}
+
 pub fn anchor_icons(
     mut anchored_icons: Query<(&mut Transform, &AnchorSet), Without<AnchorPoint>>,
     anchors: Query<&Parent, With<AnchorPoint>>,
