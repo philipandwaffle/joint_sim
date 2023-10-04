@@ -1,8 +1,8 @@
 use bevy::{
     math::vec3,
     prelude::{
-        default, Bundle, Component, Entity, Handle, Quat, Query, Res, Transform, Vec2, Vec3, With,
-        Without,
+        default, BuildChildren, Bundle, Commands, Component, Entity, GlobalTransform, Handle, Quat,
+        Query, Res, Transform, Vec2, Vec3, With, Without,
     },
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -21,7 +21,7 @@ pub struct AnchorSet {
 impl AnchorSet {
     pub fn get_anchor_pos(
         &self,
-        anchor_trans: &Query<&Transform, With<AnchorPoint>>,
+        anchor_trans: &Query<&GlobalTransform, With<AnchorPoint>>,
         mp: &Vec2,
     ) -> Option<[Vec2; 2]> {
         let a_pos = self.anchors[0].get_anchor_pos(anchor_trans, mp);
@@ -39,13 +39,13 @@ pub enum Anchor {
 impl Anchor {
     pub fn get_anchor_pos(
         &self,
-        anchor_trans: &Query<&Transform, With<AnchorPoint>>,
+        anchor_trans: &Query<&GlobalTransform, With<AnchorPoint>>,
         mp: &Vec2,
     ) -> Option<Vec2> {
         return match self {
             Anchor::Mouse => Some(mp.clone()),
             Anchor::Ent(e) => match anchor_trans.get(*e) {
-                Ok(t) => Some(t.translation.truncate()),
+                Ok(t) => Some(t.translation().truncate()),
                 Err(e) => {
                     println!("Anchor entity doesn't exist {:?}", e);
                     return None;
@@ -64,26 +64,32 @@ pub struct JointIcon {
 }
 impl JointIcon {
     pub fn new(
+        commands: &mut Commands,
         translation: Vec2,
         radius: f32,
         mesh: &Mesh2dHandle,
         material: &Handle<ColorMaterial>,
-    ) -> Self {
-        return Self {
-            icon: DraggableIcon,
-            material_mesh_bundle: MaterialMesh2dBundle {
-                mesh: mesh.clone(),
-                material: material.clone(),
-                transform: Transform {
-                    translation: translation.extend(0.3),
-                    scale: Vec3::ONE * radius,
+    ) -> Entity {
+        return commands
+            .spawn(Self {
+                icon: DraggableIcon,
+                material_mesh_bundle: MaterialMesh2dBundle {
+                    mesh: mesh.clone(),
+                    material: material.clone(),
+                    transform: Transform {
+                        translation: translation.extend(0.3),
+                        scale: Vec3::ONE * radius,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            },
-            collider: Collider::ball(1.0),
-            sensor: Sensor,
-        };
+                collider: Collider::ball(1.0),
+                sensor: Sensor,
+            })
+            .with_children(|j| {
+                j.spawn(AnchorPoint);
+            })
+            .id();
     }
 }
 
@@ -112,8 +118,9 @@ impl AnchoredIcon {
 }
 
 pub fn anchor_icons(
+    commands: Commands,
     mut anchored_icons: Query<(&mut Transform, &AnchorSet), Without<AnchorPoint>>,
-    anchor_trans: Query<&Transform, With<AnchorPoint>>,
+    anchor_trans: Query<&GlobalTransform, With<AnchorPoint>>,
     cs: Res<ControlState>,
 ) {
     for (mut t, a) in anchored_icons.iter_mut() {
