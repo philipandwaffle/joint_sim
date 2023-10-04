@@ -9,7 +9,7 @@ use self::{
     construction_mode::{ConstructionMode, ConstructionModePlugin, Mode},
     constructor::{handle_bone_construction, handle_joint_construction, Constructor},
     drag::{move_dragging, set_draggable},
-    icons::{anchor_icons, JointIcon},
+    icons::{anchor_icons, JointIconBundle},
 };
 
 mod construction_grid;

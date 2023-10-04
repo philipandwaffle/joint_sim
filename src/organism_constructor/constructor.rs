@@ -1,9 +1,10 @@
 use std::arch::x86_64::_andn_u32;
 
 use bevy::{
+    asset::Error,
     prelude::{
-        default, BuildChildren, Commands, DespawnRecursiveExt, Entity, GlobalTransform, Res,
-        ResMut, Resource, Transform,
+        default, BuildChildren, Children, Commands, DespawnRecursiveExt, Entity, GlobalTransform,
+        Query, Res, ResMut, Resource, Transform, With,
     },
     transform::TransformBundle,
 };
@@ -16,7 +17,7 @@ use crate::{
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
-    icons::{Anchor, AnchorPoint, AnchoredIcon, JointIcon},
+    icons::{Anchor, AnchorPoint, AnchoredIcon, JointIcon, JointIconBundle},
     mode_menu::{self, ModeMenuBundle},
 };
 
@@ -49,7 +50,7 @@ pub fn handle_joint_construction(
     }
     cs.double_click = false;
 
-    JointIcon::new(
+    JointIconBundle::new(
         &mut commands,
         cs.world_mouse_pos,
         10.0,
@@ -60,14 +61,16 @@ pub fn handle_joint_construction(
 
 pub fn handle_bone_construction(
     mut commands: Commands,
+    joints: Query<&Children, With<JointIcon>>,
+    // anchors: Query<&GlobalTransform, With<AnchorPoint>>,
     mut cs: ResMut<ControlState>,
     handles: Res<Handles>,
     rapier_context: Res<RapierContext>,
 ) {
-    if !cs.double_click {
+    if !cs.left_mouse_up {
         return;
     }
-    cs.double_click = false;
+    cs.left_mouse_up = false;
 
     let mut anchor_ent = Entity::PLACEHOLDER;
     rapier_context.intersections_with_point(
@@ -76,14 +79,18 @@ pub fn handle_bone_construction(
             flags: QueryFilterFlags::EXCLUDE_SOLIDS,
             ..default()
         },
-        |e| match commands.get_entity(e) {
-            Some(mut joint_ent) => {
-                joint_ent.with_children(|joint| {
-                    anchor_ent = joint.spawn((AnchorPoint, TransformBundle::default())).id();
-                });
+        |e| match joints.get(e) {
+            Ok(child) => {
+                match child.first() {
+                    Some(e) => anchor_ent = *e,
+                    None => println!("Joint icon has no anchor point"),
+                }
                 false
             }
-            None => true,
+            Err(e) => {
+                println!("No joint icon exists here, {:?}", e);
+                true
+            }
         },
     );
 

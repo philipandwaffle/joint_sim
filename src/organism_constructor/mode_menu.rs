@@ -8,7 +8,7 @@ use crate::{color_palette, handles::Handles};
 
 use super::{
     construction_mode::{Mode, ModeButton},
-    icons::JointIcon,
+    icons::JointIconBundle,
 };
 
 #[derive(Bundle)]

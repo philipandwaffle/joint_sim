@@ -1,8 +1,8 @@
 use bevy::{
     math::vec3,
     prelude::{
-        default, BuildChildren, Bundle, Commands, Component, Entity, GlobalTransform, Handle, Quat,
-        Query, Res, Transform, Vec2, Vec3, With, Without,
+        default, BuildChildren, Bundle, Commands, Component, Entity, GlobalTransform, Handle,
+        Parent, Quat, Query, Res, Transform, Vec2, Vec3, With, Without,
     },
     sprite::{ColorMaterial, MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -21,11 +21,12 @@ pub struct AnchorSet {
 impl AnchorSet {
     pub fn get_anchor_pos(
         &self,
-        anchor_trans: &Query<&GlobalTransform, With<AnchorPoint>>,
+        anchors: &Query<&Parent, With<AnchorPoint>>,
+        joint_trans: &Query<&GlobalTransform>,
         mp: &Vec2,
     ) -> Option<[Vec2; 2]> {
-        let a_pos = self.anchors[0].get_anchor_pos(anchor_trans, mp);
-        let b_pos = self.anchors[1].get_anchor_pos(anchor_trans, mp);
+        let a_pos = self.anchors[0].get_anchor_pos(anchors, joint_trans, mp);
+        let b_pos = self.anchors[1].get_anchor_pos(anchors, joint_trans, mp);
         if a_pos.is_none() || b_pos.is_none() {
             return None;
         }
@@ -39,13 +40,20 @@ pub enum Anchor {
 impl Anchor {
     pub fn get_anchor_pos(
         &self,
-        anchor_trans: &Query<&GlobalTransform, With<AnchorPoint>>,
+        anchors: &Query<&Parent, With<AnchorPoint>>,
+        joint_trans: &Query<&GlobalTransform>,
         mp: &Vec2,
     ) -> Option<Vec2> {
         return match self {
             Anchor::Mouse => Some(mp.clone()),
-            Anchor::Ent(e) => match anchor_trans.get(*e) {
-                Ok(t) => Some(t.translation().truncate()),
+            Anchor::Ent(e) => match anchors.get(*e) {
+                Ok(joint) => match joint_trans.get(joint.get()) {
+                    Ok(gt) => return Some(gt.translation().truncate()),
+                    Err(e) => {
+                        println!("Joint anchor was somehow orphaned {:?}", e);
+                        return None;
+                    }
+                },
                 Err(e) => {
                     println!("Anchor entity doesn't exist {:?}", e);
                     return None;
@@ -55,14 +63,17 @@ impl Anchor {
     }
 }
 
+#[derive(Component)]
+pub struct JointIcon;
 #[derive(Bundle)]
-pub struct JointIcon {
-    icon: DraggableIcon,
+pub struct JointIconBundle {
+    joint_icon: JointIcon,
+    draggable_icon: DraggableIcon,
     material_mesh_bundle: MaterialMesh2dBundle<ColorMaterial>,
     collider: Collider,
     sensor: Sensor,
 }
-impl JointIcon {
+impl JointIconBundle {
     pub fn new(
         commands: &mut Commands,
         translation: Vec2,
@@ -72,7 +83,8 @@ impl JointIcon {
     ) -> Entity {
         return commands
             .spawn(Self {
-                icon: DraggableIcon,
+                joint_icon: JointIcon,
+                draggable_icon: DraggableIcon,
                 material_mesh_bundle: MaterialMesh2dBundle {
                     mesh: mesh.clone(),
                     material: material.clone(),
@@ -118,13 +130,13 @@ impl AnchoredIcon {
 }
 
 pub fn anchor_icons(
-    commands: Commands,
     mut anchored_icons: Query<(&mut Transform, &AnchorSet), Without<AnchorPoint>>,
-    anchor_trans: Query<&GlobalTransform, With<AnchorPoint>>,
+    anchors: Query<&Parent, With<AnchorPoint>>,
+    joint_trans: Query<&GlobalTransform>,
     cs: Res<ControlState>,
 ) {
     for (mut t, a) in anchored_icons.iter_mut() {
-        let [a_pos, b_pos] = match a.get_anchor_pos(&anchor_trans, &cs.world_mouse_pos) {
+        let [a_pos, b_pos] = match a.get_anchor_pos(&anchors, &joint_trans, &cs.world_mouse_pos) {
             Some(anchor_pos) => anchor_pos,
             None => return,
         };
