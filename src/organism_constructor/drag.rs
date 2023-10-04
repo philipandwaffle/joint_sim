@@ -8,7 +8,10 @@ use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
 use crate::controls::{camera::ScrollingCam, control_state::ControlState};
 
-use super::icons::DraggableIcon;
+use super::{
+    construction_mode::{ConstructionMode, Mode},
+    icons::DraggableIcon,
+};
 
 #[derive(Component)]
 pub struct Dragging;
@@ -25,7 +28,11 @@ pub fn set_draggable(
     cs: Res<ControlState>,
     rapier_context: Res<RapierContext>,
     icons: Query<Entity, With<DraggableIcon>>,
+    cm: Res<ConstructionMode>,
 ) {
+    if cm.current_mode != Mode::Joint {
+        return;
+    }
     match cs.left_mouse_down {
         true => rapier_context.intersections_with_point(
             cs.world_mouse_pos,
@@ -35,7 +42,7 @@ pub fn set_draggable(
             },
             |e| {
                 commands.entity(e).insert(Dragging);
-                true
+                false
             },
         ),
         false => {
