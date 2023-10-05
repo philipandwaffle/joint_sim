@@ -20,7 +20,7 @@ pub mod mode_menu;
 pub struct OrganismConstructionPlugin;
 impl Plugin for OrganismConstructionPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(Constructor::new());
+        app.insert_resource(Constructor::default());
         app.insert_resource(AnchoredIconConstruction::default());
         app.add_plugins(ConstructionModePlugin);
         app.add_systems(Update, (anchor_icons, move_dragging, set_draggable));

@@ -1,5 +1,9 @@
-use bevy::prelude::{
-    default, Children, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Resource, With,
+use bevy::{
+    a11y::accesskit::Vec2,
+    prelude::{
+        default, Children, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Resource,
+        With,
+    },
 };
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
@@ -16,19 +20,49 @@ use super::{
 #[derive(Resource)]
 pub struct Constructor {
     part_menu: Option<Entity>,
+    joints: Vec<(Entity, Vec2)>,
+    bones: Vec<(Entity, [u32; 2])>,
+    muscles: Vec<(Entity, [u32; 2])>,
+}
+impl Default for Constructor {
+    fn default() -> Self {
+        return Self {
+            part_menu: None,
+            joints: vec![],
+            bones: vec![],
+            muscles: vec![],
+        };
+    }
 }
 impl Constructor {
-    pub fn new() -> Self {
-        return Self { part_menu: None };
-    }
-
     pub fn spawn(&mut self, commands: &mut Commands) {
         self.part_menu = Some(ModeMenuBundle::new(commands));
     }
-
     pub fn despawn(&mut self, commands: &mut Commands) {
         commands.entity(self.part_menu.unwrap()).despawn_recursive();
         self.part_menu = None;
+        for (e, _) in self.joints.iter() {
+            commands.entity(*e).despawn_recursive();
+        }
+        for (e, _) in self.bones.iter() {
+            commands.entity(*e).despawn_recursive();
+        }
+        for (e, _) in self.muscles.iter() {
+            commands.entity(*e).despawn_recursive();
+        }
+    }
+
+    pub fn push_joint(&mut self, e: Entity, pos: Vec2) {
+        self.joints.push((e, pos));
+    }
+
+    pub fn remove_joint(&mut self, e: Entity) {
+        match self.joints.iter().position(|x| x.0 == e) {
+            Some(i) => {
+                // self.joints.push(e);
+            }
+            None => return,
+        }
     }
 }
 
