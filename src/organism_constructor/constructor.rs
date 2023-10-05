@@ -56,6 +56,18 @@ pub struct AnchoredIconConstruction {
     anchored_entity: Option<Entity>,
 }
 impl Default for AnchoredIconConstruction {
+impl BoneConstruction {
+    pub fn clear(&mut self, commands: &mut Commands) {
+        match self.anchored_entity {
+            Some(e) => {
+                commands.entity(e).despawn();
+                self.anchored_entity = None;
+            }
+            None => println!("cannot clear "),
+        }
+    }
+}
+impl Default for BoneConstruction {
     fn default() -> Self {
         Self {
             anchored_entity: None,
