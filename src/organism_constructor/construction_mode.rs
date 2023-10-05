@@ -1,14 +1,16 @@
 use bevy::{
     prelude::{
         default, resource_changed, BuildChildren, Button, ButtonBundle, Changed, ChildBuilder,
-        Children, Component, IntoSystemConfigs, Plugin, Query, Res, ResMut, Resource, TextBundle,
-        Update, With,
+        Children, Commands, Component, IntoSystemConfigs, Plugin, Query, Res, ResMut, Resource,
+        TextBundle, Update, With,
     },
     text::{Text, TextStyle},
     ui::{AlignItems, BackgroundColor, BorderColor, Interaction, JustifyContent, Style, Val},
 };
 
 use crate::color_palette;
+
+use super::constructor::AnchoredIconConstruction;
 
 pub struct ConstructionModePlugin;
 impl Plugin for ConstructionModePlugin {
@@ -116,9 +118,12 @@ fn handle_mode_buttons(
 }
 
 fn handle_mode_button_color(
+    mut commands: Commands,
     mut buttons: Query<(&mut BackgroundColor, &mut BorderColor, &ModeButton), With<Button>>,
     cm: Res<ConstructionMode>,
+    mut aic: ResMut<AnchoredIconConstruction>,
 ) {
+    aic.clear(&mut commands);
     for (mut back_color, mut border_color, mb) in buttons.iter_mut() {
         match cm.current_mode == mb.mode {
             true => {

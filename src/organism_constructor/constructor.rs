@@ -1,6 +1,5 @@
 use bevy::prelude::{
-    default, Children, Commands, DespawnRecursiveExt, Entity, Local, Query, Res, ResMut, Resource,
-    With,
+    default, Children, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Resource, With,
 };
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
@@ -52,22 +51,22 @@ pub fn handle_joint_construction(
     );
 }
 
+#[derive(Resource)]
 pub struct AnchoredIconConstruction {
     anchored_entity: Option<Entity>,
 }
-impl Default for AnchoredIconConstruction {
-impl BoneConstruction {
+impl AnchoredIconConstruction {
     pub fn clear(&mut self, commands: &mut Commands) {
         match self.anchored_entity {
             Some(e) => {
                 commands.entity(e).despawn();
                 self.anchored_entity = None;
             }
-            None => println!("cannot clear "),
+            None => return,
         }
     }
 }
-impl Default for BoneConstruction {
+impl Default for AnchoredIconConstruction {
     fn default() -> Self {
         Self {
             anchored_entity: None,
@@ -84,7 +83,7 @@ pub fn handle_anchored_icon_construction(
     cm: Res<ConstructionMode>,
     handles: Res<Handles>,
     rapier_context: Res<RapierContext>,
-    mut bc: Local<AnchoredIconConstruction>,
+    mut aic: ResMut<AnchoredIconConstruction>,
 ) {
     if !cs.left_mouse_up {
         return;
@@ -125,11 +124,11 @@ pub fn handle_anchored_icon_construction(
     }
     let anchor_ent = potential_anchor_ent.unwrap();
 
-    match bc.anchored_entity {
+    match aic.anchored_entity {
         Some(anchored_icon_ent) => match anchored_icons.get_mut(anchored_icon_ent) {
             Ok(mut anchor_set) => {
                 anchor_set.set_anchor(anchor_ent);
-                bc.anchored_entity = None;
+                aic.anchored_entity = None;
             }
             Err(_) => todo!(),
         },
@@ -142,7 +141,7 @@ pub fn handle_anchored_icon_construction(
                     &handles.bone_material,
                     [Anchor::Ent(anchor_ent), Anchor::Mouse],
                 );
-                bc.anchored_entity = Some(bone_icon_ent);
+                aic.anchored_entity = Some(bone_icon_ent);
             }
             false => {
                 let muscle_icon_ent = MuscleIconBundle::new(
@@ -152,7 +151,7 @@ pub fn handle_anchored_icon_construction(
                     &handles.muscle_neutral_material,
                     [Anchor::Ent(anchor_ent), Anchor::Mouse],
                 );
-                bc.anchored_entity = Some(muscle_icon_ent);
+                aic.anchored_entity = Some(muscle_icon_ent);
             }
         },
     }
