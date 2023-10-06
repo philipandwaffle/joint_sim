@@ -7,7 +7,9 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
 
-use crate::{controls::control_state::ControlState, handles::Handles};
+use crate::{
+    controls::control_state::ControlState, handles::Handles, organism::organism::OrganismBuilder,
+};
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
@@ -20,9 +22,9 @@ use super::{
 #[derive(Resource)]
 pub struct Constructor {
     part_menu: Option<Entity>,
-    joints: Vec<(Entity, Vec2)>,
-    bones: Vec<(Entity, [u32; 2])>,
-    muscles: Vec<(Entity, [u32; 2])>,
+    joints: Vec<Entity>,
+    bones: Vec<Entity>,
+    muscles: Vec<Entity>,
 }
 impl Default for Constructor {
     fn default() -> Self {
@@ -41,33 +43,25 @@ impl Constructor {
     pub fn despawn(&mut self, commands: &mut Commands) {
         commands.entity(self.part_menu.unwrap()).despawn_recursive();
         self.part_menu = None;
-        for (e, _) in self.joints.iter() {
+        for e in self.joints.iter() {
             commands.entity(*e).despawn_recursive();
         }
-        for (e, _) in self.bones.iter() {
-            commands.entity(*e).despawn_recursive();
+        for e in self.bones.iter() {
+            commands.entity(*e).despawn();
         }
-        for (e, _) in self.muscles.iter() {
-            commands.entity(*e).despawn_recursive();
+        for e in self.muscles.iter() {
+            commands.entity(*e).despawn();
         }
     }
 
-    pub fn push_joint(&mut self, e: Entity, pos: Vec2) {
-        self.joints.push((e, pos));
-    }
-
-    pub fn remove_joint(&mut self, e: Entity) {
-        match self.joints.iter().position(|x| x.0 == e) {
-            Some(i) => {
-                // self.joints.push(e);
-            }
-            None => return,
-        }
+    pub fn create_builder(&self) -> OrganismBuilder {
+        todo!()
     }
 }
 
 pub fn handle_joint_construction(
     mut commands: Commands,
+    mut c: ResMut<Constructor>,
     mut cs: ResMut<ControlState>,
     handles: Res<Handles>,
 ) {
@@ -76,13 +70,14 @@ pub fn handle_joint_construction(
     }
     cs.double_click = false;
 
-    JointIconBundle::new(
+    let joint_ent = JointIconBundle::new(
         &mut commands,
         cs.world_mouse_pos,
         10.0,
         &handles.joint_mesh,
         &handles.joint_material,
     );
+    c.joints.push(joint_ent);
 }
 
 #[derive(Resource)]
@@ -113,6 +108,7 @@ pub fn handle_anchored_icon_construction(
     joint_icons: Query<&Children, With<JointIcon>>,
     bone_icons: Query<&Children, With<BoneIcon>>,
     mut anchored_icons: Query<&mut AnchorSet>,
+    mut c: ResMut<Constructor>,
     mut cs: ResMut<ControlState>,
     cm: Res<ConstructionMode>,
     handles: Res<Handles>,
@@ -161,6 +157,10 @@ pub fn handle_anchored_icon_construction(
     match aic.anchored_entity {
         Some(anchored_icon_ent) => match anchored_icons.get_mut(anchored_icon_ent) {
             Ok(mut anchor_set) => {
+                match is_bone {
+                    true => c.bones.push(anchored_icon_ent),
+                    false => c.muscles.push(anchored_icon_ent),
+                }
                 anchor_set.set_anchor(anchor_ent);
                 aic.anchored_entity = None;
             }
