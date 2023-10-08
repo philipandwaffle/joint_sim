@@ -1,4 +1,5 @@
 use bevy::{
+    asset::Error,
     math::vec3,
     prelude::{
         default, BuildChildren, Bundle, Commands, Component, Entity, GlobalTransform, Handle,
@@ -16,7 +17,7 @@ pub struct DraggableIcon;
 pub struct AnchorPoint;
 #[derive(Component)]
 pub struct AnchorSet {
-    anchors: [Anchor; 2],
+    pub anchors: [Anchor; 2],
 }
 impl AnchorSet {
     pub fn get_anchor_pos(
@@ -31,6 +32,17 @@ impl AnchorSet {
             return None;
         }
         return Some([a_pos.unwrap(), b_pos.unwrap()]);
+    }
+
+    pub fn get_ents(&self) -> Result<[Entity; 2], Error> {
+        if let Anchor::Ent(e_a) = self.anchors[0] {
+            if let Anchor::Ent(e_b) = self.anchors[1] {
+                return Ok([e_a, e_b]);
+            }
+        }
+        return Err(Error::msg(
+            "Anchor set doesn't consist of 2 entities and therefore cannot get entities",
+        ));
     }
 
     pub fn set_anchor(&mut self, e: Entity) {
@@ -68,7 +80,14 @@ impl Anchor {
 }
 
 #[derive(Component)]
-pub struct JointIcon;
+pub struct JointIcon {
+    pub id: usize,
+}
+impl JointIcon {
+    fn new(id: usize) -> Self {
+        return Self { id };
+    }
+}
 #[derive(Bundle)]
 pub struct JointIconBundle {
     joint_icon: JointIcon,
@@ -80,6 +99,7 @@ pub struct JointIconBundle {
 impl JointIconBundle {
     pub fn new(
         commands: &mut Commands,
+        id: usize,
         translation: Vec2,
         radius: f32,
         mesh: &Mesh2dHandle,
@@ -87,7 +107,7 @@ impl JointIconBundle {
     ) -> Entity {
         return commands
             .spawn(Self {
-                joint_icon: JointIcon,
+                joint_icon: JointIcon::new(id),
                 draggable_icon: DraggableIcon,
                 material_mesh_bundle: MaterialMesh2dBundle {
                     mesh: mesh.clone(),
@@ -140,7 +160,14 @@ impl AnchoredIconBundle {
 }
 
 #[derive(Component)]
-pub struct BoneIcon;
+pub struct BoneIcon {
+    pub id: usize,
+}
+impl BoneIcon {
+    pub fn new(id: usize) -> Self {
+        return Self { id };
+    }
+}
 #[derive(Bundle)]
 pub struct BoneIconBundle {
     bone_icon: BoneIcon,
@@ -151,6 +178,7 @@ pub struct BoneIconBundle {
 impl BoneIconBundle {
     pub fn new(
         commands: &mut Commands,
+        id: usize,
         width: f32,
         mesh: &Mesh2dHandle,
         material: &Handle<ColorMaterial>,
@@ -158,7 +186,7 @@ impl BoneIconBundle {
     ) -> Entity {
         return commands
             .spawn(Self {
-                bone_icon: BoneIcon,
+                bone_icon: BoneIcon::new(id),
                 anchored_icon_bundle: AnchoredIconBundle::new(width, -0.1, mesh, material, anchors),
                 collider: Collider::cuboid(0.5, 0.4),
                 sensor: Sensor,
@@ -170,13 +198,24 @@ impl BoneIconBundle {
     }
 }
 
+#[derive(Component)]
+pub struct MuscleIcon {
+    pub id: usize,
+}
+impl MuscleIcon {
+    pub fn new(id: usize) -> Self {
+        return Self { id };
+    }
+}
 #[derive(Bundle)]
 pub struct MuscleIconBundle {
+    muscle_icon: MuscleIcon,
     anchored_icon_bundle: AnchoredIconBundle,
 }
 impl MuscleIconBundle {
     pub fn new(
         commands: &mut Commands,
+        id: usize,
         width: f32,
         mesh: &Mesh2dHandle,
         material: &Handle<ColorMaterial>,
@@ -184,6 +223,7 @@ impl MuscleIconBundle {
     ) -> Entity {
         return commands
             .spawn(Self {
+                muscle_icon: MuscleIcon::new(id),
                 anchored_icon_bundle: AnchoredIconBundle::new(width, -0.2, mesh, material, anchors),
             })
             .id();

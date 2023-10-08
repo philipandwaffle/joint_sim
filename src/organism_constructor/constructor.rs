@@ -1,8 +1,8 @@
 use bevy::{
-    a11y::accesskit::Vec2,
+    asset::Error,
     prelude::{
-        default, Children, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Resource,
-        With,
+        default, Children, Commands, DespawnRecursiveExt, Entity, Parent, Query, Res, ResMut,
+        Resource, Transform, Vec2, With,
     },
 };
 use bevy_rapier2d::prelude::{QueryFilter, QueryFilterFlags, RapierContext};
@@ -14,7 +14,8 @@ use crate::{
 use super::{
     construction_mode::{ConstructionMode, Mode},
     icons::{
-        Anchor, AnchorSet, BoneIcon, BoneIconBundle, JointIcon, JointIconBundle, MuscleIconBundle,
+        Anchor, AnchorPoint, AnchorSet, BoneIcon, BoneIconBundle, JointIcon, JointIconBundle,
+        MuscleIcon, MuscleIconBundle,
     },
     mode_menu::ModeMenuBundle,
 };
@@ -54,8 +55,40 @@ impl Constructor {
         }
     }
 
-    pub fn create_builder(&self) -> OrganismBuilder {
-        todo!()
+    pub fn create_builder(
+        &self,
+        joint_icons: &Query<(&Transform, &JointIcon)>,
+        anchors: &Query<&Parent, With<AnchorPoint>>,
+        bone_anchors: &Query<(&AnchorSet, &BoneIcon)>,
+        muscle_anchors: &Query<(&AnchorSet, &MuscleIcon)>,
+    ) -> Result<OrganismBuilder, Error> {
+        let mut joint_pos = vec![Vec2::ZERO; self.joints.len()];
+        let mut bones = vec![[0, 0]; self.bones.len()];
+        let mut muscles = vec![[0, 0]; self.bones.len()];
+
+        for (t, j_i) in joint_icons {
+            joint_pos[j_i.id] = t.translation.truncate();
+        }
+        for (a_s, b_i) in bone_anchors.iter() {
+            // is this a fucked mapping and is this readable?
+            bones[b_i.id] = joint_icons
+                .get_many(anchors.get_many(a_s.get_ents()?)?.map(|p| p.get()))?
+                .map(|(_, j_i)| j_i.id);
+        }
+        for (a_s, m_i) in muscle_anchors.iter() {
+            // is this a fucked mapping and is this readable?
+            muscles[m_i.id] = joint_icons
+                .get_many(anchors.get_many(a_s.get_ents()?)?.map(|p| p.get()))?
+                .map(|(_, j_i)| j_i.id);
+        }
+
+        return Ok(OrganismBuilder::new(
+            1,
+            vec![6, 6, 6],
+            joint_pos,
+            bones,
+            muscles,
+        ));
     }
 }
 
@@ -72,6 +105,7 @@ pub fn handle_joint_construction(
 
     let joint_ent = JointIconBundle::new(
         &mut commands,
+        c.joints.len(),
         cs.world_mouse_pos,
         10.0,
         &handles.joint_mesh,
@@ -170,6 +204,7 @@ pub fn handle_anchored_icon_construction(
             true => {
                 let bone_icon_ent = BoneIconBundle::new(
                     &mut commands,
+                    c.bones.len(),
                     6.0,
                     &handles.bone_mesh,
                     &handles.bone_material,
@@ -180,6 +215,7 @@ pub fn handle_anchored_icon_construction(
             false => {
                 let muscle_icon_ent = MuscleIconBundle::new(
                     &mut commands,
+                    c.muscles.len(),
                     6.0,
                     &handles.muscle_mesh,
                     &handles.muscle_neutral_material,
