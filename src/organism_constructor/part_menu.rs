@@ -49,7 +49,7 @@ impl PartMenuBundle {
                         if i == 0 {
                             cell.spawn(JointIcon::new(
                                 vec2(0.0, 0.0),
-                                10.0,
+                                5.0,
                                 &handles.joint_mesh,
                                 &handles.joint_material,
                             ));

@@ -2,7 +2,7 @@ use bevy::prelude::{App, Commands, IntoSystemConfigs, Plugin, Res, ResMut, Resou
 
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
-    generation::{environment::Environment, setup_builders},
+    generation::environment::Environment,
     handles::Handles,
     organism::organism_list::OrganismList,
     organism_constructor::constructor::Constructor,
@@ -41,8 +41,8 @@ impl Scene {
         con: &mut Constructor,
         ol: &mut OrganismList,
         env: &mut Environment,
+        gc: &mut GenerationConfig,
         handles: &Handles,
-        gc: &GenerationConfig,
         sc: &SaveConfig,
     ) {
         match self {
@@ -52,7 +52,8 @@ impl Scene {
                 con.spawn(commands);
             }
             Scene::OrganismSimulation => {
-                setup_builders(ol, gc, sc);
+                // setup_builders(ol, gc, sc);
+                gc.timer.reset();
                 ol.spawn(commands, handles, gc.vertical_sep);
                 env.spawn(commands, &handles.block_mesh, &handles.block_material, gc);
             }
@@ -65,6 +66,9 @@ pub struct CurrentScene {
     cur_scene: Scene,
     pub next_scene: Scene,
 }
+pub fn is_simulation(cs: Res<CurrentScene>) -> bool {
+    return cs.cur_scene == Scene::OrganismSimulation;
+}
 
 fn scene_needs_change(cs: Res<CurrentScene>) -> bool {
     return cs.cur_scene != cs.next_scene;
@@ -75,7 +79,7 @@ fn change_scene(
     mut con: ResMut<Constructor>,
     mut ol: ResMut<OrganismList>,
     mut env: ResMut<Environment>,
-    gc: Res<GenerationConfig>,
+    mut gc: ResMut<GenerationConfig>,
     sc: Res<SaveConfig>,
     handles: Res<Handles>,
 ) {
@@ -87,8 +91,8 @@ fn change_scene(
         &mut con,
         &mut ol,
         &mut env,
+        &mut gc,
         &handles,
-        &gc,
         &sc,
     );
 }

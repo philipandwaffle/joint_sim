@@ -1,5 +1,6 @@
 use bevy::{
     asset::Error,
+    math::vec2,
     prelude::{
         default, Children, Commands, DespawnRecursiveExt, Entity, Parent, Query, Res, ResMut,
         Resource, Transform, Vec2, With,
@@ -64,32 +65,40 @@ impl Constructor {
     ) -> Result<OrganismBuilder, Error> {
         let mut joint_pos = vec![Vec2::ZERO; self.joints.len()];
         let mut bones = vec![[0, 0]; self.bones.len()];
-        let mut muscles = vec![[0, 0]; self.bones.len()];
+        let mut muscles = vec![[0, 0]; self.muscles.len()];
 
-        println!("constructing joint pos");
         for (t, j_i) in joint_icons {
             joint_pos[j_i.id] = t.translation.truncate();
         }
-        println!("constructed joint pos {:?}", joint_pos);
+        let x_offset = joint_pos.iter().map(|pos| pos.x).sum::<f32>() / joint_pos.len() as f32;
+        let y_offset = joint_pos
+            .iter()
+            .map(|pos| pos.y)
+            .min_by(|a, b| a.total_cmp(b))
+            .unwrap();
+        let offset = vec2(x_offset, y_offset);
+        joint_pos = joint_pos
+            .iter()
+            .map(|pos| *pos - offset)
+            .collect::<Vec<Vec2>>();
 
-        println!("constructing bones");
         for (a_s, b_i) in bone_anchors.iter() {
             // is this a fucked mapping and is this readable?
             bones[b_i.id] = joint_icons
                 .get_many(anchors.get_many(a_s.get_ents()?)?.map(|p| p.get()))?
                 .map(|(_, j_i)| j_i.id);
         }
-        println!("constructed bones {:?}", bones);
 
-        println!("constructing muscles");
         for (a_s, m_i) in muscle_anchors.iter() {
             // is this a fucked mapping and is this readable?
             muscles[m_i.id] = bone_anchors
                 .get_many(anchors.get_many(a_s.get_ents()?)?.map(|p| p.get()))?
                 .map(|(_, b_i)| b_i.id);
         }
-        println!("constructed muscles {:?}", muscles);
 
+        println!("joints {:?}", joint_pos);
+        println!("bones {:?}", bones);
+        println!("muscles {:?}", muscles);
         return Ok(OrganismBuilder::new(
             1,
             vec![6, 6, 6],
@@ -115,7 +124,7 @@ pub fn handle_joint_construction(
         &mut commands,
         c.joints.len(),
         cs.world_mouse_pos,
-        10.0,
+        5.0,
         &handles.joint_mesh,
         &handles.joint_material,
     );
@@ -213,7 +222,7 @@ pub fn handle_anchored_icon_construction(
                 let bone_icon_ent = BoneIconBundle::new(
                     &mut commands,
                     c.bones.len(),
-                    6.0,
+                    3.0,
                     &handles.bone_mesh,
                     &handles.bone_material,
                     [Anchor::Ent(anchor_ent), Anchor::Mouse],
@@ -224,7 +233,7 @@ pub fn handle_anchored_icon_construction(
                 let muscle_icon_ent = MuscleIconBundle::new(
                     &mut commands,
                     c.muscles.len(),
-                    6.0,
+                    3.0,
                     &handles.muscle_mesh,
                     &handles.muscle_neutral_material,
                     [Anchor::Ent(anchor_ent), Anchor::Mouse],

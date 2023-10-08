@@ -23,6 +23,7 @@ use crate::{
         organism_list::OrganismList,
         OrganismPlugin,
     },
+    scene_manager::is_simulation,
 };
 
 pub mod environment;
@@ -34,10 +35,7 @@ impl Plugin for GenerationPlugin {
         app.insert_resource(OrganismList::new())
             .insert_resource(Environment::new())
             .add_plugins(OrganismPlugin)
-            .add_systems(
-                Update,
-                (handle_generation).run_if(resource_exists::<OrganismList>()),
-            );
+            .add_systems(Update, (handle_generation).run_if(is_simulation));
     }
 }
 
