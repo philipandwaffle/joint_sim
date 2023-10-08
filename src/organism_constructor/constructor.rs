@@ -66,21 +66,29 @@ impl Constructor {
         let mut bones = vec![[0, 0]; self.bones.len()];
         let mut muscles = vec![[0, 0]; self.bones.len()];
 
+        println!("constructing joint pos");
         for (t, j_i) in joint_icons {
             joint_pos[j_i.id] = t.translation.truncate();
         }
+        println!("constructed joint pos {:?}", joint_pos);
+
+        println!("constructing bones");
         for (a_s, b_i) in bone_anchors.iter() {
             // is this a fucked mapping and is this readable?
             bones[b_i.id] = joint_icons
                 .get_many(anchors.get_many(a_s.get_ents()?)?.map(|p| p.get()))?
                 .map(|(_, j_i)| j_i.id);
         }
+        println!("constructed bones {:?}", bones);
+
+        println!("constructing muscles");
         for (a_s, m_i) in muscle_anchors.iter() {
             // is this a fucked mapping and is this readable?
-            muscles[m_i.id] = joint_icons
+            muscles[m_i.id] = bone_anchors
                 .get_many(anchors.get_many(a_s.get_ents()?)?.map(|p| p.get()))?
-                .map(|(_, j_i)| j_i.id);
+                .map(|(_, b_i)| b_i.id);
         }
+        println!("constructed muscles {:?}", muscles);
 
         return Ok(OrganismBuilder::new(
             1,

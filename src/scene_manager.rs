@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Scene {
+pub enum Scene {
     NoScene,
     StartMenu,
     OrganismConstructor,
@@ -61,9 +61,9 @@ impl Scene {
 }
 
 #[derive(Resource)]
-struct CurrentScene {
+pub struct CurrentScene {
     cur_scene: Scene,
-    next_scene: Scene,
+    pub next_scene: Scene,
 }
 
 fn scene_needs_change(cs: Res<CurrentScene>) -> bool {

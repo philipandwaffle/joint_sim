@@ -23,7 +23,7 @@ impl ModeMenuBundle {
                         height: Val::Percent(20.0),
                         width: Val::Percent(100.0),
                         grid_template_rows: vec![GridTrack::auto(); 1],
-                        grid_template_columns: vec![GridTrack::percent(33.3); 3],
+                        grid_template_columns: vec![GridTrack::percent(25.0); 4],
                         ..default()
                     },
                     background_color: BackgroundColor(color_palette::SECONDARY),
@@ -31,7 +31,7 @@ impl ModeMenuBundle {
                 },
             })
             .with_children(|grid| {
-                for i in 0..3 {
+                for i in 0..4 {
                     grid.spawn(NodeBundle {
                         style: Style {
                             display: Display::Grid,
@@ -67,6 +67,14 @@ impl ModeMenuBundle {
                                 "Muscle",
                                 "Click and drag between two bones to create a muscle",
                                 "Muscle",
+                                cell,
+                            );
+                        } else if i == 3 {
+                            ModeButton::new(
+                                Mode::Create,
+                                "Create Organism",
+                                "Click to complete construction",
+                                "Create Organism",
                                 cell,
                             );
                         }

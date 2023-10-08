@@ -92,6 +92,7 @@ pub enum Mode {
     Joint,
     Bone,
     Muscle,
+    Create,
 }
 
 #[derive(Resource)]
