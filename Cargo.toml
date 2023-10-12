@@ -3,6 +3,9 @@ name = "joint_sim"
 version = "0.2.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 # Enable a small amount of optimization in debug mode
 [profile.dev]
 codegen-units = 1
