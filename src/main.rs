@@ -1,23 +1,19 @@
-use bevy::diagnostic::DiagnosticsPlugin;
-use bevy::log::LogPlugin;
-use bevy::math::vec2;
+extern crate console_error_panic_hook;
+
 use bevy::prelude::*;
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     window::WindowMode,
 };
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 use handles::setup_handles;
-use organism::helper_fn::quat_z_rot;
 use organism_constructor::OrganismConstructionPlugin;
 use scene_manager::SceneManagerPlugin;
 use std::env;
-use std::f32::consts::PI;
+use std::panic;
 
 use controls::ControlPlugin;
 use generation::GenerationPlugin;
-use organism::OrganismPlugin;
 
 use crate::config::ConfigPlugin;
 
@@ -32,7 +28,7 @@ mod organism_constructor;
 mod scene_manager;
 
 fn main() {
-    env::set_var("RUST_BACKTRACE", "full");
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
 
     let profiling_mode = false;
     let debug_mode = false;
@@ -83,10 +79,7 @@ fn main() {
         ));
     }
     if debug_mode {
-        app.add_plugins((
-            RapierDebugRenderPlugin::default(),
-            WorldInspectorPlugin::new(),
-        ));
+        app.add_plugins((RapierDebugRenderPlugin::default(),));
     }
     // app.add_systems(Update, log_world);
     app.run();
