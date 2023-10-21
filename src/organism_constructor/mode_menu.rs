@@ -49,7 +49,7 @@ impl ModeMenuBundle {
                             ModeButton::new(
                                 Mode::Joint,
                                 "Joint",
-                                "Double click to create a joint",
+                                "Double click to create a joint.\nRight click a joint with no bones to delete it.",
                                 "Joint",
                                 cell,
                             );
@@ -57,7 +57,7 @@ impl ModeMenuBundle {
                             ModeButton::new(
                                 Mode::Bone,
                                 "Bone",
-                                "Click and drag between two joints to create a bone",
+                                "Left click on two joints to create a bone.\nRight click a bone with no muscles to delete it.",
                                 "Bone",
                                 cell,
                             );
@@ -65,7 +65,7 @@ impl ModeMenuBundle {
                             ModeButton::new(
                                 Mode::Muscle,
                                 "Muscle",
-                                "Click and drag between two bones to create a muscle",
+                                "Left click on two bones to create a muscle.\nRight click a muscle to delete it.",
                                 "Muscle",
                                 cell,
                             );

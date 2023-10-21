@@ -10,6 +10,7 @@ pub struct ControlState {
     pub zoom_delta: f32,
     pub left_mouse_down: bool,
     pub left_mouse_up: bool,
+    pub right_mouse_up: bool,
     pub double_click: bool,
     pub world_mouse_pos: Vec2,
     pub save: bool,
@@ -21,6 +22,7 @@ impl Default for ControlState {
             zoom_delta: 0.0,
             left_mouse_down: false,
             left_mouse_up: false,
+            right_mouse_up: false,
             double_click: false,
             world_mouse_pos: Vec2::ZERO,
             save: false,
@@ -125,6 +127,10 @@ pub fn update_control_state(
             cs.double_click = true;
         }
     }
+    if mouse.just_released(MouseButton::Right) {
+        cs.right_mouse_up = true;
+    }
+
     let (c, t) = camera.single();
     if let Some(world_mouse_pos) = windows
         .get_single()
