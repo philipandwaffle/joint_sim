@@ -62,6 +62,7 @@ impl MuscleBundle {
             },
             muscle: Muscle {
                 bones,
+                modifier: 1.0,
                 base_len: len,
                 len_modifier: 0.0,
             },
@@ -72,6 +73,7 @@ impl MuscleBundle {
 #[derive(Component)]
 pub struct Muscle {
     pub bones: [Entity; 2],
+    pub modifier: f32,
     pub base_len: f32,
     pub len_modifier: f32,
 }

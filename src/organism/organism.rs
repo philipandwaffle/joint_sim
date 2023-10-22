@@ -34,9 +34,9 @@ impl OrganismBuilder {
         // let num_outputs = num_muscles * 4;
 
         // Calculate brain structure
-        let mut brain_structure = vec![external_stimuli_count + num_muscles * 5];
+        let mut brain_structure = vec![external_stimuli_count + num_muscles * 6];
         brain_structure.extend(brain_hidden_structure);
-        brain_structure.push(num_muscles);
+        brain_structure.push(num_muscles * 2);
 
         return Self {
             brain: Brain::new(brain_structure),

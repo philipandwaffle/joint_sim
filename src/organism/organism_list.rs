@@ -151,7 +151,7 @@ pub fn update_muscles(
                     0.0
                 };
 
-                let modifier = 40.0;
+                let modifier = m.modifier * 80.0;
 
                 if diff != 0.0 {
                     a_ei.impulse = ab.normalize() * contract_expand * modifier;
@@ -214,10 +214,15 @@ pub fn update_brains(
         // Process stimuli
         let brain_out = o.process_stimuli(&mut stimuli);
 
-        for i in 0..brain_out.len() {
-            let cur_len_modifier = &mut muscles.get_mut(o.muscles[i]).unwrap().len_modifier;
-            o.energy_used += (*cur_len_modifier - brain_out[i]).abs().sqrt();
-            *cur_len_modifier = brain_out[i];
+        for i in 0..(brain_out.len() / 2) {
+            let index = i * 2;
+            let m = &mut muscles.get_mut(o.muscles[i]).unwrap();
+            let cur_len_modifier = m.len_modifier;
+
+            o.energy_used += (cur_len_modifier - brain_out[i]).abs().sqrt();
+
+            m.len_modifier = brain_out[index];
+            m.modifier = brain_out[index + 1];
         }
         o.brain.set_memory(brain_out);
     }
