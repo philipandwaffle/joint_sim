@@ -1,6 +1,9 @@
 use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
 
-use crate::config::structs::CameraConfig;
+use crate::{
+    config::structs::CameraConfig,
+    scene_manager::{CurrentScene, Scene},
+};
 
 use super::camera::ScrollingCam;
 
@@ -92,6 +95,7 @@ pub fn update_control_state(
     mut cs: ResMut<ControlState>,
     cc: Res<ControlConfig>,
     camera_config: Res<CameraConfig>,
+    sm: Res<CurrentScene>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &mut GlobalTransform), With<ScrollingCam>>,
     mut double_click: Local<DoubleClick>,
@@ -140,10 +144,12 @@ pub fn update_control_state(
         cs.save = true;
     }
 
-    if td != Vec2::ZERO {
-        cs.translate_delta = td * camera_config.move_modifier;
-    }
-    if zd != 0.0 {
-        cs.zoom_delta = zd * camera_config.zoom_modifier;
+    if sm.cur_scene == Scene::OrganismSimulation {
+        if td != Vec2::ZERO {
+            cs.translate_delta = td * camera_config.move_modifier;
+        }
+        if zd != 0.0 {
+            cs.zoom_delta = zd * camera_config.zoom_modifier;
+        }
     }
 }

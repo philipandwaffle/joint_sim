@@ -1,7 +1,14 @@
-use bevy::prelude::{App, Commands, IntoSystemConfigs, Plugin, Res, ResMut, Resource, Update};
+use bevy::{
+    math::vec2,
+    prelude::{
+        App, Commands, IntoSystemConfigs, OrthographicProjection, Plugin, Query, Res, ResMut,
+        Resource, Transform, Update, With,
+    },
+};
 
 use crate::{
     config::structs::{GenerationConfig, SaveConfig},
+    controls::{camera::ScrollingCam, control_state::ControlState},
     generation::environment::Environment,
     handles::Handles,
     organism::organism_list::OrganismList,
@@ -38,6 +45,7 @@ impl Scene {
     fn post_change(
         &self,
         commands: &mut Commands,
+        cam: (&mut Transform, &mut OrthographicProjection),
         con: &mut Constructor,
         ol: &mut OrganismList,
         env: &mut Environment,
@@ -49,10 +57,14 @@ impl Scene {
             Scene::NoScene => {}
             Scene::StartMenu => {}
             Scene::OrganismConstructor => {
+                let (t, op) = cam;
+                t.translation.x = 0.0;
+                t.translation.y = 0.0;
+                op.scale = 0.25;
+
                 con.spawn(commands);
             }
             Scene::OrganismSimulation => {
-                // setup_builders(ol, gc, sc);
                 gc.timer.reset();
                 ol.spawn(commands, handles, gc.vertical_sep);
                 env.spawn(commands, &handles.block_mesh, &handles.block_material, gc);
@@ -63,7 +75,7 @@ impl Scene {
 
 #[derive(Resource)]
 pub struct CurrentScene {
-    cur_scene: Scene,
+    pub cur_scene: Scene,
     pub next_scene: Scene,
 }
 pub fn is_simulation(cs: Res<CurrentScene>) -> bool {
@@ -75,7 +87,8 @@ fn scene_needs_change(cs: Res<CurrentScene>) -> bool {
 }
 fn change_scene(
     mut commands: Commands,
-    mut cs: ResMut<CurrentScene>,
+    mut cam: Query<(&mut Transform, &mut OrthographicProjection), With<ScrollingCam>>,
+    mut cur_scene: ResMut<CurrentScene>,
     mut con: ResMut<Constructor>,
     mut ol: ResMut<OrganismList>,
     mut env: ResMut<Environment>,
@@ -83,11 +96,15 @@ fn change_scene(
     sc: Res<SaveConfig>,
     handles: Res<Handles>,
 ) {
-    cs.cur_scene
+    cur_scene
+        .cur_scene
         .pre_change(&mut commands, &mut con, &mut ol, &env);
-    cs.cur_scene = cs.next_scene;
-    cs.next_scene.post_change(
+    cur_scene.cur_scene = cur_scene.next_scene;
+
+    let mut cam = cam.get_single_mut().unwrap();
+    cur_scene.next_scene.post_change(
         &mut commands,
+        (&mut cam.0, &mut cam.1),
         &mut con,
         &mut ol,
         &mut env,
