@@ -46,16 +46,12 @@ impl PartMenuBundle {
                         ..default()
                     })
                     .with_children(|cell| {
-                        if i == 0 {
-                            cell.spawn(JointIcon::new(
-                                vec2(0.0, 0.0),
-                                5.0,
-                                &handles.joint_mesh,
-                                &handles.joint_material,
-                            ));
-                        } else if i == 1 {
-                        } else if i == 2 {
-                        }
+                        cell.spawn(JointIcon::new(
+                            vec2(0.0, 0.0),
+                            5.0,
+                            &handles.joint_mesh,
+                            &handles.joint_material,
+                        ));
                     });
                 }
             })

@@ -14,6 +14,7 @@ use crate::{
 
 use super::{
     construction_mode::{ConstructionMode, Mode},
+    construction_zone::ConstructionZone,
     icons::{
         Anchor, AnchorPoint, AnchorSet, BoneIcon, BoneIconBundle, JointIcon, JointIconBundle,
         MuscleIcon, MuscleIconBundle,
@@ -24,6 +25,8 @@ use super::{
 #[derive(Resource)]
 pub struct Constructor {
     part_menu: Option<Entity>,
+    construction_zone: Option<Entity>,
+    pub in_bounds: bool,
     joints: Vec<Entity>,
     bones: Vec<Entity>,
     muscles: Vec<Entity>,
@@ -32,6 +35,8 @@ impl Default for Constructor {
     fn default() -> Self {
         return Self {
             part_menu: None,
+            construction_zone: None,
+            in_bounds: false,
             joints: vec![],
             bones: vec![],
             muscles: vec![],
@@ -41,9 +46,14 @@ impl Default for Constructor {
 impl Constructor {
     pub fn spawn(&mut self, commands: &mut Commands) {
         self.part_menu = Some(ModeMenuBundle::new(commands));
+        self.construction_zone = Some(ConstructionZone::new(commands))
     }
     pub fn despawn(&mut self, commands: &mut Commands) {
         commands.entity(self.part_menu.unwrap()).despawn_recursive();
+        commands
+            .entity(self.construction_zone.unwrap())
+            .despawn_recursive();
+
         self.part_menu = None;
         for e in self.joints.iter() {
             commands.entity(*e).despawn_recursive();
