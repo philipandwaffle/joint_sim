@@ -1,15 +1,18 @@
 use bevy::{
-    prelude::{default, BuildChildren, Bundle, Commands, Entity, NodeBundle},
-    ui::{BackgroundColor, Display, GridTrack, Style, Val},
+    prelude::{default, BuildChildren, Bundle, Commands, Component, Entity, NodeBundle},
+    ui::{BackgroundColor, Display, GridTrack, PositionType, Style, Val},
 };
 
 use crate::color_palette;
 
 use super::construction_mode::{Mode, ModeButton};
 
+#[derive(Component)]
+pub struct Menu;
 #[derive(Bundle)]
 pub struct ModeMenuBundle {
     node_bundle: NodeBundle,
+    menu: Menu,
 }
 impl ModeMenuBundle {
     pub fn new(commands: &mut Commands) -> Entity {
@@ -18,6 +21,7 @@ impl ModeMenuBundle {
                 node_bundle: NodeBundle {
                     style: Style {
                         display: Display::Grid,
+                        position_type: PositionType::Absolute,
                         left: Val::Percent(0.0),
                         top: Val::Percent(0.0),
                         height: Val::Percent(20.0),
@@ -29,6 +33,7 @@ impl ModeMenuBundle {
                     background_color: BackgroundColor(color_palette::SECONDARY),
                     ..default()
                 },
+                menu: Menu,
             })
             .with_children(|grid| {
                 for i in 0..4 {

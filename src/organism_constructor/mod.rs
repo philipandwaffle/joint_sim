@@ -10,6 +10,7 @@ use crate::{
 
 use self::{
     construction_mode::{ConstructionMode, ConstructionModePlugin, Mode},
+    construction_zone::in_construction_zone,
     constructor::{
         handle_anchored_icon_construction, handle_joint_construction, AnchoredIconConstruction,
         Constructor,
@@ -20,6 +21,7 @@ use self::{
 
 mod construction_grid;
 mod construction_mode;
+mod construction_zone;
 pub mod constructor;
 mod drag;
 mod icons;
@@ -37,15 +39,16 @@ impl Plugin for OrganismConstructionPlugin {
                 Update,
                 handle_anchored_icon_construction.run_if(construct_anchored_icon),
             )
-            .add_systems(Update, construct.run_if(construct_organism));
+            .add_systems(Update, construct.run_if(construct_organism))
+            .add_systems(Update, in_construction_zone);
     }
 }
 
-fn construct_joint(cm: Res<ConstructionMode>) -> bool {
-    return cm.current_mode == Mode::Joint;
+fn construct_joint(c: Res<Constructor>, cm: Res<ConstructionMode>) -> bool {
+    return c.in_bounds && cm.current_mode == Mode::Joint;
 }
-fn construct_anchored_icon(cm: Res<ConstructionMode>) -> bool {
-    return cm.current_mode == Mode::Bone || cm.current_mode == Mode::Muscle;
+fn construct_anchored_icon(c: Res<Constructor>, cm: Res<ConstructionMode>) -> bool {
+    return c.in_bounds && (cm.current_mode == Mode::Bone || cm.current_mode == Mode::Muscle);
 }
 
 fn construct_organism(cm: Res<ConstructionMode>) -> bool {
